@@ -13,5 +13,8 @@
     "mocha": "^2.5.3",
     "mockery": "^1.7.0",
     "sinon": "^1.17.4"
+  },
+  "dependencies": {
+    "extend_exclude": "^1.0.9"
   }
 }
