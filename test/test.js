@@ -1,6 +1,5 @@
 var sinon = require('sinon')
 var expect = require('chai').expect
-var mockery = require('mockery')
 var cssobj
 
 var obj01 = {
@@ -38,19 +37,12 @@ ul._18k9m2k_18k9m2k1_menu {
 
 describe('test cssobj', function(){
   before(function() {
-    mockery.enable({
-      warnOnReplace: false,
-      warnOnUnregistered: false
-    })
-    var mockRandom = sinon.stub(Math, 'random').returns(0.6273744097697385)
-    mockery.registerMock('../lib/cssobj.js', mockRandom)
     cssobj = require('../lib/cssobj.js')
   })
-  describe('test with sample 01', function() {
-    it('should return right css from object', function() {
-      console.log(Math.random()) // here failed to mock Math.random()
-      var ret = cssobj(obj01)
-      expect(ret.css).equal(css01)
+  describe('test selector without class', function() {
+    it('should return right css from underline properties', function() {
+      var ret = cssobj({p:{font_size:'12px', background_color:'red'}})
+      expect(ret.css).to.be.deepEqual('')
     })
   })
 })

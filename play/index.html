@@ -1,0 +1,32 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title>cssobj playground</title>
+  <script type="text/javascript" src="../node_modules/extend_exclude/iife/extend_exclude.js"></script>
+  <script type="text/javascript" src="../lib/cssobj.js"></script>
+  <style type="text/css" media="screen">
+  html,body{
+    height:100%;
+}
+textarea{
+    width:80%;
+    height:40%;
+}
+  </style>
+</head>
+<body>
+  <h3>Input JS Object:</h3>
+  <textarea id="src" oninput="convert(this)"></textarea>
+  <h3>Output CSS String:</h3>
+  <textarea id="css"></textarea>
+  <script type="text/javascript">
+  function convert(el){
+    try{
+      var obj = new Function('return '+el.value)
+      document.getElementById('css').value = cssobj(obj(), {indent:'  '}).css
+    }catch(e){
+      //console.log(e)
+    }
+  }
+  </script>
+</body>
