@@ -20,13 +20,22 @@ textarea{
   <h3>Output CSS String:</h3>
   <textarea id="css"></textarea>
   <script type="text/javascript">
-  function convert(el){
-    try{
-      var obj = new Function('return '+el.value)
-      document.getElementById('css').value = cssobj(obj(), {indent:'  '}).css
-    }catch(e){
-      //console.log(e)
-    }
+  var testData = [{p:{color:'red', back:'23'}, c:[{color:'red'}, {font:1234}]},
+            {p:{color:'red', back:'23ret', "@media & condition": {
+              color: "red2", d:{x:1}
+            }}},
+                  {p3:{color:'re56565656d', back:'24563', sdf:23453}}
+           ]
+src.value = JSON.stringify(testData)
+var opt = {indent:'  '}
+function convert(el){
+  try{
+    var obj = new Function('return '+el.value)
+    document.getElementById('css').value = cssobj(obj(), opt).css
+  }catch(e){
+    //console.log(e)
   }
+}
+  convert(src)
   </script>
 </body>
