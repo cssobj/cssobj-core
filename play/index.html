@@ -31,7 +31,9 @@ var opt = {indent:'  '}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
-    document.getElementById('css').value = cssobj(obj(), opt).css
+    var ret = cssobj(obj(), opt)
+    document.getElementById('css').value = ret.css
+    console.log(ret)
   }catch(e){
     //console.log(e)
   }
