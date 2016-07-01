@@ -20,10 +20,34 @@ textarea{
   <h3>Output CSS String:</h3>
   <textarea id="css"></textarea>
   <script type="text/javascript">
+  var obj = {
+    'ul.menu': {
+      background_color: 'red',
+      borderRadius: '2px',
+      'li.item': [
+        {
+          '&:before, .link': {
+            ".foo[title*='\\&'], :global(.xy)": {color: 'blue'},
+            color: 'red'
+          },
+          'html:global(.ie8) &': {color: 'purple'},
+          font_size: '12px'
+        },
+        {
+          'span': {
+            font_size: '22px'
+          },
+          color: 'blue'
+        }
+      ]
+    }
+  }
+
+
   var testData = [{"p":{"color":"red","back":"23"},".c":[{"color":"red", '&:before':{color:'#222'}},{"font":1234}]},{".p":{"color":"red","back":"23ret","@media & condition":{"color":"red2","@media c2":{"color":"blue"},"&.d":{"x":1}}}},{"p3":{"color":"re56565656d","back":"24563","sdf":23453}}]
 
 src.value = JSON.stringify(testData)
-var opt = {indent:'  '}
+var opt = {indent:'  ', local:1}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
