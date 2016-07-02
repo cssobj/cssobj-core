@@ -44,10 +44,10 @@ textarea{
   }
 
 
-  var testData = [{"_p":{"\\_color":"red","_backColor":"23"},".c":[{"color":"red", '&:before':{color:'#222'}},{"font":1234}]},{".p":{"color":"red","back":"23ret","@media & condition":{"color":"red2","@media c2":{"color":"blue"},"&.d":{"x":1}}}},{"p3":{"color":"re56565656d","back":"24563","sdf":23453}}]
+  var testData = [{"_p":{"\\_color":"red","_backColor":"23"},".c":[{"color":"red", '&:before':{color:'#222'}},{"font":1234}]},{".p":{"color":"red","back":"23ret","@media & condition":{"color":"red2","@media c2":{"\\_color":"blue"},"&.d":{"x":1}}}},{"p3":{"color":"re56565656d","back":"24563","sdf":23453}}]
 
 src.value = JSON.stringify(testData)
-var opt = {indent:'  ', local:1, dashProp:1}
+var opt = {indent:'  ', local:1, dashProp:0}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
