@@ -39,10 +39,65 @@ describe('test cssobj', function(){
   before(function() {
     cssobj = require('../lib/cssobj.js')
   })
+
   describe('test selector without class', function() {
-    it('should return right css from underline properties', function() {
-      var ret = cssobj({p:{font_size:'12px', background_color:'red'}})
-      expect(ret.css).to.be.deepEqual('')
+
+    it('css from underline properties', function() {
+      var ret = cssobj({p:{color:'red', font_size:'12px', background_color:'#fff'}})
+      expect(ret.css.trim()).deep.equal(
+`p
+{
+	color: red;
+	font-size: 12px;
+	background-color: #fff;
+}`
+      )
     })
+
+    it('css from css hack', function() {
+      var ret = cssobj({p:{'\\_font_size':'12px', background_color:'#fff'}})
+      expect(ret.css.trim()).deep.equal(
+`p
+{
+	_font-size: 12px;
+	background-color: #fff;
+}`
+      )
+    })
+
+    it('css from camel case', function() {
+      var ret = cssobj({p:{'\\_fontSize':'12px', 'background\\Color':'#fff'}})
+      expect(ret.css.trim()).deep.equal(
+`p
+{
+	_font-size: 12px;
+	backgroundColor: #fff;
+}`
+      )
+    })
+
+    it('css with propSugar off', function() {
+      var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
+      expect(ret.css.trim()).deep.equal(
+`p
+{
+	_fontSize: 12px;
+	background\\Color: #fff;
+}`
+      )
+    })
+
+    it('css with common.css', function() {
+      var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
+      expect(ret.css.trim()).deep.equal(
+`p
+{
+	_fontSize: 12px;
+	background\\Color: #fff;
+}`
+      )
+    })
+
+
   })
 })
