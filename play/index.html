@@ -12,10 +12,13 @@ textarea{
     width:80%;
     height:40%;
 }
+h3[title="a,b"]{
+    color:green;
+}
   </style>
 </head>
 <body>
-  <h3>Input JS Object:</h3>
+  <h3 title="a,b">Input JS Object:</h3>
   <textarea id="src" oninput="convert(this)"></textarea>
   <h3>Output CSS String:</h3>
   <textarea id="css" oninput="parse(this)"></textarea>
