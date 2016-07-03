@@ -64,12 +64,12 @@ describe('test cssobj', function(){
   describe('test selector without class', function() {
 
     it('css from underline properties', function() {
-      var ret = cssobj({p:{color:'red', font_size:'12px', background_color:'#fff'}})
+      var ret = cssobj({p:{color:'red', _font_sizeValue:'12px', background_color:'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p
 {
 	color: red;
-	font-size: 12px;
+	-font-size-value: 12px;
 	background-color: #fff;
 }`
       )
@@ -146,7 +146,7 @@ div, table
       )
     })
 
-    it('using & in child selector', function() {
+    it('using & inside child selector', function() {
       var ret = cssobj({div:{
         'fontSize':'12px',
         '&:before, &:after':{
@@ -175,12 +175,29 @@ div
       )
     })
 
-    xit('selector with comma in attribute []', function() {
-      var ret = cssobj({'p[title="abc"]':{color:'red'}})
+    it('selector with comma inside attribute []', function() {
+      var ret = cssobj({'p[title="a,bc"],div':{
+        span:{
+          color:'red'
+        }
+      }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`p[title="abc"]
+`p[title="a,bc"] span, div span
 {
-	color: red;
+  color: red;
+}`
+      )
+    })
+
+    it('selector with comma inside psuedo ()', function() {
+      var ret = cssobj(
+        {':-moz-any(ol, ul, menu[title="a,b"], dir) dd, :-moz-any(ol, ul, menu, dir) ul':{  span: {color:'red'} }}
+        , {indent:'  '}
+      )
+      expect(ret.css.trim()).deep.equal(
+`:-moz-any(ol, ul, menu[title="a,b"], dir) dd span,  :-moz-any(ol, ul, menu, dir) ul span
+{
+  color: red;
 }`
       )
     })
