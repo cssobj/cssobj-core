@@ -116,13 +116,13 @@ describe('test cssobj', function(){
         }
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`div p
-{
-  color: red;
-}
-div
+`div
 {
   font-size: 12px;
+}
+div p
+{
+  color: red;
 }`
       )
     })
@@ -135,13 +135,13 @@ div
         }
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`div p, table p,div span, table span
-{
-  color: red;
-}
-div, table
+`div, table
 {
   font-size: 12px;
+}
+div p, table p,div span, table span
+{
+  color: red;
 }`
       )
     })
@@ -154,13 +154,13 @@ div, table
         }
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`div:before, div:after
-{
-  content: "---";
-}
-div
+`div
 {
   font-size: 12px;
+}
+div:before, div:after
+{
+  content: "---";
 }`
       )
     })
