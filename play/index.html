@@ -64,7 +64,29 @@ var obj = {
 
 
   var testData = [
-  {
+    {
+      '@import':'url("fineprint.css") print',
+      '@font-face':{ style:'234' },
+      "@keyframes identifier1": {
+        "0%": {
+          "top": 0,
+          "left": 0
+        },
+        "10%": {
+          "top": 20,
+          "left": 20
+        }
+      },
+      '@supports (animation-name: test)':{
+        '@keyframes identifier':{
+          '0%':{
+            top:0, left:0
+          },
+          '10%':{
+            top:20, left:20
+          }
+        }
+      },
     "_p": {
       "\\_color": "red",
       "_backColor": "23",
