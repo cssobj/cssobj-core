@@ -63,7 +63,51 @@ var obj = {
   }
 
 
-  var testData = [{"_p":{"\\_color":"red","_backColor":"23", p1:{color:'purple'}},".c":[{"color":"red", '&:before':{color:'#222'}},{"font":1234}]},{".p":{"color":"red","back":"23ret","@media & condition":{"color":"red2","@media c2":{"\\_color":"blue"},"&.d":{"x":1}}}},{"p3":{"color":"re56565656d","back":"24563","sdf":23453}}]
+  var testData = [
+  {
+    "_p": {
+      "\\_color": "red",
+      "_backColor": "23",
+      "p1": {
+        "color": "purple"
+      }
+    },
+    ".c": [
+      {
+        "color": "red",
+        "&:before": {
+          "color": "#222"
+        }
+      },
+      {
+        "font": 1234
+      }
+    ]
+  },
+  {
+    ".p": {
+      "color": "red",
+      "back": "23ret",
+      "@media & condition": {
+        "color": "red2",
+        "@media c2": {
+          "\\_color": "blue",
+          '@media (max:324px)':{color:234}
+        },
+        "&.d": {
+          "x": 1
+        }
+      }
+    }
+  },
+  {
+    "p3": {
+      "color": "re56565656d",
+      "back": "24563",
+      "sdf": 23453
+    }
+  }
+]
 
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, dashProp:0}
