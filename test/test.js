@@ -298,6 +298,34 @@ div:before, div:after
       )
     })
 
+    it('local class name with pre-defined local name', function() {
+      var ret = cssobj({'.red .green .!bold':{
+        'color':'red',
+      }}, {prefix: '_prefix_'}, {red:'_custom_sel'}).css.trim()
+      expect(ret).equal(
+`._custom_sel ._prefix_green .bold
+{
+	color: red;
+}`
+      )
+    })
+
+    it('disable local class name', function() {
+      var ret = cssobj({'.red .!bold :global(.test)':{
+        'color':'red',
+      }}, {local:false}, {red:'_custom_sel'})
+      expect(ret.css.trim()).equal(
+`.red .bold .test
+{
+	color: red;
+}`
+      )
+
+      expect(ret.map).deep.equal({
+        red:'red'
+      })
+    })
+
 
   })
 })
