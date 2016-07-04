@@ -37,7 +37,9 @@ ul._18k9m2k_18k9m2k1_menu {
 
 describe('test cssobj', function(){
   before(function() {
+
     cssobj = require('../lib/cssobj.js')
+
   })
 
   //
@@ -45,6 +47,7 @@ describe('test cssobj', function(){
   describe('test cssobj options', function() {
 
     it('css with 2 space indent', function() {
+
       var ret = cssobj(
         {p:{color:'red'}},
         {indent:'  '}
@@ -55,6 +58,7 @@ describe('test cssobj', function(){
   color: red;
 }`
       )
+
     })
 
   })
@@ -64,6 +68,7 @@ describe('test cssobj', function(){
   describe('test selector without class', function() {
 
     it('css from underline properties', function() {
+
       var ret = cssobj({p:{color:'red', _font_sizeValue:'12px', background_color:'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p
@@ -73,9 +78,11 @@ describe('test cssobj', function(){
 	background-color: #fff;
 }`
       )
+
     })
 
     it('css from css hack', function() {
+
       var ret = cssobj({p:{'\\_font_size':'12px', background_color:'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p
@@ -84,9 +91,11 @@ describe('test cssobj', function(){
 	background-color: #fff;
 }`
       )
+
     })
 
     it('css from camel case', function() {
+
       var ret = cssobj({p:{'\\_fontSize':'12px', 'background\\Color':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p
@@ -95,9 +104,11 @@ describe('test cssobj', function(){
 	backgroundColor: #fff;
 }`
       )
+
     })
 
     it('css with propSugar off', function() {
+
       var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
       expect(ret.css.trim()).deep.equal(
 `p
@@ -106,9 +117,11 @@ describe('test cssobj', function(){
 	background\\Color: #fff;
 }`
       )
+
     })
 
     it('single child selector', function() {
+
       var ret = cssobj({div:{
         'fontSize':'12px',
         'p':{
@@ -125,9 +138,11 @@ div p
   color: red;
 }`
       )
+
     })
 
     it('comma in child selector', function() {
+
       var ret = cssobj({'div,table':{
         'fontSize':'12px',
         'p,span':{
@@ -135,18 +150,20 @@ div p
         }
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`div, table
+`div,table
 {
   font-size: 12px;
 }
-div p, table p,div span, table span
+div p,table p,div span,table span
 {
   color: red;
 }`
       )
+
     })
 
     it('using & inside child selector', function() {
+
       var ret = cssobj({div:{
         'fontSize':'12px',
         '&:before, &:after':{
@@ -163,9 +180,11 @@ div:before, div:after
   content: "---";
 }`
       )
+
     })
 
     it('selector with attribute []', function() {
+
       var ret = cssobj({'p[title="abc"]':{color:'red'}})
       expect(ret.css.trim()).deep.equal(
 `p[title="abc"]
@@ -173,36 +192,42 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('selector with comma inside attribute []', function() {
+
       var ret = cssobj({'p[title="a,bc"],div':{
         span:{
           color:'red'
         }
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
-`p[title="a,bc"] span, div span
+`p[title="a,bc"] span,div span
 {
   color: red;
 }`
       )
+
     })
 
     it('selector with comma inside psuedo ()', function() {
+
       var ret = cssobj(
         {':-moz-any(ol, ul, menu[title="a,b"], dir) dd, :-moz-any(ol, ul, menu, dir) ul':{  span: {color:'red'} }}
         , {indent:'  '}
       )
       expect(ret.css.trim()).deep.equal(
-`:-moz-any(ol, ul, menu[title="a,b"], dir) dd span,  :-moz-any(ol, ul, menu, dir) ul span
+`:-moz-any(ol, ul, menu[title="a,b"], dir) dd span, :-moz-any(ol, ul, menu, dir) ul span
 {
   color: red;
 }`
       )
+
     })
 
     xit('css with reset.css', function() {
+
       var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
       expect(ret.css.trim()).deep.equal(
 `p
@@ -211,6 +236,7 @@ div:before, div:after
 	background\\Color: #fff;
 }`
       )
+
     })
 
 
@@ -221,6 +247,7 @@ div:before, div:after
   describe('test with local class name', function() {
 
     it('local class name with random string', function() {
+
       // random string cannot test right,
       // so using regexp to test format
       var ret = cssobj({'.red':{
@@ -235,10 +262,12 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     // below will using _prefix_ as prefix
     it('local class name with custom prefix', function() {
+
       var ret = cssobj({'.red':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -248,9 +277,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('local class name with :global escape 1', function() {
+
       var ret = cssobj({':global(.red).bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -260,9 +291,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('local class name with :global escape 2', function() {
+
       var ret = cssobj({':global(.red.green .blue).bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -272,9 +305,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('local class name with ! escape 1', function() {
+
       var ret = cssobj({'.!red.bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -284,9 +319,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('local class name with ! escape 2', function() {
+
       var ret = cssobj({'.!red .!green .bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -296,9 +333,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('local class name with pre-defined local name', function() {
+
       var ret = cssobj({'.red .green .!bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}, {red:'_custom_sel'}).css.trim()
@@ -308,9 +347,11 @@ div:before, div:after
 	color: red;
 }`
       )
+
     })
 
     it('disable local class name', function() {
+
       var ret = cssobj({'.red .!bold :global(.test)':{
         'color':'red',
       }}, {local:false}, {red:'_custom_sel'})
@@ -324,8 +365,218 @@ div:before, div:after
       expect(ret.map).deep.equal({
         red:'red'
       })
+
+    })
+
+  })
+
+  //
+  //test atRules
+  describe('test @rules top level', function() {
+    it('@import rule', function() {
+
+      var ret = cssobj({
+        "@import": "url(\"fineprint.css\") print",
+        d:{color:123}
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+`@import url("fineprint.css") print;
+d
+{
+  color: 123;
+}`
+      )
+
     })
 
 
+    it('@font-face rule top level', function() {
+
+      var ret = cssobj({
+        "@font-face": {
+          "font-family": '"Bitstream Vera Serif Bold"',
+          "src": 'url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf")'
+        }
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+        `@font-face
+{
+  font-family: "Bitstream Vera Serif Bold";
+  src: url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf");
+}`
+      )
+
+    })
+
+    it('@keyframes top level', function() {
+
+      var ret = cssobj({
+        "@keyframes identifier1": {
+          "0%": {
+            "top": 0,
+            "left": 0
+          },
+          "10%": {
+            "top": 20,
+            "left": 20
+          }
+        }
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+        `@keyframes identifier1{
+  0%
+  {
+    top: 0;
+    left: 0;
+  }
+  10%
+  {
+    top: 20;
+    left: 20;
+  }
+}`
+      )
+
+    })
+
+    it('@supports top level with @import, @keyframes', function() {
+
+      var ret = cssobj({
+        "@supports (animation-name: test)": {
+          "@import": "url(\"fineprint.css\") print",
+          "d": {
+            "color": 123
+          },
+          "@keyframes identifier": {
+            "0%": {
+              "top": 0,
+              "left": 0
+            },
+            "10%": {
+              "top": 20,
+              "left": 20
+            }
+          }
+        }
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+        `@supports (animation-name: test){
+  @import url("fineprint.css") print;
+  d
+  {
+    color: 123;
+  }
+  @keyframes identifier{
+    0%
+    {
+      top: 0;
+      left: 0;
+    }
+    10%
+    {
+      top: 20;
+      left: 20;
+    }
+  }
+}`
+      )
+
+    })
+
+    it('@media at top level', function() {
+
+      var ret = cssobj(
+        {
+          "@mediaonly screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
+          "@mediaonly screen and (min-width : 321px)": {p:{color:'blue'}}
+        }
+        , {indent:'  ', prefix:'_prefix_'})
+
+      expect(ret.css.trim()).equal(
+        `@mediaonly screen and (min-device-width : 320px) and (max-device-width : 480px){
+  p
+  {
+    color: red;
+  }
+}
+@mediaonly screen and (min-width : 321px){
+  p
+  {
+    color: blue;
+  }
+}`
+      )
+
+    })
+
+    it('@media supports with multi-level', function() {
+
+      var ret = cssobj(
+        {
+          ".p": {
+            "color": "red",
+            "back": "23ret",
+            "@media (min-width:320px)": {
+              "color": "red2",
+              "@media c2&c": {
+                "\\_color": "blue",
+                "@media and (max-width:768px)": {
+                  "color": 234
+                }
+              },
+              "@font-face": {
+                "style": 1
+              },
+              "&.d": {
+                "x": 1
+              }
+            }
+          }
+        }
+        , {indent:'  ', prefix:'_prefix_'})
+
+      expect(ret.css.trim()).equal(
+        `._prefix_p
+{
+  color: red;
+  back: 23ret;
+}
+@media (min-width:320px){
+  ._prefix_p
+  {
+    color: red2;
+  }
+  @font-face
+  {
+    style: 1;
+  }
+  ._prefix_p._prefix_d
+  {
+    x: 1;
+  }
+}
+@media (min-width:320px) c2&c{
+  ._prefix_p
+  {
+    _color: blue;
+  }
+}
+@media (min-width:320px) c2&c and (max-width:768px){
+  ._prefix_p
+  {
+    color: 234;
+  }
+}`
+      )
+
+    })
+
+
+
   })
+
 })

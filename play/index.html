@@ -78,6 +78,8 @@ var obj = {
         }
       },
       '@supports (animation-name: test)':{
+        '@import':'url("fineprint.css") print',
+        d:{color:123},
         '@keyframes identifier':{
           '0%':{
             top:0, left:0
@@ -116,6 +118,7 @@ var obj = {
           "\\_color": "blue",
           '@media (max:324px)':{color:234}
         },
+        '@font-face':{style:1},
         "&.d": {
           "x": 1
         }
