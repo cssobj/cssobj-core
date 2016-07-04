@@ -559,13 +559,13 @@ d
     x: 1;
   }
 }
-@media (min-width:320px) c2&c{
+@media (min-width:320px)  c2&c{
   ._prefix_p
   {
     _color: blue;
   }
 }
-@media (min-width:320px) c2&c and (max-width:768px){
+@media (min-width:320px)  c2&c  and (max-width:768px){
   ._prefix_p
   {
     color: 234;
@@ -574,6 +574,64 @@ d
       )
 
     })
+
+
+
+        it('@media supports with multi-level comma split', function() {
+
+      var ret = cssobj(
+        {
+          ".p": {
+            "color": "red",
+            "back": "23ret",
+            "@media & condition": {
+              "color": "red2",
+              "@media c2,c3": {
+                "\\_color": "blue",
+                "@media (max:324px),(min:111px)": {
+                  "color": 234
+                }
+              },
+              "@font-face": {
+                "style": 1
+              }
+            }
+          }
+        }
+        , {indent:'  ', prefix:'_prefix_'})
+
+      expect(ret.css.trim()).equal(
+        `._prefix_p
+{
+  color: red;
+  back: 23ret;
+}
+@media & condition{
+  ._prefix_p
+  {
+    color: red2;
+  }
+  @font-face
+  {
+    style: 1;
+  }
+}
+@media & condition  c2,@media & condition c3{
+  ._prefix_p
+  {
+    _color: blue;
+  }
+}
+@media & condition  c2  (max:324px),@media & condition  c2 (min:111px),@media & condition c3  (max:324px),@media & condition c3 (min:111px){
+  ._prefix_p
+  {
+    color: 234;
+  }
+}`
+      )
+
+    })
+
 
 
 

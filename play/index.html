@@ -114,9 +114,9 @@ var obj = {
       "back": "23ret",
       "@media & condition": {
         "color": "red2",
-        "@media c2": {
+        "@media c2,c3": {
           "\\_color": "blue",
-          '@media (max:324px)':{color:234}
+          '@media (max:324px),(min:111px)':{color:234}
         },
         '@font-face':{style:1},
         "&.d": {
@@ -139,7 +139,7 @@ var opt = {indent:'  ', local:1, dashProp:0}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
-    var ret = cssobj(obj(), opt, {p:'asdfasdf'})
+    var ret = cssobj(obj(), opt, {p:'_prefix_p'})
     document.getElementById('css').value = ret.css
     console.log(ret)
   }catch(e){
