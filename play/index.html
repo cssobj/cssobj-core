@@ -74,7 +74,7 @@ var obj = {
         },
         "10%": {
           "top": 20,
-          "left": 20
+          "left": function(){ return 20+5 }
         }
       },
       '@supports (animation-name: test)':{
@@ -115,6 +115,7 @@ var obj = {
       "@media & condition": {
         "color": "red2",
         "@media c2,c3": {
+          '$id':'xyz',
           "\\_color": "blue",
           '@media (max:324px),(min:111px)':{color:234}
         },
@@ -127,6 +128,7 @@ var obj = {
   },
   {
     "p3": {
+      $id:'abc',
       "color": "re56565656d",
       "back": "24563",
       "sdf": 23453
