@@ -135,7 +135,7 @@ var obj = {
 ]
 
 src.value = JSON.stringify(testData,null,2)
-var opt = {indent:'  ', local:1, dashProp:0}
+var opt = {indent:'  ', local:1, propSugar:1}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
