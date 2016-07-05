@@ -146,12 +146,12 @@ var opt = {indent:'  ', local:1, propSugar:1}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
-  }catch(e){
-    console.log(e)
-  }
   var ret = cssobj(obj(), opt, {p:'_prefix_p'})
   document.getElementById('css').value = ret.css
   console.log(ret)
+  }catch(e){
+    console.log(e)
+  }
 }
 convert(src)
 
