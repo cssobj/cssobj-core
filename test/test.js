@@ -491,19 +491,19 @@ d
 
       var ret = cssobj(
         {
-          "@mediaonly screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
-          "@mediaonly screen and (min-width : 321px)": {p:{color:'blue'}}
+          "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
+          "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
         }
         , {indent:'  ', prefix:'_prefix_'})
 
       expect(ret.css.trim()).equal(
-        `@mediaonly screen and (min-device-width : 320px) and (max-device-width : 480px){
+        `@media only screen and (min-device-width : 320px) and (max-device-width : 480px){
   p
   {
     color: red;
   }
 }
-@mediaonly screen and (min-width : 321px){
+@media only screen and (min-width : 321px){
   p
   {
     color: blue;
@@ -524,7 +524,7 @@ d
               "color": "red2",
               "@media c2&c": {
                 "\\_color": "blue",
-                "@media and (max-width:768px)": {
+                "@media (max-width:768px)": {
                   "color": 234
                 }
               },
@@ -559,13 +559,13 @@ d
     x: 1;
   }
 }
-@media (min-width:320px)  c2&c{
+@media (min-width:320px) and c2&c{
   ._prefix_p
   {
     _color: blue;
   }
 }
-@media (min-width:320px)  c2&c  and (max-width:768px){
+@media (min-width:320px) and c2&c and (max-width:768px){
   ._prefix_p
   {
     color: 234;
@@ -616,13 +616,17 @@ d
     style: 1;
   }
 }
-@media & condition  c2,@media & condition c3{
+@media & condition and c2,
+& condition and c3{
   ._prefix_p
   {
     _color: blue;
   }
 }
-@media & condition  c2  (max:324px),@media & condition  c2 (min:111px),@media & condition c3  (max:324px),@media & condition c3 (min:111px){
+@media & condition and c2 and (max:324px),
+& condition and c3 and (max:324px),
+& condition and c2 and (min:111px),
+& condition and c3 and (min:111px){
   ._prefix_p
   {
     color: 234;

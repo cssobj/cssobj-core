@@ -134,19 +134,24 @@ var obj = {
       "sdf": 23453
     }
   }
-]
+  ]
+
+testData1 = {
+          "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
+          "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
+        }
 
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
-    var ret = cssobj(obj(), opt, {p:'_prefix_p'})
-    document.getElementById('css').value = ret.css
-    console.log(ret)
   }catch(e){
-    //console.log(e)
+    console.log(e)
   }
+  var ret = cssobj(obj(), opt, {p:'_prefix_p'})
+  document.getElementById('css').value = ret.css
+  console.log(ret)
 }
 convert(src)
 
