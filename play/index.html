@@ -65,10 +65,11 @@ var obj = {
 
   var testData = [
     {
-      '@import':'url("fineprint.css") print',
-      '@font-face':{ style:'234' },
+      '@import':['url("fineprint.css") print', 'oisdjfoj'],
+      '@font-face':{ style:['234', 234] },
       "@keyframes identifier1": {
         "0%": {
+          '':[{top:[2,3,4], left:3}, {top:4}],
           "top": 0,
           "left": 0
         },
@@ -146,9 +147,9 @@ var opt = {indent:'  ', local:1, propSugar:1}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
-  var ret = cssobj(obj(), opt, {p:'_prefix_p'})
-  document.getElementById('css').value = ret.css
-  console.log(ret)
+    var ret = cssobj(obj(), opt, {p:'_prefix_p'})
+    document.getElementById('css').value = ret.css
+    console.log(ret)
   }catch(e){
     console.log(e)
   }

@@ -371,9 +371,75 @@ div:before, div:after
   })
 
   //
+  //test array support
+
+  describe('test array support', function() {
+
+    it('object inside array', function() {
+
+      var ret = cssobj({
+        d:[{color:123}, {font:'"Arial"', color:'blue'}]
+      }, {indent:'  '})
+
+      expect(ret.css).equal(
+        `d
+{
+  color: 123;
+}
+d
+{
+  font: "Arial";
+  color: blue;
+}
+`
+      )
+
+    })
+
+    it('properties inside array', function() {
+
+      var ret = cssobj({
+        p:[{font:[function(){return 'Helvetica'}, '"Arial"'], color:'blue'}]
+      }, {indent:'  '})
+
+      expect(ret.css).equal(
+        `p
+{
+  font: Helvetica;
+  font: "Arial";
+  color: blue;
+}
+`
+      )
+
+    })
+
+    it('empty string property as array', function() {
+
+      var ret = cssobj({
+        p:{'': [{font:[function(){return 'Helvetica'}, '"Arial"'], color:'blue'}]}
+      }, {indent:'  '})
+
+      expect(ret.css).equal(
+        `p
+{
+  font: Helvetica;
+  font: "Arial";
+  color: blue;
+}
+`
+      )
+
+    })
+
+  })
+
+  //
   //test atRules
   describe('test @rules top level', function() {
-    it('@import rule', function() {
+
+
+    it('@import rule single', function() {
 
       var ret = cssobj({
         "@import": "url(\"fineprint.css\") print",
@@ -385,6 +451,60 @@ div:before, div:after
 d
 {
   color: 123;
+}`
+      )
+
+    })
+
+
+    it('@import rule with multiple', function() {
+
+      var ret = cssobj({
+        '': [
+          {"@import": "url(\"fineprint1.css\") print"},
+          {"@import": "url(\"fineprint2.css\") print"},
+          {"@import": "url(\"fineprint3.css\") print"},
+        ],
+        d:{color:123}
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+`@import url("fineprint1.css") print;
+@import url("fineprint2.css") print;
+@import url("fineprint3.css") print;
+d
+{
+  color: 123;
+}`
+      )
+
+    })
+
+
+    it('@import rule with multiple inside @supports', function() {
+
+      var ret = cssobj({
+        '@supports (import: true)':{
+          "@import": "url(\"fineprint.css\") print",
+          '': [
+            {"@import": "url(\"fineprint1.css\") print"},
+            {"@import": "url(\"fineprint2.css\") print"},
+            {"@import": "url(\"fineprint3.css\") print"},
+          ],
+          d:{color:123}
+        }
+      }, {indent:'  '})
+
+      expect(ret.css.trim()).equal(
+        `@supports (import: true){
+  @import url("fineprint.css") print;
+  @import url("fineprint1.css") print;
+  @import url("fineprint2.css") print;
+  @import url("fineprint3.css") print;
+  d
+  {
+    color: 123;
+  }
 }`
       )
 
