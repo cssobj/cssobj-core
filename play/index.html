@@ -2,6 +2,7 @@
 <head>
   <meta charset="utf-8">
   <title>cssobj playground</title>
+  <script type="text/javascript" src="http://cdn.staticfile.org/js-yaml/3.4.6/js-yaml.min.js"></script>
   <script type="text/javascript" src="../node_modules/extend_exclude/iife/extend_exclude.js"></script>
   <script type="text/javascript" src="../lib/cssobj.js"></script>
   <style type="text/css" media="screen">
@@ -25,12 +26,12 @@ h3[title="a,b"]{
   <table>
     <tr>
       <td>
-  <h3 title="a,b">Input JS Object:</h3>
-  <textarea id="src" oninput="convert(this)"></textarea>
+        <h3 title="a,b">Input JS Object:</h3>
+        <textarea id="src" oninput="convert(this)"></textarea>
       </td>
       <td>
-  <h3>Output CSS String:</h3>
-  <textarea id="css" oninput="parse(this)"></textarea>
+        <h3>Output CSS String:</h3>
+        <textarea id="css" oninput="parse(this)"></textarea>
       </td>
     </tr>
   </table>
@@ -65,8 +66,8 @@ var obj = {
 
   var testData = [
     {
-      '@import':['url("fineprint.css") print', 'oisdjfoj'],
-      '@font-face':{ style:['234', 234] },
+      '@import':['url("fineprint.css") print', ''],
+      '@font-face':{ font_family:['Arial', 'Helvetica'] },
       "@keyframes identifier1": {
         "0%": {
           '':[{top:[2,3,4], left:3}, {top:4}],
@@ -80,7 +81,7 @@ var obj = {
       },
       '@supports (animation-name: test)':{
         '@import':'url("fineprint.css") print',
-        d:{color:123},
+        d:{color:'#123'},
         '@keyframes identifier':{
           '0%':{
             top:0, left:0
@@ -105,16 +106,16 @@ var obj = {
         }
       },
       {
-        "font": 1234
+        "font": '11px Arial'
       }
     ]
   },
   {
     ".p": {
       "color": "red",
-      "back": "23ret",
-      "@media & condition": {
-        "color": "red2",
+      "margin": "10px",
+      "@media (min-width:320px)": {
+        "padding": "20px",
         "@media c2,c3": {
           '$id':'xyz',
           "\\_color": "blue",
@@ -130,9 +131,7 @@ var obj = {
   {
     "p3": {
       $id:'abc',
-      "color": "re56565656d",
-      "back": "24563",
-      "sdf": 23453
+      "color": "green",
     }
   }
   ]
