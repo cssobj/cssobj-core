@@ -660,7 +660,7 @@ d {
           ".p": {
             "color": "red",
             "back": "23ret",
-            "@media & condition": {
+            "@media & (cond,ition)": {
               "color": "red2",
               "@media c2,c3": {
                 "\\_color": "blue",
@@ -681,7 +681,7 @@ d {
   color: red;
   back: 23ret;
 }
-@media & condition {
+@media & (cond,ition) {
   ._prefix_p {
     color: red2;
   }
@@ -689,16 +689,16 @@ d {
     style: 1;
   }
 }
-@media & condition and c2,
-& condition and c3 {
+@media & (cond,ition) and c2,
+& (cond,ition) and c3 {
   ._prefix_p {
     _color: blue;
   }
 }
-@media & condition and c2 and (max:324px),
-& condition and c3 and (max:324px),
-& condition and c2 and (min:111px),
-& condition and c3 and (min:111px) {
+@media & (cond,ition) and c2 and (max:324px),
+& (cond,ition) and c3 and (max:324px),
+& (cond,ition) and c2 and (min:111px),
+& (cond,ition) and c3 and (min:111px) {
   ._prefix_p {
     color: 234;
   }
@@ -716,5 +716,115 @@ d {
 
   //
   // test with update
+
+  describe('test with update', function() {
+
+    it('should return vars in result', function() {
+
+      var ret = cssobj({
+        dd:{font:123},
+        p:{
+          $id: 'abc',
+          color: 'red'
+        },
+        p2:{
+          $id: 'xyz',
+          color: 'blue'
+        }
+      }, {indent:'  '})
+
+      expect(ret.css).equal(
+        `dd {
+  font: 123;
+}
+p {
+  color: red;
+}
+p2 {
+  color: blue;
+}
+`)
+
+      expect(Object.keys(ret.vars)).deep.equal(['abc', 'xyz'])
+
+      ret.vars.abc.prop.color = function(node, selector){ return selector }
+
+      expect(ret.update()).equal(
+        `p {
+  color: p;
+}
+p2 {
+  color: blue;
+}
+`)
+
+      expect(ret.update('xyz')).equal(
+        `p2 {
+  color: blue;
+}
+`)
+
+      expect(ret.update('xyz', 'abc')).equal(
+        `p2 {
+  color: blue;
+}
+p {
+  color: p;
+}
+`)
+
+      // test with non-exist key
+      expect(ret.update('non-exists-key')).equal('')
+
+    })
+
+    it('should invoke callback event when update, then remove', function() {
+
+      var ret = cssobj({
+        dd:{font:123},
+        p:{
+          $id: 'abc',
+          color: 'red'
+        }
+      }, {indent:'  '})
+
+      var callCount = 0
+
+      var onUpdate = function(css, args){
+
+        callCount++
+
+        expect(css).equal(
+          `p {
+  color: red;
+}
+`)
+        expect(args).deep.equal(['abc'])
+
+      }
+
+      // setup update
+      ret.on('update', onUpdate)
+
+      // normal update
+      ret.update()
+      ret.update('abc')
+      expect(callCount).equal(2)
+
+      // non-exists key will not trigger event
+      ret.update('non-exists-key')
+      expect(callCount).equal(2)
+
+      // remove event
+      ret.remove('update', onUpdate)
+
+      // should not trigger event
+      ret.update('abc')
+      expect(callCount).equal(2)
+
+
+    })
+
+  })
 
 })
