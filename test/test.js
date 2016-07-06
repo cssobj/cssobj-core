@@ -818,6 +818,10 @@ p {
       // remove event
       ret.remove('update', onUpdate)
 
+      // remove non-exists event
+      // should not throw
+      ret.remove('event_abc', onUpdate)
+
       // should not trigger event
       ret.update('abc')
       expect(callCount).equal(2)
