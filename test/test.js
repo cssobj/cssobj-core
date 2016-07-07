@@ -831,4 +831,78 @@ p {
 
   })
 
+
+  //
+  // plugin test
+  describe('plugin test', function() {
+
+
+    it('post plugin', function() {
+
+      var post1 = function(option){
+        return function(result){
+
+          expect(option.abc).equal(true)
+
+          expect(result.css).equal(
+            `p {
+  color: red;
+}
+`
+          )
+
+          result.abc = option.abc
+
+          // should return first args to pass to next plugin
+          return result
+
+        }
+      }
+
+      var post2 = function(result){
+
+        expect(result.abc).equal(true)
+
+      }
+
+      // only one plugin
+      cssobj({p:{color:'red'}}, {
+        indent:'  ',
+        post: post1({abc:true})
+      })
+
+      // pass value to next plugin
+      cssobj({p:{color:'red'}}, {
+        indent:'  ',
+        post: [post1({abc:true}), post2]
+      })
+
+    })
+
+
+    it('value plugin', function() {
+
+      function plug1(value) {
+        expect(value).equal(2)
+
+        // pass to next plugin
+        return value*2
+      }
+
+      function plug2(value){
+        expect(value).equal(4)
+      }
+
+      cssobj({p:{size:2}}, {
+        indent:'  ',
+        value: [plug1, plug2]
+      })
+
+
+
+    })
+
+
+  })
+
 })
