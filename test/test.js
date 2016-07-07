@@ -877,11 +877,11 @@ p {
       expect(callCount).equal(2)
 
       // remove event
-      ret.remove('update', onUpdate)
+      ret.off('update', onUpdate)
 
       // remove non-exists event
       // should not throw
-      ret.remove('event_abc', onUpdate)
+      ret.off('event_non_exists', onUpdate)
 
       // should not trigger event
       ret.update('abc')
