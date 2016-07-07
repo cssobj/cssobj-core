@@ -725,7 +725,8 @@ d {
         dd:{font:123},
         p:{
           $id: 'abc',
-          color: 'red'
+          color: 'red',
+          p1:{font:1234}
         },
         p2:{
           $id: 'xyz',
@@ -740,20 +741,47 @@ d {
 p {
   color: red;
 }
+p p1 {
+  font: 1234;
+}
 p2 {
   color: blue;
 }
 `)
 
-      expect(Object.keys(ret.vars)).deep.equal(['abc', 'xyz'])
+      expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
-      ret.vars.abc.prop.color = function(node, opt){
+      ret.ref.abc.color = function(node, opt){
         return opt._util.getSelector(node, opt)
       }
+
+      // recursive all children
+      expect(ret.update('abc', true)).equal(
+        `p {
+  color: p;
+}
+p p1 {
+  font: 1234;
+}
+`
+      )
+
 
       expect(ret.update()).equal(
         `p {
   color: p;
+}
+p2 {
+  color: blue;
+}
+`)
+      // deep get children css
+      expect(ret.update(true)).equal(
+        `p {
+  color: p;
+}
+p p1 {
+  font: 1234;
 }
 p2 {
   color: blue;
@@ -766,7 +794,7 @@ p2 {
 }
 `)
 
-      expect(ret.update('xyz', 'abc')).equal(
+      expect(ret.update(['xyz', 'abc'])).equal(
         `p2 {
   color: blue;
 }
@@ -777,6 +805,38 @@ p {
 
       // test with non-exist key
       expect(ret.update('non-exists-key')).equal('')
+
+    })
+
+    it('should update from object', function() {
+
+      var sub = {font:123}
+      var ret = cssobj({
+        dd: sub,
+        p:{
+          $id: 'abc',
+          color: 'red'
+        }
+      }, {indent:'  '})
+
+      sub.font = '12px'
+
+      // test for update object
+      expect(ret.update(sub)).equal(
+        `dd {
+  font: 12px;
+}
+`)
+
+      // test for update object string mixed
+      expect(ret.update([sub, 'abc'])).equal(
+        `dd {
+  font: 12px;
+}
+p {
+  color: red;
+}
+`)
 
     })
 
@@ -792,7 +852,7 @@ p {
 
       var callCount = 0
 
-      var onUpdate = function(css, args){
+      var onUpdate = function(css) {
 
         callCount++
 
@@ -801,7 +861,6 @@ p {
   color: red;
 }
 `)
-        expect(args).deep.equal(['abc'])
 
       }
 

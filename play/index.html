@@ -37,64 +37,65 @@ h3[title="a,b"]{
   </table>
   <script type="text/javascript">
 
-var mediaTest = { h1: { 'font-size': '12px', color: 'blue' },
- '@media(max-width: 800px)': { color: 'purple', p: { color: 'red' } } }
+var mediaTest = {  h1: { 'font-size': '12px', color: 'blue' },
+  '@media(max-width: 800px)': { color: 'purple', p: { color: 'red' } } }
 
 var obj = {
-    'ul.menu': {
-      background_color: 'red',
-      borderRadius: '2px',
-      'li.item': [
-        {
-          '&:before, .link': {
-            ".foo[title*='\\&'], :global(.xy)": {color: 'blue'},
-            color: 'red'
-          },
-          'html:global(.ie8) &': {color: 'purple'},
-          font_size: '12px'
+  'ul.menu': {
+    background_color: 'red',
+    borderRadius: '2px',
+    'li.item': [
+      {
+        '&:before, .link': {
+          ".foo[title*='\\&'], :global(.xy)": {color: 'blue'},
+          color: 'red'
         },
-        {
-          'span': {
-            font_size: '22px'
-          },
-          color: 'blue'
-        }
-      ]
-    }
+        'html:global(.ie8) &': {color: 'purple'},
+        font_size: '12px'
+      },
+      {
+        'span': {
+          font_size: '22px'
+        },
+        color: 'blue'
+      }
+    ]
   }
+}
 
 
-  var testData = [
-    {
-      '@import':['url("fineprint.css") print', ''],
-      '@font-face':{ font_family:['Arial', 'Helvetica'] },
-      "@keyframes identifier1": {
-        "0%": {
-          '':[{top:[2,3,4], left:3}, {top:4}],
-          "top": 0,
-          "left": 0
+var testData = [
+  {
+    '@import':['url("fineprint.css") print', ''],
+    '@font-face':{ font_family:['Arial', 'Helvetica'] },
+    "@keyframes identifier1": {
+      "0%": {
+        '':[{top:[2,3,4], left:3}, {top:4}],
+        "top": 0,
+        "left": 0
+      },
+      "10%": {
+        "top": 20,
+        "left": function(){ return 20+5 }
+      }
+    },
+    '@supports (animation-name: test)':{
+      '@import':'url("fineprint.css") print',
+      d:{color:'#123'},
+      '@keyframes identifier':{
+        '0%':{
+          top:0, left:0
         },
-        "10%": {
-          "top": 20,
-          "left": function(){ return 20+5 }
+        '10%':{
+          top:20, left:20
         }
-      },
-      '@supports (animation-name: test)':{
-        '@import':'url("fineprint.css") print',
-        d:{color:'#123'},
-        '@keyframes identifier':{
-          '0%':{
-            top:0, left:0
-          },
-          '10%':{
-            top:20, left:20
-          }
-        }
-      },
+      }
+    },
     "_p": {
       "\\_color": "red",
       "_backColor": "23",
       "p1": {
+        $id: 'ff',
         "color": "purple"
       }
     },
@@ -134,23 +135,29 @@ var obj = {
       "color": "green",
     }
   }
-  ]
+]
 
 testData1 = {
-          "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
-          "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
-        }
+  "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
+  "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
+}
 
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1, plugins:{
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
 }}
+var testObj, testD
 function convert(el){
   try{
-    var obj = new Function('return '+el.value)
-    var ret = cssobj(obj(), opt, {p:'_prefix_p'})
+    var func = new Function('return '+el.value)
+    testObj = func()
+    var ret = cssobj(testObj, opt, {p:'_prefix_p'})
     document.getElementById('css').value = ret.css
     console.log(ret)
+
+    testD = testObj[1]
+    console.log(testD, ret.update(testD, true))
+
   }catch(e){
     console.log(e)
   }
@@ -165,7 +172,7 @@ function parse(el){
     .then(v=>{
       if(v.ok)
         v.text().then(text=>src.value = text)
-  })
+    })
 }
 
 
