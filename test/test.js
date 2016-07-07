@@ -868,13 +868,19 @@ p {
       // only one plugin
       cssobj({p:{color:'red'}}, {
         indent:'  ',
-        post: post1({abc:true})
+
+        plugins: {
+          post: post1({abc:true})
+        }
+
       })
 
       // pass value to next plugin
       cssobj({p:{color:'red'}}, {
         indent:'  ',
-        post: [post1({abc:true}), post2]
+        plugins: {
+          post: [post1({abc:true}), post2]
+        }
       })
 
     })
@@ -895,7 +901,9 @@ p {
 
       cssobj({p:{size:2}}, {
         indent:'  ',
-        value: [plug1, plug2]
+        plugins:{
+          value: [plug1, plug2]
+        }
       })
 
 
