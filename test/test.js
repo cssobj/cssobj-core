@@ -747,7 +747,9 @@ p2 {
 
       expect(Object.keys(ret.vars)).deep.equal(['abc', 'xyz'])
 
-      ret.vars.abc.prop.color = function(node, selector){ return selector }
+      ret.vars.abc.prop.color = function(node, opt){
+        return opt._util.getSelector(node, opt)
+      }
 
       expect(ret.update()).equal(
         `p {

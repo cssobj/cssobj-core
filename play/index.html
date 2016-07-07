@@ -142,7 +142,9 @@ testData1 = {
         }
 
 src.value = JSON.stringify(testData,null,2)
-var opt = {indent:'  ', local:1, propSugar:1}
+var opt = {indent:'  ', local:1, propSugar:1, plugins:{
+  // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
+}}
 function convert(el){
   try{
     var obj = new Function('return '+el.value)
