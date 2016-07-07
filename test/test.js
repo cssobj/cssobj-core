@@ -972,6 +972,34 @@ p {
     })
 
 
+
+    it('update with value plugin', function() {
+
+      function plug(value){
+        return value+'px'
+      }
+
+      var size = {size:2}
+      var ret = cssobj({p:size}, {
+        indent:'  ',
+        plugins:{
+          value: [plug]
+        }
+      })
+
+      size.size = 10
+
+      var css = ret.update(size)
+
+      expect(css).equal(
+        `p {
+  size: 10px;
+}
+`
+      )
+
+    })
+
   })
 
 })
