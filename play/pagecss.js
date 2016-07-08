@@ -1,7 +1,10 @@
 var pagecss = {
-  'html,body': { height: '100%' },
+  'html,body': { height: '100%', margin:0, padding:0 },
   'table,textarea': { width: '100%', height: '100%', 'table-layout': 'fixed' },
-  textarea: { display: 'block' },
+  textarea: {
+    $id: 'textarea',
+    display: 'block'
+  },
   'h3[title="a,b"]': {
     color: 'green'
   },

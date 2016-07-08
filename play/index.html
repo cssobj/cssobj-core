@@ -2,7 +2,12 @@
 <head>
   <meta charset="utf-8">
   <title>cssobj playground</title>
-  <script type="text/javascript" src="http://cdn.staticfile.org/js-yaml/3.4.6/js-yaml.min.js"></script>
+    <!--[if lte IE 9]>
+        <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
+        <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
+        <![endif]-->
+
+          <script type="text/javascript" src="http://cdn.staticfile.org/js-yaml/3.4.6/js-yaml.min.js"></script>
   <script type="text/javascript" src="../node_modules/extend_exclude/iife/extend_exclude.js"></script>
   <script type="text/javascript" src="../lib/cssobj.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
@@ -10,7 +15,6 @@
   <script type="text/javascript">
   var css = cssobj(pagecss, {plugins:{post:[cssobj_plugin_post_stylize()],
                                       value: function(val, key){
-                                        console.log(val);
                                         return /width|height|top|left|font-size/.test(key) && typeof val=='number' ? val+'px' : val }
                            }})
 
@@ -128,7 +132,7 @@ var testData = [
   {
     "p3": {
       $id:'abc',
-      "color": "green",
+      "color": "green"
     }
   }
 ]
@@ -165,25 +169,45 @@ function parse(el){
 
   // server using cssobj-converter project: npm run server
   fetch('http://1111hui.com:8080', {method:'POST', body:JSON.stringify({text:value})})
-    .then(v=>{
+    .then(function(v){
       if(v.ok)
-        v.text().then(text=>src.value = text)
+        v.text().then(function(text){ src.value = text})
     })
 }
 
 
+var $=function(sel) {
+  return document.querySelector(sel)
+}
 
 // for page css
-var h3node
+css.ref.textarea.height=function(last, node) {
+  var h3 = $('h3')
+  var ie8 = !!h3.currentStyle
+  var css = h3.currentStyle || window.getComputedStyle(h3)
+  var height = h3.getBoundingClientRect().bottom - h3.getBoundingClientRect().top
+  height = h3.offsetHeight + (ie8?16:parseFloat(css.marginTop)) + (ie8?16:parseFloat(css.marginBottom))
+  console.log(height)
+  return (window.innerHeight||document.body.offsetHeight) - height - 20
+}
+css.ref.textarea.width=function(last, node) {
+  return node.value.width = document.body.clientWidth / 2
+}
+
+
           css.ref.h3.fontSize = function(last, node) {
-            h3node = node
-          last = last||10
-          return last+1
+            last = last||10
+            return last+1
           }
 
+
         h3.onclick=function() {
-          css.update('h3')
-          console.log(h3node.lastVal['font-size']);
-      }
+          css.update(['h3', 'textarea'])
+        }
+
+window.onresize = function(){
+  setTimeout(function(){css.update(['textarea'])}, 100)}
+window.onresize()
+
   </script>
 </body>
