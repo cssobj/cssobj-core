@@ -751,8 +751,8 @@ p2 {
 
       expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
-      ret.ref.abc.color = function(node, opt){
-        return opt._util.getSelector(node, opt)
+      ret.ref.abc.color = function(last, n, opt){
+        return opt._util.getSelector(n, opt)
       }
 
       // recursive all children
@@ -765,7 +765,6 @@ p p1 {
 }
 `
       )
-
 
       expect(ret.update()).equal(
         `p {
@@ -890,6 +889,52 @@ p {
 
     })
 
+    it('value update function to set node.lastVal', function() {
+
+      var t = {
+          color: 0
+        }
+      var ret = cssobj({
+        p:t
+      }, {indent:'  '})
+
+      var node = ret.options._root.children.p
+      expect(node.lastVal['color']).equal(0)
+
+      // test for normal update based on lastVal
+      t.color = function(last) {
+        return last+1
+      }
+
+      expect(ret.update(t)).equal(
+        `p {
+  color: 1;
+}
+`)
+      // test for non value update
+      t.color = function(n) {
+        return null
+      }
+
+      // css will be empty due to null
+      expect(ret.update(t)).equal(
+        `p {
+}
+`)
+
+      // test for 0 value update
+      t.color = function(n) {
+        return 0
+      }
+
+      expect(ret.update(t)).equal(
+        `p {
+  color: 0;
+}
+`)
+
+    })
+
   })
 
 
@@ -949,6 +994,8 @@ p {
 
     it('value plugin', function() {
 
+      var node
+
       function plug1(value) {
         expect(value).equal(2)
 
@@ -956,7 +1003,8 @@ p {
         return value*2
       }
 
-      function plug2(value){
+      function plug2(value, key, n){
+        node = n
         expect(value).equal(4)
       }
 
@@ -967,7 +1015,8 @@ p {
         }
       })
 
-
+      // plugin should not effect lastVal
+      expect(node.lastVal['size']).equal(2)
 
     })
 

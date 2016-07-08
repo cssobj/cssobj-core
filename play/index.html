@@ -5,22 +5,18 @@
   <script type="text/javascript" src="http://cdn.staticfile.org/js-yaml/3.4.6/js-yaml.min.js"></script>
   <script type="text/javascript" src="../node_modules/extend_exclude/iife/extend_exclude.js"></script>
   <script type="text/javascript" src="../lib/cssobj.js"></script>
-  <style type="text/css" media="screen">
-  html,body{
-    height:100%;
-}
-table,textarea{
-    width:100%;
-    height:100%;
-    table-layout : fixed;
-}
-textarea{
-    display:block;
-}
-h3[title="a,b"]{
-    color:green;
-}
-  </style>
+  <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
+  <script type="text/javascript" src="pagecss.js"></script>
+  <script type="text/javascript">
+  var css = cssobj(pagecss, {plugins:{post:[cssobj_plugin_post_stylize()],
+                                      value: function(val, key){
+                                        console.log(val);
+                                        return /width|height|top|left|font-size/.test(key) && typeof val=='number' ? val+'px' : val }
+                           }})
+
+
+
+  </script>
 </head>
 <body>
   <table>
@@ -30,7 +26,7 @@ h3[title="a,b"]{
         <textarea id="src" oninput="convert(this)"></textarea>
       </td>
       <td>
-        <h3>Output CSS String:</h3>
+        <h3 id="h3">Output CSS String:</h3>
         <textarea id="css" oninput="parse(this)"></textarea>
       </td>
     </tr>
@@ -115,12 +111,12 @@ var testData = [
     ".p": {
       "color": "red",
       "margin": "10px",
-      "@media (min-width:320px)": {
+      "@media only screen": {
         "padding": "20px",
-        "@media c2,c3": {
+        "@media (> 100px)": {
           '$id':'xyz',
           "\\_color": "blue",
-          '@media (max:324px),(min:111px)':{color:234}
+          '@media (< 324px),(> 111px)':{color:234}
         },
         '@font-face':{style:1},
         "&.d": {
@@ -146,17 +142,17 @@ src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1, plugins:{
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
 }}
-var testObj, testD
+var testObj, testD, ret
 function convert(el){
   try{
     var func = new Function('return '+el.value)
     testObj = func()
-    var ret = cssobj(testObj, opt, {p:'_prefix_p'})
+    ret = cssobj(testObj, opt, {p:'_prefix_p'})
     document.getElementById('css').value = ret.css
     console.log(ret)
 
     testD = testObj[1]
-    console.log(testD, ret.update(testD, true))
+    // console.log(testD, ret.update(testD, true))
 
   }catch(e){
     console.log(e)
@@ -176,5 +172,18 @@ function parse(el){
 }
 
 
+
+// for page css
+var h3node
+          css.ref.h3.fontSize = function(last, node) {
+            h3node = node
+          last = last||10
+          return last+1
+          }
+
+        h3.onclick=function() {
+          css.update('h3')
+          console.log(h3node.lastVal['font-size']);
+      }
   </script>
 </body>
