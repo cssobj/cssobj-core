@@ -15,7 +15,12 @@ var pagecss = {
     margin:0,
     padding:0
   },
-  'h3[title="a,b"]': {
+  'h3': {
+    $id: 'h3',
+    fontSize: 16,
+    lineHeight:1.2,
+    margin_top: 10,
+    margin_bottom: 10,
     color: 'green'
   },
   '@media (>800px)':{
@@ -30,7 +35,6 @@ var pagecss = {
   },
   '@media (>1000px)':{
     h3:{
-      $id:'h3',
       color:'grey'
     }
   }

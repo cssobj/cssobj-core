@@ -10,7 +10,7 @@
       <script type="text/javascript" src="http://1111hui.com/js/querySelector.js"></script>
       <![endif]-->
 
-  <script type="text/javascript" src="../dist/cssobj.min.js"></script>
+  <script type="text/javascript" src="../dist/cssobj.iife.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
@@ -20,10 +20,33 @@
      {
        post:[cssobj_plugin_post_stylize()],
        value: function(val, key){
-         return /width|height|top|left|font-size/.test(key) && typeof val=='number' ? val+'px' : val }
+         return /width|height|top|left|fontSize/.test(key) && typeof val=='number' ? val+'px' : val }
      }
     }
   )
+console.log(css);
+
+var refh3 = css.ref.h3
+var reftextarea = css.ref.textarea
+// for page css
+reftextarea.height=function(last, node) {
+  var h3node = cssobj.findNode(refh3, css.root).lastVal
+  height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
+  return (window.innerHeight||document.documentElement.clientHeight) - height - 20
+}
+reftextarea.width=function(last, node) {
+  return node.value.width = document.documentElement.clientWidth / 2 - 4
+}
+
+refh3.fontSize = function(last, node) {
+  last = last||10
+  return last+1
+}
+window.onresize = function(){
+  setTimeout(function(){css.update(['textarea'])}, 100)}
+window.onresize()
+
+
   </script>
 </head>
 <body>
@@ -182,37 +205,11 @@ function parse(el){
 }
 
 
-var $=function(sel) {
-  return document.querySelector(sel)
-}
-
-// for page css
-css.ref.textarea.height=function(last, node) {
-  var h3 = $('h3')
-  var ie = !!h3.currentStyle
-  var css = h3.currentStyle || window.getComputedStyle(h3)
-  var height = h3.getBoundingClientRect().bottom - h3.getBoundingClientRect().top
-  height = h3.offsetHeight + (ie?16:parseFloat(css.marginTop)) + (ie?16:parseFloat(css.marginBottom))
-  return (window.innerHeight||document.body.offsetHeight) - height - 20
-}
-css.ref.textarea.width=function(last, node) {
-  return node.value.width = document.body.clientWidth / 2 - 4
-}
-
-
-css.ref.h3.fontSize = function(last, node) {
-  last = last||10
-  return last+1
-}
-
 
 h3.onclick=function() {
   css.update(['h3', 'textarea'])
 }
 
-window.onresize = function(){
-  setTimeout(function(){css.update(['textarea'])}, 100)}
-window.onresize()
 
   </script>
 </body>

@@ -106,10 +106,10 @@ function strSugar (str, sugar) {
   return sugar.reduce(
     function (pre, cur) {
       return pre.replace(
-        new RegExp('^(_)|(.)(_)'.replace(/_/g, cur[0]), 'g'),
-        function (m, z1, p, z2) {
-          var z = z1 || z2
-          return p == '\\' ? z : (p || '') + cur[1](z)
+        new RegExp('\\\\?'+ cur[0] +'', 'g'),
+        function (m) {
+          // m[0] don't work in IE7....
+          return m.charAt(0)!='\\' ? cur[1](m) : m.slice(1)
         }
       )
     },
@@ -121,8 +121,7 @@ function getProp (str, opt) {
   return !opt.propSugar
     ? str
     : strSugar(str, [
-      ['_', function (z) { return '-' }],
-      ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+      ['_[a-zA-Z]', function (z) { return z.charAt(1).toUpperCase() }]
     ])
 }
 
@@ -203,13 +202,19 @@ function makeRule (node, opt, level) {
     return propArr.map(function (t) {
       var val = is('Function', t)
           ? t(lastVal[key], node, opt)
-        : t
+          : t
       if (!isValidCSSValue(val)) return ''
 
       lastVal[key] = val
 
       var valAfter = applyPlugins(opt, 'value', val, key, node)
-      return indent + key + sep + valAfter + end
+      return indent +
+        (opt.propSugar
+         ? strSugar(key, [
+           ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+         ])
+         : key) +
+        sep + valAfter + end
     }).join('')
   }
 
@@ -312,7 +317,7 @@ function applyPlugins (opt, type) {
   )
 }
 
-function findObj (obj, root) {
+function findNode (obj, root) {
   var found
   var walk = function (node) {
     if (is(ARRAY, node)) return node.some(walk)
@@ -363,8 +368,8 @@ function cssobj (obj, options, localNames) {
         : [].concat(updateObj).map(mapRef)
 
     var css = args.map(function (k) {
-      var target = findObj(k, root)
-      return makeCSS(parseObj(k, options, target), options, recursive)
+      var node = findNode(k, root)
+      return makeCSS(parseObj(k, options, node), options, recursive)
     }).join('')
 
     var cb = options._events['update']
@@ -373,6 +378,7 @@ function cssobj (obj, options, localNames) {
   }
 
   var result = {
+    root: root,
     css: makeCSS(root, options, true),
     map: nameMap,
     ref: ref,
@@ -394,5 +400,8 @@ function cssobj (obj, options, localNames) {
   applyPlugins(options, 'post', result)
   return result
 }
+
+cssobj.findNode = findNode
+cssobj.getSelector = getSelector
 
 module.exports = cssobj;

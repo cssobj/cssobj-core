@@ -32,7 +32,7 @@ describe('test cssobj', function(){
   // function test
   describe('test selector without class', function() {
 
-    it('css from underline properties', function() {
+    it('css from underscore properties', function() {
 
       var ret = cssobj({p:{color:'red', _font_sizeValue:'12px', background_color:'#fff'}})
       expect(ret.css.trim()).deep.equal(
@@ -66,6 +66,20 @@ describe('test cssobj', function(){
 	backgroundColor: #fff;
 }`
       )
+
+    })
+
+    it('more complex test with strSugar', function() {
+
+      var ret = cssobj({p:{'A_B_C_D__a_b____c\\D\\E\\FGH_I_JKLMnop': 1234}})
+
+      expect(ret.css).equal(
+        `p {
+	-a-b-c-d_-a-b___-cDEF-g-h-i-j-k-l-mnop: 1234;
+}
+`
+      )
+
 
     })
 
@@ -1032,6 +1046,19 @@ p {
       )
 
     })
+
+  })
+
+  //
+  // sub function test
+  describe('sub function test', function() {
+
+    it('strSugar convert test', function() {
+
+      cssobj.strSugar
+
+    })
+
 
   })
 

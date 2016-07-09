@@ -6,7 +6,7 @@
   "jsnext:main": "dist/cssobj.es.js",
   "scripts": {
     "test": "mocha",
-    "report": "gzip < dist/cssobj.min.js > dist/cssobj.min.gz && ls -lh dist",
+    "report": "cd dist && gzip < cssobj.min.js > cssobj.min.gz && ls -lh && rm -f *.gz",
     "make": "rollup -c && uglifyjs dist/cssobj.iife.js -cm -o dist/cssobj.min.js"
   },
   "author": "",
