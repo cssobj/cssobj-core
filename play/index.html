@@ -4,10 +4,7 @@
   <title>cssobj playground</title>
   <!--[if lte IE 8]>
       <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
-      <![endif]-->
-  <!--[if lte IE 7]>
       <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
-      <script type="text/javascript" src="http://1111hui.com/js/querySelector.js"></script>
       <![endif]-->
 
   <script type="text/javascript" src="../dist/cssobj.iife.js"></script>
@@ -20,30 +17,32 @@
      {
        post:[cssobj_plugin_post_stylize()],
        value: function(val, key){
-         return /width|height|top|left|fontSize/.test(key) && typeof val=='number' ? val+'px' : val }
+         return /width|height|top|left|fontSize/i.test(key) && typeof val=='number' ? val+'px' : val }
      }
     }
   )
-console.log(css);
 
+var windowWidth = function(){return window.innerWidth||document.documentElement.offsetWidth}
+var windowHeight = function(){return window.innerHeight||document.documentElement.offsetHeight}
 var refh3 = css.ref.h3
 var reftextarea = css.ref.textarea
 // for page css
 reftextarea.height=function(last, node) {
   var h3node = cssobj.findNode(refh3, css.root).lastVal
+  console.log(h3node);
   height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
-  return (window.innerHeight||document.documentElement.clientHeight) - height - 20
+  return windowHeight() - height - 20
 }
 reftextarea.width=function(last, node) {
-  return node.value.width = document.documentElement.clientWidth / 2 - 4
+  return node.value.width = windowWidth() / 2 - 4
 }
 
 refh3.fontSize = function(last, node) {
-  last = last||10
   return last+1
 }
 window.onresize = function(){
-  setTimeout(function(){css.update(['textarea'])}, 100)}
+  css.update()
+}
 window.onresize()
 
 
@@ -207,7 +206,7 @@ function parse(el){
 
 
 h3.onclick=function() {
-  css.update(['h3', 'textarea'])
+  css.update()
 }
 
 

@@ -819,6 +819,48 @@ p {
 
     })
 
+    // test for update order
+    it('should update accroding to $order', function() {
+
+      var obj = {
+        p2:{
+          $id: 2,
+          $oder:2,
+          color: 'red'
+        },
+        p1:{
+          $id: 1,
+          $order:1,
+          color: 'blue'
+        },
+        p:{
+          $id: 0,
+          color: 'green'
+        }
+      }
+      var ret = cssobj(obj, {indent:'  '})
+
+      obj.p2.color = 2
+      obj.p1.color = 1
+      obj.p.color = 0
+
+      expect(ret.update()).equal(
+        `p {
+  color: 0;
+}
+p1 {
+  color: 1;
+}
+p2 {
+  color: 2;
+}
+`
+      )
+
+
+    })
+
+
     it('should invoke callback event when update, then remove', function() {
 
       var ret = cssobj({

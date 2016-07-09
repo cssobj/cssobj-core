@@ -79,7 +79,9 @@ define('cssobj', function () { 'use strict';
         if (!own(d, k)) continue
         if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
           ![].concat(d[k]).forEach(function (v) {
-            if (k == '$id') opt._ref[v] = d
+            if (k.charAt(0) == '$') {
+              if(k=='$id') opt._ref[v] = d
+            }
             else arrayKV(parent.prop, getProp(k, opt), v)
           })
         } else {
@@ -364,7 +366,9 @@ define('cssobj', function () { 'use strict';
       var mapRef = function (k) { return isIterable(k) ? k : ref[k]}
 
       var args = !updateObj
-          ? Object.keys(ref).map(mapRef)
+          ? Object.keys(ref).sort(function(a,b) {
+            return (a.$order|0) - (b.$order|0)
+          }).map(mapRef)
           : [].concat(updateObj).map(mapRef)
 
       var css = args.map(function (k) {
