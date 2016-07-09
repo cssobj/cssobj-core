@@ -2,19 +2,19 @@
   "name": "cssobj",
   "version": "0.1.0",
   "description": "Create css from js object",
-  "main": "lib/cssobj.js",
+  "main": "dist/cssobj.cjs.js",
+  "jsnext:main": "dist/cssobj.es.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "report": "gzip < dist/cssobj.min.js > dist/cssobj.min.gz && ls -lh dist",
+    "make": "rollup -c && uglifyjs dist/cssobj.iife.js -cm -o dist/cssobj.min.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
-    "mockery": "^1.7.0",
-    "sinon": "^1.17.4"
+    "rollup": "^0.33.1"
   },
-  "dependencies": {
-    "extend_exclude": "^1.0.9"
-  }
+  "dependencies": {}
 }

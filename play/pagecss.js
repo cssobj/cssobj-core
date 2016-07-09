@@ -1,9 +1,19 @@
 var pagecss = {
-  'html,body': { height: '100%', margin:0, padding:0 },
-  'table,textarea': { width: '100%', height: '100%', 'table-layout': 'fixed' },
+  'html,body': {
+    height: '100%',
+    margin:0,
+    padding:0
+  },
+  table: {
+    width: '100%',
+    height: '100%',
+    'table-layout': 'fixed'
+  },
   textarea: {
     $id: 'textarea',
-    display: 'block'
+    display: 'block',
+    margin:0,
+    padding:0
   },
   'h3[title="a,b"]': {
     color: 'green'

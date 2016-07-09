@@ -1,5 +1,4 @@
-/* lib cssobj */
-'use strict'
+'use strict';
 
 /** IE ES3 need below polyfills:
  * Array.prototype.forEach
@@ -396,12 +395,4 @@ function cssobj (obj, options, localNames) {
   return result
 }
 
-// no optins
-// console.log(cssobj({p:{color:123}}).css)
-
-// // save options
-// window.a = cssobj(obj, window.a? window.a.options : {})
-// console.log(a.css)
-
-// module exports
-export default cssobj
+module.exports = cssobj;

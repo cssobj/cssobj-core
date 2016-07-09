@@ -1,44 +1,10 @@
-var sinon = require('sinon')
 var expect = require('chai').expect
 var cssobj
-
-var obj01 = {
-  'ul.menu': {
-    background_color: 'red',
-    borderRadius: '2px',
-    'li.item, li.cc': {
-      '&:before, .link':{
-        '.foo[title*=\'\\&\'], :global(.xy)':{color:'blue'},
-        color:'red'
-      },
-      'html:global(.ie8) &':{color:'purple'},
-      font_size: '12px'
-    }
-  }
-}
-
-var css01 = `ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item:before ._18k9m2k_18k9m2k1_foo[title*='&'], ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc:before ._18k9m2k_18k9m2k1_foo[title*='&'], ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item ._18k9m2k_18k9m2k1_link ._18k9m2k_18k9m2k1_foo[title*='&'], ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc ._18k9m2k_18k9m2k1_link ._18k9m2k_18k9m2k1_foo[title*='&'], ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item:before .xy, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc:before .xy, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item ._18k9m2k_18k9m2k1_link .xy, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc ._18k9m2k_18k9m2k1_link .xy {
-	color:blue
-}
-ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item:before, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc:before, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item ._18k9m2k_18k9m2k1_link, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc ._18k9m2k_18k9m2k1_link {
-	color:red
-}
-html.ie8 ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item, html.ie8 ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc {
-	color:purple
-}
-ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_item, ul._18k9m2k_18k9m2k1_menu li._18k9m2k_18k9m2k1_cc {
-	font-size:12px
-}
-ul._18k9m2k_18k9m2k1_menu {
-	background-color:red;
-	border-radius:2px
-}`
-
 
 describe('test cssobj', function(){
   before(function() {
 
-    cssobj = require('../lib/cssobj.js')
+    cssobj = require('../dist/cssobj.cjs.js')
 
   })
 
@@ -752,7 +718,7 @@ p2 {
       expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
       ret.ref.abc.color = function(last, n, opt){
-        return opt._util.getSelector(n, opt)
+        return n.selector
       }
 
       // recursive all children
@@ -892,11 +858,14 @@ p {
     it('value update function to set node.lastVal', function() {
 
       var t = {
-          color: 0
-        }
-      var ret = cssobj({
-        p:t
-      }, {indent:'  '})
+        color: 0,
+        cc:{zIndex:3}
+      }
+      var obj = {
+        p:t,
+        d:{font:'Arial'}
+      }
+      var ret = cssobj(obj, {indent:'  '})
 
       var node = ret.options._root.children.p
       expect(node.lastVal['color']).equal(0)
@@ -932,6 +901,21 @@ p {
   color: 0;
 }
 `)
+      // test for add new rule
+      // add object and register to ref
+      ret.ref.xyz = t.xyz = {
+        font_size: '12px'
+      }
+      // update node with recursive to take the node
+      ret.update(t,true)
+
+      // check css
+      expect(ret.update()).equal(
+        `p xyz {
+  font-size: 12px;
+}
+`
+      )
 
     })
 

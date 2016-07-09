@@ -2,24 +2,28 @@
 <head>
   <meta charset="utf-8">
   <title>cssobj playground</title>
-    <!--[if lte IE 9]>
-        <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
-        <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
-        <![endif]-->
+  <!--[if lte IE 8]>
+      <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
+      <![endif]-->
+  <!--[if lte IE 7]>
+      <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
+      <script type="text/javascript" src="http://1111hui.com/js/querySelector.js"></script>
+      <![endif]-->
 
-          <script type="text/javascript" src="http://cdn.staticfile.org/js-yaml/3.4.6/js-yaml.min.js"></script>
-  <script type="text/javascript" src="../node_modules/extend_exclude/iife/extend_exclude.js"></script>
-  <script type="text/javascript" src="../lib/cssobj.js"></script>
+  <script type="text/javascript" src="../dist/cssobj.min.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
-  var css = cssobj(pagecss, {plugins:{post:[cssobj_plugin_post_stylize()],
-                                      value: function(val, key){
-                                        return /width|height|top|left|font-size/.test(key) && typeof val=='number' ? val+'px' : val }
-                           }})
-
-
-
+  var css = cssobj(
+    pagecss,
+    {plugins:
+     {
+       post:[cssobj_plugin_post_stylize()],
+       value: function(val, key){
+         return /width|height|top|left|font-size/.test(key) && typeof val=='number' ? val+'px' : val }
+     }
+    }
+  )
   </script>
 </head>
 <body>
@@ -38,7 +42,7 @@
   <script type="text/javascript">
 
 var mediaTest = {  h1: { 'font-size': '12px', color: 'blue' },
-  '@media(max-width: 800px)': { color: 'purple', p: { color: 'red' } } }
+                   '@media(max-width: 800px)': { color: 'purple', p: { color: 'red' } } }
 
 var obj = {
   'ul.menu': {
@@ -142,6 +146,8 @@ testData1 = {
   "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
 }
 
+window.DEBUG=true
+
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1, plugins:{
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
@@ -183,27 +189,26 @@ var $=function(sel) {
 // for page css
 css.ref.textarea.height=function(last, node) {
   var h3 = $('h3')
-  var ie8 = !!h3.currentStyle
+  var ie = !!h3.currentStyle
   var css = h3.currentStyle || window.getComputedStyle(h3)
   var height = h3.getBoundingClientRect().bottom - h3.getBoundingClientRect().top
-  height = h3.offsetHeight + (ie8?16:parseFloat(css.marginTop)) + (ie8?16:parseFloat(css.marginBottom))
-  console.log(height)
+  height = h3.offsetHeight + (ie?16:parseFloat(css.marginTop)) + (ie?16:parseFloat(css.marginBottom))
   return (window.innerHeight||document.body.offsetHeight) - height - 20
 }
 css.ref.textarea.width=function(last, node) {
-  return node.value.width = document.body.clientWidth / 2
+  return node.value.width = document.body.clientWidth / 2 - 4
 }
 
 
-          css.ref.h3.fontSize = function(last, node) {
-            last = last||10
-            return last+1
-          }
+css.ref.h3.fontSize = function(last, node) {
+  last = last||10
+  return last+1
+}
 
 
-        h3.onclick=function() {
-          css.update(['h3', 'textarea'])
-        }
+h3.onclick=function() {
+  css.update(['h3', 'textarea'])
+}
 
 window.onresize = function(){
   setTimeout(function(){css.update(['textarea'])}, 100)}
