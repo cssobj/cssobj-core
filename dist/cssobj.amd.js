@@ -72,7 +72,7 @@ define('cssobj', function () { 'use strict';
       })
     }
     if (is(OBJECT, d)) {
-      parent.lastVal = parent.lastVal || {}
+      var lastVal = parent.lastVal = parent.lastVal || {}
       parent.prop = {}
       parent.children = {}
       for (var k in d) {
@@ -81,8 +81,14 @@ define('cssobj', function () { 'use strict';
           ![].concat(d[k]).forEach(function (v) {
             if (k.charAt(0) == '$') {
               if(k=='$id') opt._ref[v] = d
+            } else {
+              var key = getProp(k, opt)
+              var val = is('Function', v)
+                  ? v(lastVal[key], parent, opt)
+                  : v
+              arrayKV(parent.prop, key, val)
+              if (isValidCSSValue(val)) lastVal[key] = val
             }
-            else arrayKV(parent.prop, getProp(k, opt), v)
           })
         } else {
           parent.children[k] = parseObj(d[k], opt, {parent: parent, src: d, key: k, value: d[k]})
@@ -198,25 +204,18 @@ define('cssobj', function () { 'use strict';
     var indent = strRepeat(opt.indent, level)
     var props = Object.keys(node.prop)
     var selector = getSelector(node, opt)
-    var lastVal = node.lastVal
     var getVal = function (indent, key, sep, end) {
       var propArr = [].concat(node.prop[key])
-      return propArr.map(function (t) {
-        var val = is('Function', t)
-            ? t(lastVal[key], node, opt)
-            : t
-        if (!isValidCSSValue(val)) return ''
-
-        lastVal[key] = val
-
-        var valAfter = applyPlugins(opt, 'value', val, key, node)
+      return propArr.map(function (v) {
+        if(!isValidCSSValue(v)) return ''
+        var val = applyPlugins(opt, 'value', v, key, node)
         return indent +
           (opt.propSugar
            ? strSugar(key, [
              ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
            ])
            : key) +
-          sep + valAfter + end
+          sep + val + end
       }).join('')
     }
 
