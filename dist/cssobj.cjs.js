@@ -72,20 +72,38 @@ function parseObj (d, opt, node) {
     })
   }
   if (is(OBJECT, d)) {
-    node.oldVal = node.lastVal
+    var children = node.children = node.children||{}
+    var oldVal = node.oldVal = node.lastVal
     node.lastVal = {}
     node.prop = {}
     node.diff = {}
-    node.children = node.children||{}
     for (var k in d) {
       if (!own(d, k)) continue
       if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
         parseProp(node, d, k, opt)
       } else {
-        node.children[k] = parseObj(d[k], opt, extendObj(node.children, k, {parent: node, src: d, key: k, value: d[k]}))
+        var haveOldChild = k in children
+        var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, value: d[k]}))
+        // it's new added node
+        if(oldVal && !haveOldChild) arrayKV(opt._diff, 'added', n)
       }
     }
-    if(Object.keys(node.diff).length) opt._diffArr.push(node)
+
+    // when it's second time visit node
+    if(oldVal) {
+      // children removed
+      for(k in children) {
+        if(!(k in d)) {
+          arrayKV(opt._diff, 'removed', children[k])
+          delete children[k]
+        }
+      }
+      // prop changed
+      var newKeys = Object.keys(node.lastVal)
+      var removed = Object.keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
+      if(removed.length) node.diff.removed = removed
+      if(Object.keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
+    }
     return node
   }
   return node
@@ -148,10 +166,9 @@ function strSugar (str, sugar) {
   return sugar.reduce(
     function (pre, cur) {
       return pre.replace(
-        new RegExp('\\\\?'+ cur[0] +'', 'g'),
-        function (m) {
-          // m[0] don't work in IE7....
-          return m.charAt(0)!='\\' ? cur[1](m) : m.slice(1)
+        new RegExp('\\\\?('+ cur[0] +')', 'g'),
+        function (m, z) {
+          return m==z ? cur[1](z) : z
         }
       )
     },
@@ -396,7 +413,7 @@ function cssobj (obj, options, localNames) {
   var updater = function (updateObj, recursive) {
     if (updateObj === true) recursive = true, updateObj = 0
 
-    options._diffArr = []
+    options._diff = {}
 
     return console.log(parseObj(obj, options, root))
 

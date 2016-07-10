@@ -38,9 +38,14 @@ reftextarea.width=function(last, node) {
 }
 
 refh3.left = 10
+delete refh3.color
 
 refh3.fontSize = function(last, node) {
   return last+1
+}
+
+pagecss.div = {
+  color: 'red'
 }
 window.onresize = function(){
   css.update()
