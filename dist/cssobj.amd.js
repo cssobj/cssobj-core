@@ -85,6 +85,7 @@ define('cssobj', function () { 'use strict';
           node.children[k] = parseObj(d[k], opt, extendObj(node.children, k, {parent: node, src: d, key: k, value: d[k]}))
         }
       }
+      if(Object.keys(node.diff).length) opt._diffArr.push(node)
       return node
     }
     return node
@@ -115,7 +116,7 @@ define('cssobj', function () { 'use strict';
             : v
 
         // push every val to prop
-        arrayKV(node, 'prop', key, val)
+        arrayKV(node.prop, key, val)
 
         // only valid val can be lastVal
         if (isValidCSSValue(val)) {
@@ -125,11 +126,10 @@ define('cssobj', function () { 'use strict';
     })
     if(!isSpecial && oldVal) {
       if(!(key in oldVal)) {
-        arrayKV(node, 'diff', 'add', key)
+        arrayKV(node.diff, 'added', key)
       } else if (oldVal[key]!=lastVal[key]){
-        arrayKV(node, 'diff', 'changed', key)
+        arrayKV(node.diff, 'changed', key)
       }
-      if(node.diff) opt._diffArr.push(node)
     }
   }
 
@@ -139,10 +139,9 @@ define('cssobj', function () { 'use strict';
     return p
   }
 
-  function arrayKV (obj, key, k, v) {
-    var d = obj[key] = obj[key]||{}
-    d[k] = d[k] || []
-    d[k].push(v)
+  function arrayKV (obj, k, v) {
+    obj[k] = obj[k] || []
+    obj[k].push(v)
   }
 
   function strSugar (str, sugar) {
@@ -399,7 +398,7 @@ define('cssobj', function () { 'use strict';
 
       options._diffArr = []
 
-      // return console.log(parseObj(obj, options, root))
+      return console.log(parseObj(obj, options, root))
 
       var mapRef = function (k) { return isIterable(k) ? k : ref[k]}
 
@@ -427,7 +426,7 @@ define('cssobj', function () { 'use strict';
       update: updater,
       options: options,
       on: function (eventName, cb) {
-        arrayKV(options, '_events', eventName, cb)
+        arrayKV(options._events, eventName, cb)
       },
       off: function (eventName, cb) {
         var i, arr = options._events[eventName]

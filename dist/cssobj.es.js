@@ -83,6 +83,7 @@ function parseObj (d, opt, node) {
         node.children[k] = parseObj(d[k], opt, extendObj(node.children, k, {parent: node, src: d, key: k, value: d[k]}))
       }
     }
+    if(Object.keys(node.diff).length) opt._diffArr.push(node)
     return node
   }
   return node
@@ -113,7 +114,7 @@ function parseProp(node, d, k, opt) {
           : v
 
       // push every val to prop
-      arrayKV(node, 'prop', key, val)
+      arrayKV(node.prop, key, val)
 
       // only valid val can be lastVal
       if (isValidCSSValue(val)) {
@@ -123,11 +124,10 @@ function parseProp(node, d, k, opt) {
   })
   if(!isSpecial && oldVal) {
     if(!(key in oldVal)) {
-      arrayKV(node, 'diff', 'add', key)
+      arrayKV(node.diff, 'added', key)
     } else if (oldVal[key]!=lastVal[key]){
-      arrayKV(node, 'diff', 'changed', key)
+      arrayKV(node.diff, 'changed', key)
     }
-    if(node.diff) opt._diffArr.push(node)
   }
 }
 
@@ -137,10 +137,9 @@ function getParent (node, test) {
   return p
 }
 
-function arrayKV (obj, key, k, v) {
-  var d = obj[key] = obj[key]||{}
-  d[k] = d[k] || []
-  d[k].push(v)
+function arrayKV (obj, k, v) {
+  obj[k] = obj[k] || []
+  obj[k].push(v)
 }
 
 function strSugar (str, sugar) {
@@ -397,7 +396,7 @@ function cssobj (obj, options, localNames) {
 
     options._diffArr = []
 
-    // return console.log(parseObj(obj, options, root))
+    return console.log(parseObj(obj, options, root))
 
     var mapRef = function (k) { return isIterable(k) ? k : ref[k]}
 
@@ -425,7 +424,7 @@ function cssobj (obj, options, localNames) {
     update: updater,
     options: options,
     on: function (eventName, cb) {
-      arrayKV(options, '_events', eventName, cb)
+      arrayKV(options._events, eventName, cb)
     },
     off: function (eventName, cb) {
       var i, arr = options._events[eventName]
