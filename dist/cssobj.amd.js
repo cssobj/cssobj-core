@@ -64,39 +64,73 @@ define('cssobj', function () { 'use strict';
    * @param {array} [path] - array path represent root to parent
    * @returns {object} tree data object
    */
-  function parseObj (d, opt, parent) {
-    parent = parent || {}
+  function parseObj (d, opt, node) {
+    node = node || {}
     if (is(ARRAY, d)) {
       return d.map(function (v, i) {
-        return parseObj(v, opt, {parent: parent, src: d, index: i, value: d[i]})
+        return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, value: d[i]})
       })
     }
     if (is(OBJECT, d)) {
-      var lastVal = parent.lastVal = parent.lastVal || {}
-      parent.prop = {}
-      parent.children = {}
+      node.oldVal = node.lastVal
+      node.lastVal = {}
+      node.prop = {}
+      node.diff = {}
+      node.children = node.children||{}
       for (var k in d) {
         if (!own(d, k)) continue
         if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
-          ![].concat(d[k]).forEach(function (v) {
-            if (k.charAt(0) == '$') {
-              if(k=='$id') opt._ref[v] = d
-            } else {
-              var key = getProp(k, opt)
-              var val = is('Function', v)
-                  ? v(lastVal[key], parent, opt)
-                  : v
-              arrayKV(parent.prop, key, val)
-              if (isValidCSSValue(val)) lastVal[key] = val
-            }
-          })
+          parseProp(node, d, k, opt)
         } else {
-          parent.children[k] = parseObj(d[k], opt, {parent: parent, src: d, key: k, value: d[k]})
+          node.children[k] = parseObj(d[k], opt, extendObj(node.children, k, {parent: node, src: d, key: k, value: d[k]}))
         }
       }
-      return parent
+      return node
     }
-    return parent
+    return node
+  }
+
+  function extendObj(obj, key, source) {
+    obj[key] = obj[key]||{}
+    for(var k in source) obj[key][k] = source[k]
+    return obj[key]
+  }
+
+  function parseProp(node, d, k, opt) {
+    var oldVal = node.oldVal
+    var lastVal = node.lastVal
+
+    var key = getProp(k, opt)
+    var prev = oldVal && oldVal[key]
+
+    var isSpecial = k.charAt(0) == '$'
+
+    ![].concat(d[k]).forEach(function (v) {
+      if (isSpecial) {
+        if(k=='$id') opt._ref[v] = d
+      } else {
+        // pass lastVal if it's function
+        var val = is('Function', v)
+            ? v(prev, node, opt)
+            : v
+
+        // push every val to prop
+        arrayKV(node, 'prop', key, val)
+
+        // only valid val can be lastVal
+        if (isValidCSSValue(val)) {
+          prev = lastVal[key] = val
+        }
+      }
+    })
+    if(!isSpecial && oldVal) {
+      if(!(key in oldVal)) {
+        arrayKV(node, 'diff', 'add', key)
+      } else if (oldVal[key]!=lastVal[key]){
+        arrayKV(node, 'diff', 'changed', key)
+      }
+      if(node.diff) opt._diffArr.push(node)
+    }
   }
 
   function getParent (node, test) {
@@ -105,9 +139,10 @@ define('cssobj', function () { 'use strict';
     return p
   }
 
-  function arrayKV (obj, k, v) {
-    obj[k] = obj[k] || []
-    obj[k].push(v)
+  function arrayKV (obj, key, k, v) {
+    var d = obj[key] = obj[key]||{}
+    d[k] = d[k] || []
+    d[k].push(v)
   }
 
   function strSugar (str, sugar) {
@@ -362,6 +397,10 @@ define('cssobj', function () { 'use strict';
     var updater = function (updateObj, recursive) {
       if (updateObj === true) recursive = true, updateObj = 0
 
+      options._diffArr = []
+
+      // return console.log(parseObj(obj, options, root))
+
       var mapRef = function (k) { return isIterable(k) ? k : ref[k]}
 
       var args = !updateObj
@@ -388,7 +427,7 @@ define('cssobj', function () { 'use strict';
       update: updater,
       options: options,
       on: function (eventName, cb) {
-        arrayKV(options._events, eventName, cb)
+        arrayKV(options, '_events', eventName, cb)
       },
       off: function (eventName, cb) {
         var i, arr = options._events[eventName]

@@ -29,13 +29,15 @@ var reftextarea = css.ref.textarea
 // for page css
 reftextarea.height=function(last, node) {
   var h3node = cssobj.findNode(refh3, css.root).lastVal
-  console.log(h3node);
+  console.log(h3node)
   height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
   return windowHeight() - height - 20
 }
 reftextarea.width=function(last, node) {
   return node.value.width = windowWidth() / 2 - 4
 }
+
+refh3.left = 10
 
 refh3.fontSize = function(last, node) {
   return last+1
