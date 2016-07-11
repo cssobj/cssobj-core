@@ -11,16 +11,18 @@ var pagecss = {
   },
   textarea: {
     $id: 'textarea',
+    $order:2,
     display: 'block',
     margin:0,
     padding:0
   },
   'h3': {
     $id: 'h3',
+    $order:1,
     fontSize: 16,
     lineHeight:1.2,
-    margin_top: 10,
-    margin_bottom: 10,
+    marginTop: 10,
+    marginBottom: 10,
     color: 'green'
   },
   '@media (>800px)':{

@@ -115,18 +115,17 @@ function extendObj(obj, key, source) {
   return obj[key]
 }
 
-function parseProp(node, d, k, opt) {
+function parseProp(node, d, key, opt) {
   var oldVal = node.oldVal
   var lastVal = node.lastVal
 
-  var key = getProp(k, opt)
   var prev = oldVal && oldVal[key]
 
-  var isSpecial = k.charAt(0) == '$'
+  var isSpecial = key.charAt(0) == '$'
 
-  ![].concat(d[k]).forEach(function (v) {
+  ![].concat(d[key]).forEach(function (v) {
     if (isSpecial) {
-      if(k=='$id') opt._ref[v] = d
+      if(key=='$id') opt._ref[v] = d
     } else {
       // pass lastVal if it's function
       var val = is('Function', v)
@@ -174,14 +173,6 @@ function strSugar (str, sugar) {
     },
     str
   )
-}
-
-function getProp (str, opt) {
-  return !opt.propSugar
-    ? str
-    : strSugar(str, [
-      ['_[a-zA-Z]', function (z) { return z.charAt(1).toUpperCase() }]
-    ])
 }
 
 function splitComma (str) {
@@ -261,11 +252,9 @@ function makeRule (node, opt, level) {
       if(!isValidCSSValue(v)) return ''
       var val = applyPlugins(opt, 'value', v, key, node)
       return indent +
-        (opt.propSugar
-         ? strSugar(key, [
+         strSugar(key, [
            ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-         ])
-         : key) +
+         ]) +
         sep + val + end
     }).join('')
   }
@@ -388,8 +377,8 @@ function cssobj (obj, options, localNames) {
 
   var defaultOption = {
     local: true,
-    propSugar: true,
     indent: '\t',
+    diffOnly: false,
     plugins: {}
   }
   // set default options
@@ -410,33 +399,25 @@ function cssobj (obj, options, localNames) {
   // var d=testObj[1]['.p']
   // console.log(1111, d, findObj(d, root))
 
-  var updater = function (updateObj, recursive) {
-    if (updateObj === true) recursive = true, updateObj = 0
+  var updater = function (newObj, data) {
 
-    options._diff = {}
+    result.diff = options._diff = {}
+    options._data = data||{}
 
-    return console.log(parseObj(obj, options, root))
+    var newCSS=''
 
-    var mapRef = function (k) { return isIterable(k) ? k : ref[k]}
+    var newRoot = parseObj(newObj||obj, options, root)
 
-    var args = !updateObj
-        ? Object.keys(ref).sort(function(a,b) {
-          return (a.$order|0) - (b.$order|0)
-        }).map(mapRef)
-        : [].concat(updateObj).map(mapRef)
-
-    var css = args.map(function (k) {
-      var node = findNode(k, root)
-      return makeCSS(parseObj(k, options, node), options, recursive)
-    }).join('')
+    if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
 
     var cb = options._events['update']
-    cb && css && cb.forEach(function (v) {v(css)})
-    return css
+    cb && newCSS && cb.forEach(function (v) {v(newCSS, options)})
+    return newCSS
   }
 
   var result = {
     root: root,
+    obj: obj,
     css: makeCSS(root, options, true),
     map: nameMap,
     ref: ref,

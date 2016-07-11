@@ -32,26 +32,13 @@ describe('test cssobj', function(){
   // function test
   describe('test selector without class', function() {
 
-    it('css from underscore properties', function() {
+    it('css with css hacks', function() {
 
-      var ret = cssobj({p:{color:'red', _font_sizeValue:'12px', background_color:'#fff'}})
+      var ret = cssobj({p:{'_font_size\\0/':'12px', '*background-color':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p {
-	color: red;
-	-font-size-value: 12px;
-	background-color: #fff;
-}`
-      )
-
-    })
-
-    it('css from css hack', function() {
-
-      var ret = cssobj({p:{'\\_font_size':'12px', background_color:'#fff'}})
-      expect(ret.css.trim()).deep.equal(
-`p {
-	_font-size: 12px;
-	background-color: #fff;
+	_font_size\\0/: 12px;
+	*background-color: #fff;
 }`
       )
 
@@ -59,41 +46,16 @@ describe('test cssobj', function(){
 
     it('css from camel case', function() {
 
-      var ret = cssobj({p:{'\\_fontSize':'12px', 'background\\Color':'#fff'}})
+      var ret = cssobj({p:{'_fontSize':'12px', 'background\\With\\S\\BColor':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p {
 	_font-size: 12px;
-	backgroundColor: #fff;
+	backgroundWithSB-color: #fff;
 }`
       )
 
     })
 
-    it('more complex test with strSugar', function() {
-
-      var ret = cssobj({p:{'A_B_C_D__a_b____c\\D\\E\\FGH_I_JKLMnop': 1234}})
-
-      expect(ret.css).equal(
-        `p {
-	-a-b-c-d_-a-b___-cDEF-g-h-i-j-k-l-mnop: 1234;
-}
-`
-      )
-
-
-    })
-
-    it('css with propSugar off', function() {
-
-      var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
-      expect(ret.css.trim()).deep.equal(
-`p {
-	_fontSize: 12px;
-	background\\Color: #fff;
-}`
-      )
-
-    })
 
     it('single child selector', function() {
 
@@ -585,7 +547,7 @@ d {
             "@media (min-width:320px)": {
               "color": "red2",
               "@media c2&c": {
-                "\\_color": "blue",
+                "_color": "blue",
                 "@media (max-width:768px)": {
                   "color": 234
                 }
@@ -643,7 +605,7 @@ d {
             "@media & (cond,ition)": {
               "color": "red2",
               "@media c2,c3": {
-                "\\_color": "blue",
+                "_color": "blue",
                 "@media (max:324px),(min:111px)": {
                   "color": 234
                 }
@@ -699,13 +661,14 @@ d {
 
   describe('test with update', function() {
 
-    it('should return vars in result', function() {
+    it('should diff right in result', function() {
 
       var ret = cssobj({
         dd:{font:123},
         p:{
           $id: 'abc',
           color: 'red',
+          textAlign: 'right',
           p1:{font:1234}
         },
         p2:{
@@ -720,6 +683,7 @@ d {
 }
 p {
   color: red;
+  text-align: right;
 }
 p p1 {
   font: 1234;
@@ -731,96 +695,88 @@ p2 {
 
       expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
-      ret.ref.abc.color = function(last, n, opt){
+      var abc = ret.ref.abc
+      abc.color = function(last, n, opt){
         return n.selector
       }
+      abc.left = '10px'
+      delete abc.textAlign
 
-      // recursive all children
-      expect(ret.update('abc', true)).equal(
+      delete ret.obj.dd
+
+      ret.obj.div = {
+        float: 'left'
+      }
+
+      ret.update()
+
+      expect(ret.diff.added.length).equal(1)
+      expect(ret.diff.added[0].key).equal('div')
+
+      expect(ret.diff.removed.length).equal(1)
+      expect(ret.diff.removed[0].key).equal('dd')
+
+      expect(ret.diff.changed.length).equal(1)
+      expect(ret.diff.changed[0].key).equal('p')
+      expect(ret.diff.changed[0].diff).deep.equal({
+        changed:['color'],
+        removed:['textAlign'],
+        added:['left']
+      })
+
+      expect(ret.css).equal(
         `p {
   color: p;
+  left: 10px;
 }
 p p1 {
   font: 1234;
+}
+p2 {
+  color: blue;
+}
+div {
+  float: left;
+}
+`)
+
+      ret.update({p:{color:'blue'}})
+
+      expect(ret.css).equal(
+        `p {
+  color: blue;
 }
 `
       )
 
-      expect(ret.update()).equal(
-        `p {
-  color: p;
-}
-p2 {
-  color: blue;
-}
-`)
-      // deep get children css
-      expect(ret.update(true)).equal(
-        `p {
-  color: p;
-}
-p p1 {
-  font: 1234;
-}
-p2 {
-  color: blue;
-}
-`)
-
-      expect(ret.update('xyz')).equal(
-        `p2 {
-  color: blue;
-}
-`)
-
-      expect(ret.update(['xyz', 'abc'])).equal(
-        `p2 {
-  color: blue;
-}
-p {
-  color: p;
-}
-`)
-
-      // test with non-exist key
-      expect(ret.update('non-exists-key')).equal('')
+      expect('added' in ret.diff).equal(false)
+      expect(ret.diff.changed.length).equal(1)
+      expect(ret.diff.removed.map(function(v){return v.key})).deep.equal(['p1', 'p2', 'div'])
 
     })
 
-    it('should update from object', function() {
+    it('set diffOnly option', function() {
 
-      var sub = {font:123}
-      var ret = cssobj({
-        dd: sub,
-        p:{
-          $id: 'abc',
-          color: 'red'
-        }
-      }, {indent:'  '})
+      var ret = cssobj({p:{color:'red'}}, {diffOnly: true, indent:'  '})
 
-      sub.font = '12px'
+      ret.obj.p.left = 10
 
-      // test for update object
-      expect(ret.update(sub)).equal(
-        `dd {
-  font: 12px;
-}
-`)
+      var css = ret.update()
 
-      // test for update object string mixed
-      expect(ret.update([sub, 'abc'])).equal(
-        `dd {
-  font: 12px;
-}
-p {
+      expect(css).equal('')
+
+      // ret.css will not changed due to: diffOnly=true
+      expect(ret.css).equal(
+        `p {
   color: red;
 }
-`)
+`
+      )
 
     })
 
     // test for update order
-    it('should update accroding to $order', function() {
+    xit('should update accroding to $order', function() {
 
       var obj = {
         p2:{
@@ -873,12 +829,19 @@ p2 {
 
       var callCount = 0
 
-      var onUpdate = function(css) {
+      var onUpdate = function(css, opt) {
 
         callCount++
 
+        if(callCount==3){
+          expect(opt._data).deep.equal({resize:true})
+        }
+
         expect(css).equal(
-          `p {
+          `dd {
+  font: 123;
+}
+p {
   color: red;
 }
 `)
@@ -890,12 +853,12 @@ p2 {
 
       // normal update
       ret.update()
-      ret.update('abc')
+      ret.update()
       expect(callCount).equal(2)
 
-      // non-exists key will not trigger event
-      ret.update('non-exists-key')
-      expect(callCount).equal(2)
+      // update with custom data
+      ret.update(null, {resize:true})
+      expect(callCount).equal(3)
 
       // remove event
       ret.off('update', onUpdate)
@@ -905,8 +868,8 @@ p2 {
       ret.off('event_non_exists', onUpdate)
 
       // should not trigger event
-      ret.update('abc')
-      expect(callCount).equal(2)
+      ret.update()
+      expect(callCount).equal(3)
 
 
     })
@@ -914,8 +877,7 @@ p2 {
     it('value update function to set node.lastVal', function() {
 
       var t = {
-        color: 0,
-        cc:{zIndex:3}
+        color: 0
       }
       var obj = {
         p:t,
@@ -931,9 +893,12 @@ p2 {
         return last+1
       }
 
-      expect(ret.update(t)).equal(
+      expect(ret.update()).equal(
         `p {
   color: 1;
+}
+d {
+  font: Arial;
 }
 `)
       // test for non value update
@@ -942,8 +907,11 @@ p2 {
       }
 
       // css will be empty due to null
-      expect(ret.update(t)).equal(
+      expect(ret.update()).equal(
         `p {
+}
+d {
+  font: Arial;
 }
 `)
 
@@ -952,23 +920,32 @@ p2 {
         return 0
       }
 
-      expect(ret.update(t)).equal(
+      expect(ret.update()).equal(
         `p {
   color: 0;
+}
+d {
+  font: Arial;
 }
 `)
       // test for add new rule
       // add object and register to ref
       ret.ref.xyz = t.xyz = {
-        font_size: '12px'
+        fontSize: '12px'
       }
       // update node with recursive to take the node
-      ret.update(t,true)
+      ret.update()
 
       // check css
-      expect(ret.update()).equal(
-        `p xyz {
+      expect(ret.css).equal(
+        `p {
+  color: 0;
+}
+p xyz {
   font-size: 12px;
+}
+d {
+  font: Arial;
 }
 `
       )
@@ -1078,7 +1055,7 @@ p2 {
 
       size.size = 10
 
-      var css = ret.update(size)
+      var css = ret.update({p:size})
 
       expect(css).equal(
         `p {
