@@ -244,6 +244,7 @@ define('cssobj', function () { 'use strict';
 
   function makeRule (node, opt, level) {
     var indent = strRepeat(opt.indent, level)
+    var indent2 = level<0 ? '' : indent + opt.indent
     var props = Object.keys(node.prop)
     var selector = getSelector(node, opt)
     var getVal = function (indent, key, sep, end) {
@@ -252,9 +253,9 @@ define('cssobj', function () { 'use strict';
         if(!isValidCSSValue(v)) return ''
         var val = applyPlugins(opt, 'value', v, key, node)
         return indent +
-           strSugar(key, [
-             ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-           ]) +
+          strSugar(key, [
+            ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+          ]) +
           sep + val + end
       }).join('')
     }
@@ -264,14 +265,19 @@ define('cssobj', function () { 'use strict';
       if (reOneRule.test(v)) str += getVal(indent, v, ' ', ';' + newLine)
     })
 
+    var propStr = props.map(function (v) {
+      return getVal(indent2, v, ': ', ';' + newLine)
+    }).join('')
+
     return !selector
       ? str
-      : str + [indent, selector , ' {' + newLine ,
-               props.map(function (v) {
-                 return getVal(indent + opt.indent, v, ': ', ';' + newLine)
-               }).join('') ,
-               indent , '}' + newLine
-              ].join('')
+      : str + (indent2
+               ? [indent, selector , ' {' + newLine ,
+                  propStr,
+                  indent , '}' + newLine
+                 ].join('')
+               : propStr
+              )
   }
 
   function makeCSS (node, opt, recursive) {
@@ -442,6 +448,7 @@ define('cssobj', function () { 'use strict';
 
   cssobj.findNode = findNode
   cssobj.getSelector = getSelector
+  cssobj.makeRule = makeRule
 
   return cssobj;
 

@@ -835,6 +835,8 @@ p2 {
 
         if(callCount==3){
           expect(opt._data).deep.equal({resize:true})
+        } else {
+          expect(opt._data).deep.equal({})
         }
 
         expect(css).equal(
@@ -1072,9 +1074,35 @@ d {
   // sub function test
   describe('sub function test', function() {
 
-    it('strSugar convert test', function() {
+    it('makeRule test', function() {
 
-      cssobj.strSugar
+      var opt = {indent:'  '}
+      var ret = cssobj(
+        {p:{$id:'abc', color:'red', font:123}},
+        opt
+      )
+
+      var node = cssobj.findNode(ret.ref.abc, ret.root)
+      expect(node.key).equal('p')
+
+      var rule = cssobj.makeRule( node, opt )
+      expect(rule).equal(
+        `p {
+  color: red;
+  font: 123;
+}
+`
+      )
+
+      rule = cssobj.makeRule( node, opt, -1 )
+      expect(rule).equal(
+        `color: red;
+font: 123;
+`
+      )
+
+      var selector = cssobj.getSelector( node, opt)
+      expect(selector).equal('p')
 
     })
 
