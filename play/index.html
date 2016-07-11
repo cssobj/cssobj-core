@@ -29,7 +29,7 @@ var reftextarea = css.ref.textarea
 // for page css
 reftextarea.height=function(last, node) {
   var h3node = cssobj.findNode(refh3, css.root).lastVal
-  console.log(h3node)
+  console.log('textarea', h3node)
   height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
   return windowHeight() - height - 20
 }
@@ -41,6 +41,7 @@ refh3.left = 10
 delete refh3.color
 
 refh3.fontSize = function(last, node) {
+  console.log('h3', last);
   return last+1
 }
 
@@ -112,7 +113,7 @@ var testData = [
         "left": function(){ return 20+5 }
       }
     },
-    '@supports (animation-name: test)':{
+    '@supports not (display: flex)':{
       '@import':'url("fineprint.css") print',
       d:{color:'#123'},
       '@keyframes identifier':{

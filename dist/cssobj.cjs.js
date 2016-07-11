@@ -12,6 +12,8 @@
 
 // using var as iteral to help optimize
 var newLine = '\n'
+var ID = '$id'
+var ORDER = '$order'
 var ARRAY = 'Array'
 var OBJECT = 'Object'
 
@@ -77,10 +79,19 @@ function parseObj (d, opt, node) {
     node.lastVal = {}
     node.prop = {}
     node.diff = {}
+    if(d[ID]) opt._ref[d[ID]] = d
+    var order = d[ORDER]|0
+    var funcArr = []
     for (var k in d) {
       if (!own(d, k)) continue
       if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
-        parseProp(node, d, k, opt)
+        if(k.charAt(0)=='$') continue
+        var r = function(_k){
+          parseProp(node, d, _k, opt)
+        }
+        order!=0
+          ? funcArr.push([r, k])
+          : r(k)
       } else {
         var haveOldChild = k in children
         var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, value: d[k]}))
@@ -91,6 +102,7 @@ function parseObj (d, opt, node) {
 
     // when it's second time visit node
     if(oldVal) {
+
       // children removed
       for(k in children) {
         if(!(k in d)) {
@@ -98,12 +110,20 @@ function parseObj (d, opt, node) {
           delete children[k]
         }
       }
+
       // prop changed
-      var newKeys = Object.keys(node.lastVal)
-      var removed = Object.keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
-      if(removed.length) node.diff.removed = removed
-      if(Object.keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
+      var diffProp = function() {
+        var newKeys = Object.keys(node.lastVal)
+        var removed = Object.keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
+        if(removed.length) node.diff.removed = removed
+        if(Object.keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
+      }
+      order!=0
+        ? funcArr.push([diffProp, null])
+        : diffProp()
     }
+
+    if(order) arrayKV(opt, '_order', {order:order, func:funcArr})
     return node
   }
   return node
@@ -121,27 +141,21 @@ function parseProp(node, d, key, opt) {
 
   var prev = oldVal && oldVal[key]
 
-  var isSpecial = key.charAt(0) == '$'
-
   ![].concat(d[key]).forEach(function (v) {
-    if (isSpecial) {
-      if(key=='$id') opt._ref[v] = d
-    } else {
-      // pass lastVal if it's function
-      var val = is('Function', v)
-          ? v(prev, node, opt)
-          : v
+    // pass lastVal if it's function
+    var val = is('Function', v)
+      ? v(prev, node, opt)
+      : v
 
-      // push every val to prop
-      arrayKV(node.prop, key, val)
+    // push every val to prop
+    arrayKV(node.prop, key, val)
 
-      // only valid val can be lastVal
-      if (isValidCSSValue(val)) {
-        prev = lastVal[key] = val
-      }
+    // only valid val can be lastVal
+    if (isValidCSSValue(val)) {
+      prev = lastVal[key] = val
     }
   })
-  if(!isSpecial && oldVal) {
+  if(oldVal) {
     if(!(key in oldVal)) {
       arrayKV(node.diff, 'added', key)
     } else if (oldVal[key]!=lastVal[key]){
@@ -246,7 +260,6 @@ function makeRule (node, opt, level) {
   var indent = strRepeat(opt.indent, level)
   var indent2 = level<0 ? '' : indent + opt.indent
   var props = Object.keys(node.prop)
-  var selector = getSelector(node, opt)
   var getVal = function (indent, key, sep, end) {
     var propArr = [].concat(node.prop[key])
     return propArr.map(function (v) {
@@ -260,24 +273,27 @@ function makeRule (node, opt, level) {
     }).join('')
   }
 
+  var propStr = props.map(function (v) {
+    return getVal(indent2, v, ': ', ';' + newLine)
+  }).join('')
+  if(!indent2) return propStr
+
   var str = ''
   props.forEach(function (v) {
     if (reOneRule.test(v)) str += getVal(indent, v, ' ', ';' + newLine)
   })
 
-  var propStr = props.map(function (v) {
-    return getVal(indent2, v, ': ', ';' + newLine)
-  }).join('')
+  var selector = getSelector(node, opt)
+  if(!selector) return str
 
-  return !selector
-    ? str
-    : str + (indent2
-             ? [indent, selector , ' {' + newLine ,
-                propStr,
-                indent , '}' + newLine
-               ].join('')
-             : propStr
-            )
+  return str +
+    (indent2
+     ? [indent, selector , ' {' + newLine ,
+        propStr,
+        indent , '}' + newLine
+       ].join('')
+     : propStr
+    )
 }
 
 function makeCSS (node, opt, recursive) {
@@ -378,6 +394,20 @@ function findNode (obj, root) {
   return found
 }
 
+function applyOrder(opt) {
+  if(!opt._order) return
+  opt._order
+    .sort(function(a,b) {
+      return a.order-b.order
+    })
+    .forEach(function(v) {
+      v.func.forEach(function(f) {
+        f[0](f[1])
+      })
+    })
+  delete opt._order
+}
+
 function cssobj (obj, options, localNames) {
   options = options || {}
 
@@ -400,6 +430,8 @@ function cssobj (obj, options, localNames) {
   var nameMap = options._localNames = localNames || {}
 
   var root = parseObj(obj, options)
+  applyOrder(options)
+
   options._root = root
 
   // var d=testObj[1]['.p']
@@ -412,7 +444,8 @@ function cssobj (obj, options, localNames) {
 
     var newCSS=''
 
-    var newRoot = parseObj(newObj||obj, options, root)
+    parseObj(newObj||obj, options, root)
+    applyOrder(options)
 
     if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
 

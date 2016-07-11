@@ -776,17 +776,17 @@ div {
     })
 
     // test for update order
-    xit('should update accroding to $order', function() {
+    it('should update accroding to $order', function() {
 
       var obj = {
         p2:{
           $id: 2,
-          $oder:2,
+          $order:2,
           color: 'red'
         },
         p1:{
           $id: 1,
-          $order:1,
+          $order:-1,
           color: 'blue'
         },
         p:{
@@ -794,21 +794,28 @@ div {
           color: 'green'
         }
       }
-      var ret = cssobj(obj, {indent:'  '})
+      var opt = {indent:'  '}
+      var ret = cssobj(obj, opt)
 
-      obj.p2.color = 2
-      obj.p1.color = 1
-      obj.p.color = 0
+      obj.p.color = 10
+      obj.p1.color = function(){
+        var pNode = cssobj.findNode(obj.p, ret.root)
+        return pNode.lastVal.color * 2
+      }
+      obj.p2.color = function(){
+        var pNode = cssobj.findNode(obj.p1, ret.root)
+        return pNode.lastVal.color * 2
+      }
 
       expect(ret.update()).equal(
-        `p {
-  color: 0;
+        `p2 {
+  color: 40;
 }
 p1 {
-  color: 1;
+  color: 20;
 }
-p2 {
-  color: 2;
+p {
+  color: 10;
 }
 `
       )
@@ -1078,7 +1085,13 @@ d {
 
       var opt = {indent:'  '}
       var ret = cssobj(
-        {p:{$id:'abc', color:'red', font:123}},
+        {
+          p:{
+            $id:'abc',
+            color:'red',
+            font:123
+          }
+        },
         opt
       )
 
