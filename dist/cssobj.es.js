@@ -80,10 +80,16 @@ function parseObj (d, opt, node) {
     var order = d[ORDER]|0
     var funcArr = []
 
-
+    // array index don't have key,
+    // fetch parent key as ruleNode
     var ruleNode = getParents(node, function(v) {
       return v.key
     }).pop()
+
+    var parentRule = node.parentRule = getParents(node.parent, function(n) {
+      return /keyframes|group/.test(n.type)
+    }).pop() || null
+
 
     if(ruleNode) {
       var sel = ruleNode.key
@@ -111,25 +117,21 @@ function parseObj (d, opt, node) {
       } else if (keyFramesRule) {
         node.type = 'keyframes'
         node.at = keyFramesRule.pop()
-        node.sel = splitComma(sel.replace(reKeyFrame, ''))
+        node.selText = sel
       } else if (reOneRule.test(sel)) {
         node.type = 'one'
         node.at = sel
       } else {
-        node.sel = splitComma(sel)
-        var pPath = getParents(ruleNode, function(v) {
-          return v.sel && !v.at
-        }, 'sel')
-        node.selText = combinePath(pPath, '', ' ', true)+''
+        node.selText = parentRule && parentRule.type=='keyframes'
+          ? sel
+          : '' + combinePath(getParents(ruleNode, function(v) {
+            return v.sel && !v.at
+          }, 'sel'), '', ' ', true)
       }
 
       if(node!==ruleNode) node.ruleNode = ruleNode
 
     }
-
-    node.parentRule = getParents(node.parent, function(n) {
-      return /keyframes|group/.test(n.type)
-    }).pop() || null
 
     for (var k in d) {
       if (!own(d, k)) continue
@@ -143,7 +145,7 @@ function parseObj (d, opt, node) {
           : r(k)
       } else {
         var haveOldChild = k in children
-        var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, value: d[k]}))
+        var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), value: d[k]}))
         // it's new added node
         if(oldVal && !haveOldChild) arrayKV(opt._diff, 'added', n)
       }
@@ -201,7 +203,11 @@ function parseProp(node, d, key, opt) {
 
     // only valid val can be lastVal
     if (isValidCSSValue(val)) {
-      prev = lastVal[key] = val
+      prev = val
+      if(reOneRule.test(key))
+        arrayKV(lastVal, key, val)
+      else
+        lastVal[key] = val
     }
   })
   if(oldVal) {
@@ -222,9 +228,9 @@ function getParents (node, test, key) {
   return path
 }
 
-function arrayKV (obj, k, v) {
+function arrayKV (obj, k, v, noMerge) {
   obj[k] = obj[k] || []
-  obj[k].push(v)
+  obj[k] = obj[k].concat(noMerge ? [v] :v)
 }
 
 function strSugar (str, sugar) {
@@ -321,107 +327,53 @@ function isValidCSSValue (val) {
 
 
 
-function makeRule (node, opt, propOnly) {
-  var props = Object.keys(node.prop)
-  var getVal = function (key) {
-    var propArr = [].concat(node.prop[key])
-    return propArr.map(function (v) {
-      if(!isValidCSSValue(v)) return ''
-      return [
-        strSugar(key, [
-          ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-        ]),
-        applyPlugins(opt, 'value', v, key, node)
-      ]
-    })
+function makeCSS (node, opt, recursive) {
+  var str = []
+  var walk = function(n) {
+    if (!n) return ''
+    if (is(ARRAY, n)) return n.map(function (v) {walk(v)})
+    var isGroup = n.type=='group'
+    var isFrames = n.type=='keyframes'
+    if(isGroup||isFrames) {
+      str.push(n.selText+'{\n')
+    }
+
+    if(Object.keys(n.lastVal).length){
+      str.push(makeRule(n, opt))
+    }
+
+    for(var c in n.children)
+      walk(n.children[c])
+
+    if(isGroup||isFrames){
+      str.push('}\n')
+    }
   }
-
-  var propStr = props.map(function (v) {
-    return getVal(v)
-  })
-  if(propOnly) return propStr
-
-  var selector = getSelector(node, opt)
-  if(!selector) return propStr
-
-  return [selector, propStr]
+  walk(node)
+  return str.join('')
 }
 
-function makeCSS (node, opt, recursive) {
-  var str = [], groupStr = []
-
-  var newGroup = function (node, cur) {
-    var p = node, path = []
-    while(p) {
-      if (reGroupRule.test(p.key)) path.unshift(p.key)
-      p = p.parent
+function makeRule (node, opt) {
+  var lastVal = node.lastVal
+  var style = Object.keys(lastVal).map(function(k) {
+    if(reOneRule.test(k)){
+      return lastVal[k].map(function(v) {
+        return k + ' ' + v + ';\n'
+      }).join('')
     }
-    var rule = path[0].match(reGroupRule).pop()
-    var selector = rule + path.reduce(function (pre, cur) {
-      return splitComma(cur.replace(reGroupRule, '')).map(function (v) {
-        v = strSugar(v, [
-          ['[><]', function (z) {
-            return z == '>'
-              ? 'min-width:'
-              : 'max-width:'
-          }]
-        ])
-        return !pre ? v : splitComma(pre.replace(reGroupRule, '')).map(function (p) {
-          return p + ' and ' + v
-        }).join(',')
-      }).join(',')
-    }, '')
-    cur.push(selector, [])
-    groupStr.push(cur)
-  }
-
-  var walk = function (node, groupLevel, parent, curArr) {
-    if (!node) return ''
-    if (is(ARRAY, node)) return node.map(function (v) {walk(v, groupLevel)})
-
-    var cur = groupStr[groupLevel - 1] || str
-    var isGroupRule = reGroupRule.test(node.key)
-    var isKeyFrameNode = reKeyFrame.test(node.key)
-    var isInKeyFrame = !!getParents(node.parent, function (v) {
-      return reKeyFrame.test(v.key)
-    })
-    if (isGroupRule) {
-      groupLevel++
-      parent = curArr
-      cur = []
-      newGroup(node, cur)
-      curArr = cur[1]
-    }
-    if (isKeyFrameNode) {
-      parent = curArr
-      cur = [node.key, []]
-      curArr.push(cur)
-      curArr = cur[1]
-    }
-
-    // if (Object.keys(node.prop).length)
-    //   curArr.push(
-    //     makeRule(node, opt)
-    //   )
-
-    // if (recursive)
-    //   for (var k in node.children)
-    //     walk(node.children[k], groupLevel, parent, curArr)
-
-    if (isKeyFrameNode) {
-      curArr = parent
-    }
-    if (isGroupRule) {
-      groupLevel--
-    }
-
-    if (!groupLevel)
-      while(groupStr.length)
-        str.push(groupStr.shift())
-  }
-  walk(node, 0, str, str)
-
-  return str
+    return [
+      strSugar(k, [
+        ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+      ]),
+      ': ',
+      applyPlugins(opt, 'value', lastVal[k], k, node),
+      ';\n'
+    ].join('')
+  }).join('')
+  var sel = getParents(node, function(v) {
+    return v.selText && !v.at
+  }, 'selText').pop()
+  return sel ? sel + '{\n'+ style +'}\n' : style
 }
 
 function applyPlugins (opt, type) {
