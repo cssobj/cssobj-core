@@ -1,10 +1,11 @@
 var pagecss = {
   'html,body': {
-    height: '100%',
+    height: ['100%', 100],
     margin:0,
     padding:0
   },
   table: {
+    '':[{width:100}],
     width: '100%',
     height: '100%',
     'table-layout': 'fixed'
@@ -26,10 +27,23 @@ var pagecss = {
     color: 'green'
   },
   '@media (>800px)':{
+    '@keyframes abc':{
+      '10%':{
+        color: 'blue',
+        opacity: .5,
+      },
+      '20%':{
+        color: 'red'
+      }
+    },
     h3:{
       color:'red'
     },
-    '@media (<1000px)':{
+    p:{
+      fontSize:16,
+      color: ['red','#fcc']
+    },
+    '@media (<1000px), (>900px)':{
       h3:{
         color:'blue'
       }

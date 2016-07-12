@@ -11,7 +11,6 @@ define('cssobj', function () { 'use strict';
 
 
   // using var as iteral to help optimize
-  var newLine = '\n'
   var ID = '$id'
   var ORDER = '$order'
   var ARRAY = 'Array'
@@ -24,7 +23,7 @@ define('cssobj', function () { 'use strict';
     return is(OBJECT, v) || is(ARRAY, v)
   }
 
-  var reOneRule = /@(?:charset|import|namespace)/
+  var reOneRule = /@(?:charset|import|namespace)\s*$/
     var reGroupRule = /^@(?:media|document|supports) /
     var reKeyFrame = /^@keyframes /
     var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
@@ -82,11 +81,61 @@ define('cssobj', function () { 'use strict';
       if(d[ID]) opt._ref[d[ID]] = d
       var order = d[ORDER]|0
       var funcArr = []
+
+
+      var sel = node.key
+      if(sel) {
+        var groupRule = sel.match(reGroupRule)
+        var keyFramesRule = sel.match(reKeyFrame)
+        if(groupRule){
+          node.type = 'group'
+          node.at = groupRule.pop()
+          node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
+            return strSugar(v, [
+              ['[><]', function (z) {
+                return z == '>'
+                  ? 'min-width:'
+                  : 'max-width:'
+              }]
+            ])
+          })
+
+          var pPath = getParents(node, function(v) {
+            return v.type=='group'
+          }, 'sel')
+
+          node.selText = node.at + combinePath(pPath, '', ' and ')
+
+        } else if (keyFramesRule) {
+          node.type = 'keyframes'
+          node.at = keyFramesRule.pop()
+          node.sel = splitComma(sel.replace(reKeyFrame, ''))
+        } else if (reOneRule.test(sel)) {
+          node.type = 'one'
+          node.at = sel
+        } else {
+          node.sel = splitComma(sel)
+          var pPath = getParents(node, function(v) {
+            return v.sel && !v.at
+          }, 'sel')
+          node.selText = combinePath(pPath, '', ' ')
+
+        }
+      }
+
+      node.parentRule = getParents(node.parent, function(n) {
+        return /keyframes|group/.test(n.type)
+      }).pop() || null
+
+      if(node.parent && node.parent.key===''){
+        node.alias = node.parent.parent
+      }
+
       for (var k in d) {
         if (!own(d, k)) continue
         if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
           if(k.charAt(0)=='$') continue
-          var r = function(_k){
+          var r = function(_k) {
             parseProp(node, d, _k, opt)
           }
           order!=0
@@ -164,10 +213,13 @@ define('cssobj', function () { 'use strict';
     }
   }
 
-  function getParent (node, test) {
-    var p = node
-    while(p && !test(p)) p = p.parent
-    return p
+  function getParents (node, test, key) {
+    var p = node, path=[]
+    while(p) {
+      if(test(p)) path.unshift(key?p[key]:p)
+      p = p.parent
+    }
+    return path
   }
 
   function arrayKV (obj, k, v) {
@@ -189,6 +241,12 @@ define('cssobj', function () { 'use strict';
     )
   }
 
+  function combinePath(array, prev, sep) {
+    return !array.length ? prev : array[0].reduce(function (result, value) {
+      return result.concat(combinePath(array.slice(1), (prev ? prev + sep : prev) + value, sep))
+    }, [])
+  }
+
   function splitComma (str) {
     for (var c, i = 0, n = 0, prev = 0, d = []; c = str[i]; i++) {
       if (/[\(\[]/.test(c)) n++
@@ -196,12 +254,6 @@ define('cssobj', function () { 'use strict';
       if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
     }
     return d.concat(str.substring(prev))
-  }
-
-  function strRepeat (str, n) {
-    var s = ''
-    while (n-- > 0) s += str
-    return s
   }
 
   function getSelector (node, opt) {
@@ -256,44 +308,32 @@ define('cssobj', function () { 'use strict';
     return val || val === 0
   }
 
-  function makeRule (node, opt, level) {
-    var indent = strRepeat(opt.indent, level)
-    var indent2 = level<0 ? '' : indent + opt.indent
+
+
+  function makeRule (node, opt, propOnly) {
     var props = Object.keys(node.prop)
-    var getVal = function (indent, key, sep, end) {
+    var getVal = function (key) {
       var propArr = [].concat(node.prop[key])
       return propArr.map(function (v) {
         if(!isValidCSSValue(v)) return ''
-        var val = applyPlugins(opt, 'value', v, key, node)
-        return indent +
+        return [
           strSugar(key, [
             ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-          ]) +
-          sep + val + end
-      }).join('')
+          ]),
+          applyPlugins(opt, 'value', v, key, node)
+        ]
+      })
     }
 
     var propStr = props.map(function (v) {
-      return getVal(indent2, v, ': ', ';' + newLine)
-    }).join('')
-    if(!indent2) return propStr
-
-    var str = ''
-    props.forEach(function (v) {
-      if (reOneRule.test(v)) str += getVal(indent, v, ' ', ';' + newLine)
+      return getVal(v)
     })
+    if(propOnly) return propStr
 
     var selector = getSelector(node, opt)
-    if(!selector) return str
+    if(!selector) return propStr
 
-    return str +
-      (indent2
-       ? [indent, selector , ' {' + newLine ,
-          propStr,
-          indent , '}' + newLine
-         ].join('')
-       : propStr
-      )
+    return [selector, propStr]
   }
 
   function makeCSS (node, opt, recursive) {
@@ -318,57 +358,59 @@ define('cssobj', function () { 'use strict';
           return !pre ? v : splitComma(pre.replace(reGroupRule, '')).map(function (p) {
             return p + ' and ' + v
           }).join(',')
-        }).join(',' + newLine)
+        }).join(',')
       }, '')
-      cur.push(selector + ' {' + newLine)
+      cur.push(selector, [])
       groupStr.push(cur)
     }
 
-    var walk = function (node, groupLevel) {
+    var walk = function (node, groupLevel, parent, curArr) {
       if (!node) return ''
       if (is(ARRAY, node)) return node.map(function (v) {walk(v, groupLevel)})
 
       var cur = groupStr[groupLevel - 1] || str
       var isGroupRule = reGroupRule.test(node.key)
       var isKeyFrameNode = reKeyFrame.test(node.key)
-      var isInKeyFrame = !!getParent(node.parent, function (v) {
+      var isInKeyFrame = !!getParents(node.parent, function (v) {
         return reKeyFrame.test(v.key)
       })
       if (isGroupRule) {
         groupLevel++
+        parent = curArr
         cur = []
         newGroup(node, cur)
+        curArr = cur[1]
       }
-      var indentLevel = !!groupLevel + isInKeyFrame
-      var indent = strRepeat(opt.indent, indentLevel)
       if (isKeyFrameNode) {
-        cur.push(indent + node.key + ' {' + newLine)
+        parent = curArr
+        cur = [node.key, []]
+        curArr.push(cur)
+        curArr = cur[1]
       }
 
-      if (Object.keys(node.prop).length)
-        cur.push(
-          makeRule(node, opt, indentLevel)
-        )
+      // if (Object.keys(node.prop).length)
+      //   curArr.push(
+      //     makeRule(node, opt)
+      //   )
 
-      if (recursive)
-        for (var k in node.children)
-          walk(node.children[k], groupLevel)
+      // if (recursive)
+      //   for (var k in node.children)
+      //     walk(node.children[k], groupLevel, parent, curArr)
 
       if (isKeyFrameNode) {
-        cur.push(indent + '}' + newLine)
+        curArr = parent
       }
       if (isGroupRule) {
-        cur.push('}' + newLine)
         groupLevel--
       }
 
       if (!groupLevel)
         while(groupStr.length)
-          str.push(groupStr.shift().join(''))
+          str.push(groupStr.shift())
     }
-    walk(node, 0)
+    walk(node, 0, str, str)
 
-    return str.join('')
+    return str
   }
 
   function applyPlugins (opt, type) {
