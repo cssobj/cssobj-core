@@ -26,6 +26,7 @@ define('cssobj', function () { 'use strict';
   var reOneRule = /@(?:charset|import|namespace)\s*$/
     var reGroupRule = /^@(?:media|document|supports) /
     var reKeyFrame = /^@keyframes /
+    var reAtRule = /^\s*@/
     var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
 
   var random = (function () {
@@ -114,7 +115,7 @@ define('cssobj', function () { 'use strict';
             return v.type=='group'
           }, 'sel')
 
-          node.selText = node.at + combinePath(pPath, '', ' and ')
+          node.selText = localizeName(node.at + combinePath(pPath, '', ' and '), opt)
 
         } else if (keyFramesRule) {
           node.type = 'keyframes'
@@ -122,13 +123,15 @@ define('cssobj', function () { 'use strict';
           node.selText = sel
         } else if (reOneRule.test(sel)) {
           node.type = 'one'
-          node.at = sel
+        } else if (reAtRule.test(sel)) {
+          node.type = 'at'
+          node.selText = sel
         } else {
           node.selText = parentRule && parentRule.type=='keyframes'
             ? sel
-            : '' + combinePath(getParents(ruleNode, function(v) {
+            : localizeName(''+combinePath(getParents(ruleNode, function(v) {
               return v.sel && !v.at
-            }, 'sel'), '', ' ', true)
+            }, 'sel'), '', ' ', true), opt)
         }
 
         if(node!==ruleNode) node.ruleNode = ruleNode
@@ -275,7 +278,7 @@ define('cssobj', function () { 'use strict';
     return d.concat(str.substring(prev))
   }
 
-  function getSelector (node, opt) {
+  function localizeName (str, opt) {
     var NS = opt._localNames
     var replacer = function (match, global, dot, name) {
       if (global) {
@@ -294,40 +297,12 @@ define('cssobj', function () { 'use strict';
       return dot + NS[name]
     }
 
-    var localize = function (name) {
-      return name.replace(reClass, replacer)
-    }
-
-    var item
-    var prev = ''
-    var p = node
-    var path = [p]
-    while (p = p.parent) path.unshift(p)
-    for (var i = 0, len = path.length; i < len; i++) {
-      item = path[i]
-      // only Object type has key, only Object can be parent
-      if (!item.key || reGroupRule.test(item.key)) continue
-      if (reKeyFrame.test(item.parent.key)) return item.key
-      if (!reKeyFrame.test(item.key) && /^@/.test(item.key)) return item.key
-      if (!item.selector) {
-        item.selector = splitComma(item.key).map(function (v) {
-          return !prev ? v : splitComma(prev).map(function (p) {
-            return v.match(/^&|[^\\]&/)
-              ? v.replace(/&/, p)
-              : p + ' ' + v.replace(/\\&/g, '&')
-          }).join(',')
-        }).join(',')
-      }
-      prev = item.selector
-    }
-    return localize(prev)
+    return str.replace(reClass, replacer)
   }
 
   function isValidCSSValue (val) {
     return val || val === 0
   }
-
-
 
   function makeCSS (node, opt, recursive) {
     var str = []
@@ -487,7 +462,6 @@ define('cssobj', function () { 'use strict';
   }
 
   cssobj.findNode = findNode
-  cssobj.getSelector = getSelector
   cssobj.makeRule = makeRule
 
   return cssobj;
