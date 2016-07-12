@@ -210,11 +210,10 @@ define('cssobj', function () { 'use strict';
         ? v(prev, node, opt)
         : v
 
-      // push every val to prop
-      arrayKV(node.prop, key, val)
-
       // only valid val can be lastVal
       if (isValidCSSValue(val)) {
+        // push every val to prop
+        arrayKV(node.prop, key, val)
         prev = lastVal[key] = val
       }
     })
@@ -315,22 +314,20 @@ define('cssobj', function () { 'use strict';
 
       var postArr = []
       var children = node.children
-      var isGroup = function(t) {
-        return reWrapperType.test(t.type)
-      }
+      var isGroup = reWrapperType.test(node.type)
 
-      if(isGroup(node)) {
-        str.push(node.selText+'{\n')
+      if(isGroup) {
+        str.push(node.selText+' {\n')
       }
 
       if(keys(node.lastVal).length) str.push(makeRule(node, opt))
 
       for(var c in children){
-        if(isGroup(children[c])) postArr.push(c)
+        if(c==='' || children[c].type==TYPE_GROUP) postArr.push(c)
         else walk(children[c])
       }
 
-      if(isGroup(node)) {
+      if(isGroup) {
         str.push('}\n')
       }
 
@@ -343,27 +340,30 @@ define('cssobj', function () { 'use strict';
     return str.join('')
   }
 
-  function makeRule (node, opt) {
-    var lastVal = node.lastVal
-    var style = keys(lastVal).map(function(k) {
-      if(reOneRule.test(k)){
-        return node.prop[k].map(function(v) {
+  function makeRule (node, opt, declOnly) {
+    var prop = node.prop
+
+    var style = keys(prop).map(function(k) {
+
+      var key = strSugar(k, [
+        ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+      ])
+
+      return prop[k].map(function(v) {
+        if(reOneRule.test(k))
           return k + ' ' + v + ';\n'
-        }).join('')
-      }
-      return [
-        strSugar(k, [
-          ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-        ]),
-        ': ',
-        applyPlugins(opt, 'value', lastVal[k], k, node),
-        ';\n'
-      ].join('')
+        else
+          return key + ': ' + applyPlugins(opt, 'value', v, k, node) + ';\n'
+      }).join('')
     }).join('')
+
+    if(declOnly) return style
+
     var sel = getParents(node, function(v) {
       return v.selText && !v.at
     }, 'selText').pop()
-    return sel ? sel + '{\n'+ style +'}\n' : style
+
+    return sel && !sel.at ? sel + ' {\n'+ style +'}\n' : style
   }
 
   function applyPlugins (opt, type) {
@@ -408,12 +408,11 @@ define('cssobj', function () { 'use strict';
 
     var defaultOption = {
       local: true,
-      indent: '\t',
       diffOnly: false,
       plugins: {}
     }
     // set default options
-    for (var i in defaultOption){
+    for (var i in defaultOption) {
       if(!(i in options)) options[i] = defaultOption[i]
     }
 

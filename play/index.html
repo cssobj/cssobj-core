@@ -168,6 +168,12 @@ var testData = [
       $id:'abc',
       "color": "green"
     }
+  },
+  {
+    '@media (>300)':{
+      color:'red',
+      p:{font:123}
+    }
   }
 ]
 
@@ -175,6 +181,18 @@ testData1 = {
   "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
   "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
 }
+
+testData = {
+        '@supports (import: true)':{
+          "@import": "url(\"fineprint.css\") print",
+          '': [
+            {"@import": "url(\"fineprint1.css\") print"},
+            {"@import": "url(\"fineprint2.css\") print"},
+            {"@import": "url(\"fineprint3.css\") print"},
+          ],
+          d:{color:123}
+        }
+      }
 
 window.DEBUG=true
 

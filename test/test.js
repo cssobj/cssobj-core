@@ -1,4 +1,6 @@
 var expect = require('chai').expect
+var util = require('util')
+
 var cssobj
 
 describe('test cssobj', function(){
@@ -20,7 +22,7 @@ describe('test cssobj', function(){
       )
       expect(ret.css.trim()).deep.equal(
 `p {
-  color: red;
+color: red;
 }`
       )
 
@@ -37,8 +39,8 @@ describe('test cssobj', function(){
       var ret = cssobj({p:{'_font_size\\0/':'12px', '*background-color':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p {
-	_font_size\\0/: 12px;
-	*background-color: #fff;
+_font_size\\0/: 12px;
+*background-color: #fff;
 }`
       )
 
@@ -49,8 +51,8 @@ describe('test cssobj', function(){
       var ret = cssobj({p:{'_fontSize':'12px', 'background\\With\\S\\BColor':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p {
-	_font-size: 12px;
-	backgroundWithSB-color: #fff;
+_font-size: 12px;
+backgroundWithSB-color: #fff;
 }`
       )
 
@@ -67,10 +69,10 @@ describe('test cssobj', function(){
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
 `div {
-  font-size: 12px;
+font-size: 12px;
 }
 div p {
-  color: red;
+color: red;
 }`
       )
 
@@ -86,10 +88,10 @@ div p {
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
 `div,table {
-  font-size: 12px;
+font-size: 12px;
 }
-div p,table p,div span,table span {
-  color: red;
+div p,div span,table p,table span {
+color: red;
 }`
       )
 
@@ -105,10 +107,10 @@ div p,table p,div span,table span {
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
 `div {
-  font-size: 12px;
+font-size: 12px;
 }
 div:before, div:after {
-  content: "---";
+content: "---";
 }`
       )
 
@@ -119,7 +121,7 @@ div:before, div:after {
       var ret = cssobj({'p[title="abc"]':{color:'red'}})
       expect(ret.css.trim()).deep.equal(
 `p[title="abc"] {
-	color: red;
+color: red;
 }`
       )
 
@@ -134,7 +136,7 @@ div:before, div:after {
       }}, {indent:'  '})
       expect(ret.css.trim()).deep.equal(
 `p[title="a,bc"] span,div span {
-  color: red;
+color: red;
 }`
       )
 
@@ -148,7 +150,7 @@ div:before, div:after {
       )
       expect(ret.css.trim()).deep.equal(
 `:-moz-any(ol, ul, menu[title="a,b"], dir) dd span, :-moz-any(ol, ul, menu, dir) ul span {
-  color: red;
+color: red;
 }`
       )
 
@@ -159,8 +161,8 @@ div:before, div:after {
       var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
       expect(ret.css.trim()).deep.equal(
 `p {
-	_fontSize: 12px;
-	background\\Color: #fff;
+_fontSize: 12px;
+background\\Color: #fff;
 }`
       )
 
@@ -185,7 +187,7 @@ div:before, div:after {
           .split(/\n/)
       expect(ret.shift()).match(/^._\w{6,7}\d+_red {/)
       expect(ret.join('\n')).equal(
-`	color: red;
+`color: red;
 }`
       )
 
@@ -199,7 +201,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}).css.trim()
       expect(ret).equal(
 `._prefix_red {
-	color: red;
+color: red;
 }`
       )
 
@@ -212,7 +214,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}).css.trim()
       expect(ret).equal(
 `.red._prefix_bold {
-	color: red;
+color: red;
 }`
       )
 
@@ -225,7 +227,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}).css.trim()
       expect(ret).equal(
 `.red.green .blue._prefix_bold {
-	color: red;
+color: red;
 }`
       )
 
@@ -238,7 +240,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}).css.trim()
       expect(ret).equal(
 `.red._prefix_bold {
-	color: red;
+color: red;
 }`
       )
 
@@ -251,7 +253,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}).css.trim()
       expect(ret).equal(
 `.red .green ._prefix_bold {
-	color: red;
+color: red;
 }`
       )
 
@@ -264,7 +266,7 @@ div:before, div:after {
       }}, {prefix: '_prefix_'}, {red:'_custom_sel'}).css.trim()
       expect(ret).equal(
 `._custom_sel ._prefix_green .bold {
-	color: red;
+color: red;
 }`
       )
 
@@ -277,7 +279,7 @@ div:before, div:after {
       }}, {local:false}, {red:'_custom_sel'})
       expect(ret.css.trim()).equal(
 `.red .bold .test {
-	color: red;
+color: red;
 }`
       )
 
@@ -302,11 +304,11 @@ div:before, div:after {
 
       expect(ret.css).equal(
         `d {
-  color: 123;
+color: 123;
 }
 d {
-  font: "Arial";
-  color: blue;
+font: "Arial";
+color: blue;
 }
 `
       )
@@ -321,9 +323,9 @@ d {
 
       expect(ret.css).equal(
         `p {
-  font: Helvetica;
-  font: "Arial";
-  color: blue;
+font: Helvetica;
+font: "Arial";
+color: blue;
 }
 `
       )
@@ -338,9 +340,9 @@ d {
 
       expect(ret.css).equal(
         `p {
-  font: Helvetica;
-  font: "Arial";
-  color: blue;
+font: Helvetica;
+font: "Arial";
+color: blue;
 }
 `
       )
@@ -364,7 +366,7 @@ d {
       expect(ret.css.trim()).equal(
 `@import url("fineprint.css") print;
 d {
-  color: 123;
+color: 123;
 }`
       )
 
@@ -382,13 +384,23 @@ d {
         d:{color:123}
       }, {indent:'  '})
 
-      expect(ret.css.trim()).equal(
-`@import url("fineprint1.css") print;
+      expect(ret.css).equal(
+
+        // child always come first
+        `d {
+color: 123;
+}
+@import url("fineprint1.css") print;
 @import url("fineprint2.css") print;
 @import url("fineprint3.css") print;
-d {
-  color: 123;
-}`
+`
+        // version 0.1 result
+//         `@import url("fineprint1.css") print;
+// @import url("fineprint2.css") print;
+// @import url("fineprint3.css") print;
+// d {
+// color: 123;
+// }`
       )
 
     })
@@ -408,16 +420,33 @@ d {
         }
       }, {indent:'  '})
 
-      expect(ret.css.trim()).equal(
+      expect(ret.css).equal(
         `@supports (import: true) {
-  @import url("fineprint.css") print;
-  @import url("fineprint1.css") print;
-  @import url("fineprint2.css") print;
-  @import url("fineprint3.css") print;
-  d {
-    color: 123;
-  }
-}`
+@import url("fineprint.css") print;
+d {
+color: 123;
+}
+}
+@supports (import: true) {
+@import url("fineprint1.css") print;
+}
+@supports (import: true) {
+@import url("fineprint2.css") print;
+}
+@supports (import: true) {
+@import url("fineprint3.css") print;
+}
+`
+        // version 0.1 result
+//         `@supports (import: true) {
+// @import url("fineprint.css") print;
+// @import url("fineprint1.css") print;
+// @import url("fineprint2.css") print;
+// @import url("fineprint3.css") print;
+// d {
+// color: 123;
+// }
+// }`
       )
 
     })
@@ -434,8 +463,8 @@ d {
 
       expect(ret.css.trim()).equal(
         `@font-face {
-  font-family: "Bitstream Vera Serif Bold";
-  src: url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf");
+font-family: "Bitstream Vera Serif Bold";
+src: url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf");
 }`
       )
 
@@ -457,15 +486,15 @@ d {
       }, {indent:'  '})
 
       expect(ret.css.trim()).equal(
-        `@keyframes identifier1 {
-  0% {
-    top: 0;
-    left: 0;
-  }
-  10% {
-    top: 20;
-    left: 20;
-  }
+`@keyframes identifier1 {
+0% {
+top: 0;
+left: 0;
+}
+10% {
+top: 20;
+left: 20;
+}
 }`
       )
 
@@ -493,21 +522,21 @@ d {
       }, {indent:'  '})
 
       expect(ret.css.trim()).equal(
-        `@supports (animation-name: test) {
-  @import url("fineprint.css") print;
-  d {
-    color: 123;
-  }
-  @keyframes identifier {
-    0% {
-      top: 0;
-      left: 0;
-    }
-    10% {
-      top: 20;
-      left: 20;
-    }
-  }
+`@supports (animation-name: test) {
+@import url("fineprint.css") print;
+d {
+color: 123;
+}
+@keyframes identifier {
+0% {
+top: 0;
+left: 0;
+}
+10% {
+top: 20;
+left: 20;
+}
+}
 }`
       )
 
@@ -524,14 +553,14 @@ d {
 
       expect(ret.css.trim()).equal(
         `@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-  p {
-    color: red;
-  }
+p {
+color: red;
+}
 }
 @media only screen and (min-width : 321px) {
-  p {
-    color: blue;
-  }
+p {
+color: blue;
+}
 }`
       )
 
@@ -565,29 +594,29 @@ d {
 
       expect(ret.css.trim()).equal(
         `._prefix_p {
-  color: red;
-  back: 23ret;
+color: red;
+back: 23ret;
 }
 @media (min-width:320px) {
-  ._prefix_p {
-    color: red2;
-  }
-  @font-face {
-    style: 1;
-  }
-  ._prefix_p._prefix_d {
-    x: 1;
-  }
+._prefix_p {
+color: red2;
+}
+@font-face {
+style: 1;
+}
+._prefix_p._prefix_d {
+x: 1;
+}
 }
 @media (min-width:320px) and c2&c {
-  ._prefix_p {
-    _color: blue;
-  }
+._prefix_p {
+_color: blue;
+}
 }
 @media (min-width:320px) and c2&c and (max-width:768px) {
-  ._prefix_p {
-    color: 234;
-  }
+._prefix_p {
+color: 234;
+}
 }`
       )
 
@@ -620,30 +649,26 @@ d {
 
       expect(ret.css.trim()).equal(
         `._prefix_p {
-  color: red;
-  back: 23ret;
+color: red;
+back: 23ret;
 }
 @media & (cond,ition) {
-  ._prefix_p {
-    color: red2;
-  }
-  @font-face {
-    style: 1;
-  }
+._prefix_p {
+color: red2;
 }
-@media & (cond,ition) and c2,
-& (cond,ition) and c3 {
-  ._prefix_p {
-    _color: blue;
-  }
+@font-face {
+style: 1;
 }
-@media & (cond,ition) and c2 and (max:324px),
-& (cond,ition) and c3 and (max:324px),
-& (cond,ition) and c2 and (min:111px),
-& (cond,ition) and c3 and (min:111px) {
-  ._prefix_p {
-    color: 234;
-  }
+}
+@media & (cond,ition) and c2,& (cond,ition) and c3 {
+._prefix_p {
+_color: blue;
+}
+}
+@media & (cond,ition) and c2 and (max:324px),& (cond,ition) and c2 and (min:111px),& (cond,ition) and c3 and (max:324px),& (cond,ition) and c3 and (min:111px) {
+._prefix_p {
+color: 234;
+}
 }`
       )
 
@@ -679,17 +704,17 @@ d {
 
       expect(ret.css).equal(
         `dd {
-  font: 123;
+font: 123;
 }
 p {
-  color: red;
-  text-align: right;
+color: red;
+text-align: right;
 }
 p p1 {
-  font: 1234;
+font: 1234;
 }
 p2 {
-  color: blue;
+color: blue;
 }
 `)
 
@@ -697,7 +722,8 @@ p2 {
 
       var abc = ret.ref.abc
       abc.color = function(last, n, opt){
-        return n.selector
+        // version 0.1 it's n.selector
+        return n.selText
       }
       abc.left = '10px'
       delete abc.textAlign
@@ -710,6 +736,22 @@ p2 {
 
       ret.update()
 
+      expect(ret.css).equal(
+        `p {
+color: p;
+left: 10px;
+}
+p p1 {
+font: 1234;
+}
+p2 {
+color: blue;
+}
+div {
+float: left;
+}
+`)
+
       expect(ret.diff.added.length).equal(1)
       expect(ret.diff.added[0].key).equal('div')
 
@@ -718,33 +760,18 @@ p2 {
 
       expect(ret.diff.changed.length).equal(1)
       expect(ret.diff.changed[0].key).equal('p')
+
       expect(ret.diff.changed[0].diff).deep.equal({
         changed:['color'],
         removed:['textAlign'],
         added:['left']
       })
 
-      expect(ret.css).equal(
-        `p {
-  color: p;
-  left: 10px;
-}
-p p1 {
-  font: 1234;
-}
-p2 {
-  color: blue;
-}
-div {
-  float: left;
-}
-`)
-
       ret.update({p:{color:'blue'}})
 
       expect(ret.css).equal(
         `p {
-  color: blue;
+color: blue;
 }
 `
       )
@@ -768,7 +795,7 @@ div {
       // ret.css will not changed due to: diffOnly=true
       expect(ret.css).equal(
         `p {
-  color: red;
+color: red;
 }
 `
       )
@@ -809,13 +836,13 @@ div {
 
       expect(ret.update()).equal(
         `p2 {
-  color: 40;
+color: 40;
 }
 p1 {
-  color: 20;
+color: 20;
 }
 p {
-  color: 10;
+color: 10;
 }
 `
       )
@@ -848,10 +875,10 @@ p {
 
         expect(css).equal(
           `dd {
-  font: 123;
+font: 123;
 }
 p {
-  color: red;
+color: red;
 }
 `)
 
@@ -904,10 +931,10 @@ p {
 
       expect(ret.update()).equal(
         `p {
-  color: 1;
+color: 1;
 }
 d {
-  font: Arial;
+font: Arial;
 }
 `)
       // test for non value update
@@ -917,10 +944,9 @@ d {
 
       // css will be empty due to null
       expect(ret.update()).equal(
-        `p {
-}
-d {
-  font: Arial;
+        // version 0.1 will have empty prop
+        `d {
+font: Arial;
 }
 `)
 
@@ -931,10 +957,10 @@ d {
 
       expect(ret.update()).equal(
         `p {
-  color: 0;
+color: 0;
 }
 d {
-  font: Arial;
+font: Arial;
 }
 `)
       // test for add new rule
@@ -948,13 +974,13 @@ d {
       // check css
       expect(ret.css).equal(
         `p {
-  color: 0;
+color: 0;
 }
 p xyz {
-  font-size: 12px;
+font-size: 12px;
 }
 d {
-  font: Arial;
+font: Arial;
 }
 `
       )
@@ -978,7 +1004,7 @@ d {
 
           expect(result.css).equal(
             `p {
-  color: red;
+color: red;
 }
 `
           )
@@ -1068,7 +1094,7 @@ d {
 
       expect(css).equal(
         `p {
-  size: 10px;
+size: 10px;
 }
 `
       )
@@ -1101,8 +1127,8 @@ d {
       var rule = cssobj.makeRule( node, opt )
       expect(rule).equal(
         `p {
-  color: red;
-  font: 123;
+color: red;
+font: 123;
 }
 `
       )
@@ -1114,8 +1140,10 @@ font: 123;
 `
       )
 
-      var selector = cssobj.getSelector( node, opt)
-      expect(selector).equal('p')
+      // after version 0.1, use selText instead
+      // var selector = cssobj.getSelector( node, opt)
+
+      expect(node.selText).equal('p')
 
     })
 

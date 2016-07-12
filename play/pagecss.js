@@ -1,19 +1,10 @@
 var pagecss = {
-  '@import': ['url1', 'url2'],
   'html,body': {
-    height: ['100%', 100],
+    height: ['100%'],
     margin:0,
     padding:0,
-    p:{
-      '\\&:before &':{
-        d:{font:123},
-        content:'"-"'
-      },
-      color:'red'
-    }
   },
   table: {
-    '':[{width:100}],
     width: '100%',
     height: '100%',
     'table-layout': 'fixed'
