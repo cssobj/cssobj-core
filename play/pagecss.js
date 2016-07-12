@@ -2,7 +2,14 @@ var pagecss = {
   'html,body': {
     height: ['100%', 100],
     margin:0,
-    padding:0
+    padding:0,
+    p:{
+      '\\&:before &':{
+        d:{font:123},
+        content:'"-"'
+      },
+      color:'red'
+    }
   },
   table: {
     '':[{width:100}],

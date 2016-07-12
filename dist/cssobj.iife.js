@@ -84,8 +84,12 @@ var cssobj = (function () {
       var funcArr = []
 
 
-      var sel = node.key
-      if(sel) {
+      var ruleNode = getParents(node, function(v) {
+        return v.key
+      }).pop()
+
+      if(ruleNode) {
+        var sel = ruleNode.key
         var groupRule = sel.match(reGroupRule)
         var keyFramesRule = sel.match(reKeyFrame)
         if(groupRule){
@@ -101,7 +105,7 @@ var cssobj = (function () {
             ])
           })
 
-          var pPath = getParents(node, function(v) {
+          var pPath = getParents(ruleNode, function(v) {
             return v.type=='group'
           }, 'sel')
 
@@ -116,21 +120,19 @@ var cssobj = (function () {
           node.at = sel
         } else {
           node.sel = splitComma(sel)
-          var pPath = getParents(node, function(v) {
+          var pPath = getParents(ruleNode, function(v) {
             return v.sel && !v.at
           }, 'sel')
-          node.selText = combinePath(pPath, '', ' ')
-
+          node.selText = combinePath(pPath, '', ' ', true)+''
         }
+
+        if(node!==ruleNode) node.ruleNode = ruleNode
+
       }
 
       node.parentRule = getParents(node.parent, function(n) {
         return /keyframes|group/.test(n.type)
       }).pop() || null
-
-      if(node.parent && node.parent.key===''){
-        node.alias = node.parent.parent
-      }
 
       for (var k in d) {
         if (!own(d, k)) continue
@@ -242,9 +244,20 @@ var cssobj = (function () {
     )
   }
 
-  function combinePath(array, prev, sep) {
+  function combinePath(array, prev, sep, rep) {
     return !array.length ? prev : array[0].reduce(function (result, value) {
-      return result.concat(combinePath(array.slice(1), (prev ? prev + sep : prev) + value, sep))
+      var str = prev ? prev + sep : prev
+      if(rep){
+        var isReplace = false
+        var sugar = strSugar(value, [['&', function(z){
+          isReplace=true
+          return prev
+        }]])
+        str = isReplace ? sugar : str + sugar
+      } else {
+        str += value
+      }
+      return result.concat(combinePath( array.slice(1), str, sep, rep ))
     }, [])
   }
 
