@@ -9,18 +9,25 @@
 
 
 // using var as iteral to help optimize
-var ID = '$id'
-var ORDER = '$order'
+var KEY_ID = '$id'
+var KEY_ORDER = '$order'
+
+var TYPE_KEYFRAMES = 'keyframes'
+var TYPE_GROUP = 'group'
+
 var ARRAY = 'Array'
 var OBJECT = 'Object'
 
+
 var is = function (t, v) { return {}.toString.call(v).slice(8, -1) === t }
 var own = function (o, k) { return {}.hasOwnProperty.call(o, k) }
+var keys = Object.keys
 
 function isIterable (v) {
   return is(OBJECT, v) || is(ARRAY, v)
 }
 
+var reWrapperType = /keyframes|group/
 var reOneRule = /@(?:charset|import|namespace)\s*$/
   var reGroupRule = /^@(?:media|document|supports) /
   var reKeyFrame = /^@keyframes /
@@ -77,8 +84,8 @@ function parseObj (d, opt, node) {
     node.lastVal = {}
     node.prop = {}
     node.diff = {}
-    if(d[ID]) opt._ref[d[ID]] = d
-    var order = d[ORDER]|0
+    if(d[KEY_ID]) opt._ref[d[KEY_ID]] = d
+    var order = d[KEY_ORDER]|0
     var funcArr = []
 
     // array index don't have key,
@@ -88,7 +95,7 @@ function parseObj (d, opt, node) {
     }).pop()
 
     var parentRule = node.parentRule = getParents(node.parent, function(n) {
-      return /keyframes|group/.test(n.type)
+      return reWrapperType.test(n.type)
     }).pop() || null
 
 
@@ -97,7 +104,7 @@ function parseObj (d, opt, node) {
       var groupRule = sel.match(reGroupRule)
       var keyFramesRule = sel.match(reKeyFrame)
       if(groupRule){
-        node.type = 'group'
+        node.type = TYPE_GROUP
         node.at = groupRule.pop()
         node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
           return strSugar(v, [
@@ -110,13 +117,13 @@ function parseObj (d, opt, node) {
         })
 
         var pPath = getParents(ruleNode, function(v) {
-          return v.type=='group'
+          return v.type==TYPE_GROUP
         }, 'sel')
 
         node.selText = localizeName(node.at + combinePath(pPath, '', ' and '), opt)
 
       } else if (keyFramesRule) {
-        node.type = 'keyframes'
+        node.type = TYPE_KEYFRAMES
         node.at = keyFramesRule.pop()
         node.selText = sel
       } else if (reOneRule.test(sel)) {
@@ -125,7 +132,7 @@ function parseObj (d, opt, node) {
         node.type = 'at'
         node.selText = sel
       } else {
-        node.selText = parentRule && parentRule.type=='keyframes'
+        node.selText = parentRule && parentRule.type==TYPE_KEYFRAMES
           ? sel
           : localizeName(''+combinePath(getParents(ruleNode, function(v) {
             return v.sel && !v.at
@@ -167,10 +174,10 @@ function parseObj (d, opt, node) {
 
       // prop changed
       var diffProp = function() {
-        var newKeys = Object.keys(node.lastVal)
-        var removed = Object.keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
+        var newKeys = keys(node.lastVal)
+        var removed = keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
         if(removed.length) node.diff.removed = removed
-        if(Object.keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
+        if(keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
       }
       order!=0
         ? funcArr.push([diffProp, null])
@@ -206,11 +213,7 @@ function parseProp(node, d, key, opt) {
 
     // only valid val can be lastVal
     if (isValidCSSValue(val)) {
-      prev = val
-      if(reOneRule.test(key))
-        arrayKV(lastVal, key, val)
-      else
-        lastVal[key] = val
+      prev = lastVal[key] = val
     }
   })
   if(oldVal) {
@@ -302,37 +305,47 @@ function isValidCSSValue (val) {
   return val || val === 0
 }
 
-function makeCSS (node, opt, recursive) {
+function makeCSS (root, opt, recursive) {
   var str = []
-  var walk = function(n) {
-    if (!n) return ''
-    if (is(ARRAY, n)) return n.map(function (v) {walk(v)})
-    var isGroup = n.type=='group'
-    var isFrames = n.type=='keyframes'
-    if(isGroup||isFrames) {
-      str.push(n.selText+'{\n')
+  var walk = function(node) {
+    if (!node) return ''
+    if (is(ARRAY, node)) return node.map(function (v) {walk(v)})
+
+    var postArr = []
+    var children = node.children
+    var isGroup = function(t) {
+      return reWrapperType.test(t.type)
     }
 
-    if(Object.keys(n.lastVal).length){
-      str.push(makeRule(n, opt))
+    if(isGroup(node)) {
+      str.push(node.selText+'{\n')
     }
 
-    for(var c in n.children)
-      walk(n.children[c])
+    if(keys(node.lastVal).length) str.push(makeRule(node, opt))
 
-    if(isGroup||isFrames){
+    for(var c in children){
+      if(isGroup(children[c])) postArr.push(c)
+      else walk(children[c])
+    }
+
+    if(isGroup(node)) {
       str.push('}\n')
     }
+
+    postArr.map(function(v) {
+      walk(children[v])
+    })
+
   }
-  walk(node)
+  walk(root)
   return str.join('')
 }
 
 function makeRule (node, opt) {
   var lastVal = node.lastVal
-  var style = Object.keys(lastVal).map(function(k) {
+  var style = keys(lastVal).map(function(k) {
     if(reOneRule.test(k)){
-      return lastVal[k].map(function(v) {
+      return node.prop[k].map(function(v) {
         return k + ' ' + v + ';\n'
       }).join('')
     }

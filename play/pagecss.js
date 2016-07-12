@@ -1,4 +1,5 @@
 var pagecss = {
+  '@import': ['url1', 'url2'],
   'html,body': {
     height: ['100%', 100],
     margin:0,
