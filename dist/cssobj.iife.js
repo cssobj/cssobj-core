@@ -78,7 +78,7 @@ var cssobj = (function () {
   function parseObj (d, opt, node, init) {
     node = node || {}
     if(init) {
-      opt._nodes=[]
+      opt._nodes.length=0
       opt._diff = {}
       opt._ref = {}
     }
@@ -197,7 +197,7 @@ var cssobj = (function () {
           : diffProp()
       }
 
-      funcArr.push( [function(){ node.cssText = makeRule(node, opt, -1) }, null] )
+      funcArr.push( [function(){ node.cssText = makeRule(node, opt, 1) }, null] )
       arrayKV(opt, '_order', {order:order, func:funcArr})
       opt._nodes.push(node)
       return node
@@ -246,10 +246,9 @@ var cssobj = (function () {
   }
 
   function getParents (node, test, key, onlyOne) {
-    var p = node, path=[], el
+    var p = node, path=[]
     while(p) {
-      if(test(p)) path.unshift(el=key?p[key]:p)
-      if(el && onlyOne) return el
+      if(test(p)) path.unshift(key?p[key]:p)
       p = p.parent
     }
     return path
@@ -340,7 +339,10 @@ var cssobj = (function () {
         str.push(node.groupText+' {\n')
       }
 
-      if(keys(node.lastVal).length) str.push(makeRule(node, opt))
+      var selText = node.selText
+      var cssText = node.cssText
+
+      if(cssText) str.push( selText ? selText + ' {\n'+ cssText +'}\n' : cssText )
 
       for(var c in children){
         if(c==='' || children[c].type==TYPE_GROUP) postArr.push(c)
@@ -409,7 +411,8 @@ var cssobj = (function () {
     var defaultOption = {
       local: true,
       diffOnly: false,
-      plugins: {}
+      plugins: {},
+      _nodes: []
     }
     // set default options
     for (var i in defaultOption) {
@@ -445,7 +448,6 @@ var cssobj = (function () {
       result.obj = newObj
       result.ref = options._ref
       result.diff = options._diff
-      result.nodes = options._nodes
 
       if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
 

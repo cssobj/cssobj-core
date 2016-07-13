@@ -777,7 +777,7 @@ color: blue;
 
       expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
-      var abc = ret.ref.abc
+      var abc = ret.ref.abc.obj
       abc.color = function(last, n, opt){
         // version 0.1 it's n.selector
         return n.selText
@@ -1026,11 +1026,15 @@ font: Arial;
 `)
       // test for add new rule
       // add object and register to ref
-      ret.ref.xyz = t.xyz = {
+      t.xyz = {
+        $id: 'xyz',
         fontSize: '12px'
       }
       // update node with recursive to take the node
       ret.update()
+
+      // check new ref
+      expect(ret.ref.xyz.key).equal('xyz')
 
       // check css
       expect(ret.css).equal(
@@ -1208,9 +1212,7 @@ size: 10px;
         opt
       )
 
-      var node = ret.options._nodes.filter(function(v) {
-        return v.obj == ret.ref.abc
-      }).pop()
+      var node = ret.ref.abc
 
       expect(node.key).equal('p')
 
