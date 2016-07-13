@@ -30,8 +30,7 @@ define('cssobj', function () { 'use strict';
     return type.call(v)==OBJECT || type.call(v)==ARRAY
   }
 
-  var reOneRule = /@(?:charset|import|namespace)\s*$/
-    var reGroupRule = /^@(?:media|document|supports) /
+  var reGroupRule = /^@(?:media|document|supports) /
     var reKeyFrame = /^@keyframes /
     var reAtRule = /^\s*@/
     var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
@@ -137,8 +136,6 @@ define('cssobj', function () { 'use strict';
           node.type = TYPE_KEYFRAMES
           node.at = keyFramesRule.pop()
           node.groupText = sel
-        } else if (reOneRule.test(sel)) {
-          node.type = 'one'
         } else if (reAtRule.test(sel)) {
           node.type = 'at'
           node.selText = sel
