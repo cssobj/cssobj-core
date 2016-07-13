@@ -292,6 +292,63 @@ color: red;
   })
 
   //
+  // test prop && lastVal
+
+  describe('test prop && lastVal', function() {
+
+
+    it('prop should as real css rule', function() {
+
+      var obj = {
+
+        p:{
+          fontSize: 123,
+          'font-size': 456,
+          _msZIndex: 999
+        }
+
+      }
+
+      var ret = cssobj(obj)
+
+      expect(ret.root.children.p.prop).deep.equal({
+        'font-size': [123, 456],
+        '_ms-z-index': [999]
+      })
+
+      expect(ret.root.children.p.lastVal).deep.equal({
+        fontSize: 123,
+        'font-size': 456,
+        _msZIndex: 999
+      })
+
+    })
+
+    it('should trim prop, keep lastVal untouched', function() {
+
+      var obj = {
+
+        p:{
+          ' fontSize': 123,
+          ' @import  ': 456,
+          '  @import  ': 789
+        }
+
+      }
+
+      var ret = cssobj(obj)
+
+      expect(ret.root.children.p.prop).deep.equal({
+        'font-size': [123],
+        '@import': [456, 789]
+      })
+
+    })
+
+
+  })
+
+  //
   //test array support
 
   describe('test array support', function() {
@@ -986,6 +1043,32 @@ font: Arial;
       )
 
     })
+
+
+    it('update ref when remove named obj', function() {
+
+      var obj = {
+        p:{
+          $id:'xy',
+          color:1
+        },
+        b:{
+          $id:'ab',
+          color:2
+        }
+      }
+
+      var ret = cssobj(obj)
+
+      expect(Object.keys(ret.ref)).deep.equal(['xy', 'ab'])
+
+      delete obj.p
+      ret.update()
+
+      expect(Object.keys(ret.ref)).deep.equal(['ab'])
+
+    })
+
 
   })
 

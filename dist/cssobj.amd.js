@@ -23,6 +23,7 @@ define('cssobj', function () { 'use strict';
 
   var is = function (t, v) { return {}.toString.call(v).slice(8, -1) === t }
   var own = function (o, k) { return {}.hasOwnProperty.call(o, k) }
+  var trim = function (str) { return str.replace(/(^\s+|\s+$)/g, '') }
   var keys = Object.keys
 
   function isIterable (v) {
@@ -73,8 +74,13 @@ define('cssobj', function () { 'use strict';
    * @param {array} [path] - array path represent root to parent
    * @returns {object} tree data object
    */
-  function parseObj (d, opt, node) {
+  function parseObj (d, opt, node, init) {
     node = node || {}
+    if(init) {
+      opt._nodes=[]
+      opt._diff = {}
+      opt._ref = {}
+    }
     if (is(ARRAY, d)) {
       return d.map(function (v, i) {
         return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, value: d[i]})
@@ -122,12 +128,16 @@ define('cssobj', function () { 'use strict';
             return v.type==TYPE_GROUP
           }, 'sel')
 
-          node.selText = localizeName(node.at + combinePath(pPath, '', ' and '), opt)
+          node.groupText = localizeName(node.at + combinePath(pPath, '', ' and '), opt)
+
+          node.selText = getParents(node, function(v) {
+            return v.selText && !v.at
+          }, 'selText').pop()
 
         } else if (keyFramesRule) {
           node.type = TYPE_KEYFRAMES
           node.at = keyFramesRule.pop()
-          node.selText = sel
+          node.groupText = sel
         } else if (reOneRule.test(sel)) {
           node.type = 'one'
         } else if (reAtRule.test(sel)) {
@@ -187,6 +197,7 @@ define('cssobj', function () { 'use strict';
       }
 
       if(order) arrayKV(opt, '_order', {order:order, func:funcArr})
+      opt._nodes.push(node)
       return node
     }
     return node
@@ -207,13 +218,19 @@ define('cssobj', function () { 'use strict';
     ![].concat(d[key]).forEach(function (v) {
       // pass lastVal if it's function
       var val = is('Function', v)
-        ? v(prev, node, opt)
+          ? v(prev, node, opt)
         : v
 
       // only valid val can be lastVal
       if (isValidCSSValue(val)) {
         // push every val to prop
-        arrayKV(node.prop, key, val)
+        arrayKV(
+          node.prop,
+          trim(strSugar(key, [
+            ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
+          ])),
+          applyPlugins(opt, 'value', val, key, node)
+        )
         prev = lastVal[key] = val
       }
     })
@@ -226,10 +243,11 @@ define('cssobj', function () { 'use strict';
     }
   }
 
-  function getParents (node, test, key) {
-    var p = node, path=[]
+  function getParents (node, test, key, onlyOne) {
+    var p = node, path=[], el
     while(p) {
-      if(test(p)) path.unshift(key?p[key]:p)
+      if(test(p)) path.unshift(el=key?p[key]:p)
+      if(el && onlyOne) return el
       p = p.parent
     }
     return path
@@ -317,7 +335,7 @@ define('cssobj', function () { 'use strict';
       var isGroup = reWrapperType.test(node.type)
 
       if(isGroup) {
-        str.push(node.selText+' {\n')
+        str.push(node.groupText+' {\n')
       }
 
       if(keys(node.lastVal).length) str.push(makeRule(node, opt))
@@ -345,25 +363,19 @@ define('cssobj', function () { 'use strict';
 
     var style = keys(prop).map(function(k) {
 
-      var key = strSugar(k, [
-        ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-      ])
-
       return prop[k].map(function(v) {
         if(reOneRule.test(k))
           return k + ' ' + v + ';\n'
         else
-          return key + ': ' + applyPlugins(opt, 'value', v, k, node) + ';\n'
+          return k + ': ' + v + ';\n'
       }).join('')
     }).join('')
 
     if(declOnly) return style
 
-    var sel = getParents(node, function(v) {
-      return v.selText && !v.at
-    }, 'selText').pop()
+    var sel = node.selText
 
-    return sel && !sel.at ? sel + ' {\n'+ style +'}\n' : style
+    return sel ? sel + ' {\n'+ style +'}\n' : style
   }
 
   function applyPlugins (opt, type) {
@@ -420,10 +432,9 @@ define('cssobj', function () { 'use strict';
     // options._util = _util
     options.prefix = options.prefix || random()
 
-    var ref = options._ref = {}
     var nameMap = options._localNames = localNames || {}
 
-    var root = parseObj(obj, options)
+    var root = parseObj(obj, options, '', true)
     applyOrder(options)
 
     options._root = root
@@ -433,13 +444,16 @@ define('cssobj', function () { 'use strict';
 
     var updater = function (newObj, data) {
 
-      result.diff = options._diff = {}
       options._data = data||{}
 
       var newCSS=''
 
-      parseObj(newObj||obj, options, root)
+      parseObj(newObj||obj, options, root, true)
       applyOrder(options)
+
+      // update ref, diff
+      result.ref = options._ref
+      result.diff = options._diff
 
       if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
 
@@ -451,9 +465,9 @@ define('cssobj', function () { 'use strict';
     var result = {
       root: root,
       obj: obj,
+      ref: options._ref,
       css: makeCSS(root, options, true),
       map: nameMap,
-      ref: ref,
       update: updater,
       options: options,
       on: function (eventName, cb) {
