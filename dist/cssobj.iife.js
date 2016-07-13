@@ -84,7 +84,7 @@ var cssobj = (function () {
     }
     if (is(ARRAY, d)) {
       return d.map(function (v, i) {
-        return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, value: d[i]})
+        return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, obj: d[i]})
       })
     }
     if (is(OBJECT, d)) {
@@ -93,7 +93,7 @@ var cssobj = (function () {
       node.lastVal = {}
       node.prop = {}
       node.diff = {}
-      if(d[KEY_ID]) opt._ref[d[KEY_ID]] = d
+      if(d[KEY_ID]) opt._ref[d[KEY_ID]] = node
       var order = d[KEY_ORDER]|0
       var funcArr = []
 
@@ -168,7 +168,7 @@ var cssobj = (function () {
             : r(k)
         } else {
           var haveOldChild = k in children
-          var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), value: d[k]}))
+          var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
           // it's new added node
           if(oldVal && !haveOldChild) arrayKV(opt._diff, 'added', n)
         }
@@ -197,7 +197,8 @@ var cssobj = (function () {
           : diffProp()
       }
 
-      if(order) arrayKV(opt, '_order', {order:order, func:funcArr})
+      funcArr.push( [function(){ node.cssText = makeRule(node, opt, -1) }, null] )
+      arrayKV(opt, '_order', {order:order, func:funcArr})
       opt._nodes.push(node)
       return node
     }
@@ -254,9 +255,9 @@ var cssobj = (function () {
     return path
   }
 
-  function arrayKV (obj, k, v, noMerge) {
+  function arrayKV (obj, k, v) {
     obj[k] = obj[k] || []
-    obj[k] = obj[k].concat(noMerge ? [v] :v)
+    obj[k].push(v)
   }
 
   function strSugar (str, sugar) {
@@ -388,20 +389,6 @@ var cssobj = (function () {
     )
   }
 
-  function findNode (obj, root) {
-    var found
-    var walk = function (node) {
-      if (is(ARRAY, node)) return node.some(walk)
-      if (node.value == obj) return found = node
-      for (var k in node.children) {
-        if (found) return
-        walk(node.children[k])
-      }
-    }
-    walk(root)
-    return found
-  }
-
   function applyOrder(opt) {
     if(!opt._order) return
     opt._order
@@ -445,16 +432,20 @@ var cssobj = (function () {
 
     var updater = function (newObj, data) {
 
+      newObj = newObj||obj
+
       options._data = data||{}
 
       var newCSS=''
 
-      parseObj(newObj||obj, options, root, true)
+      parseObj(newObj, options, root, true)
       applyOrder(options)
 
       // update ref, diff
+      result.obj = newObj
       result.ref = options._ref
       result.diff = options._diff
+      result.nodes = options._nodes
 
       if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
 
@@ -467,6 +458,7 @@ var cssobj = (function () {
       root: root,
       obj: obj,
       ref: options._ref,
+      nodes: options._nodes,
       css: makeCSS(root, options, true),
       map: nameMap,
       update: updater,
@@ -488,7 +480,6 @@ var cssobj = (function () {
     return result
   }
 
-  cssobj.findNode = findNode
   cssobj.makeRule = makeRule
 
   return cssobj;

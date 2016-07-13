@@ -883,11 +883,15 @@ color: red;
 
       obj.p.color = 10
       obj.p1.color = function(){
-        var pNode = cssobj.findNode(obj.p, ret.root)
+        var pNode = ret.options._nodes.filter(function(v) {
+          return obj.p == v.obj
+        }).pop()
         return pNode.lastVal.color * 2
       }
       obj.p2.color = function(){
-        var pNode = cssobj.findNode(obj.p1, ret.root)
+        var pNode = ret.options._nodes.filter(function(v) {
+          return obj.p1 == v.obj
+        }).pop()
         return pNode.lastVal.color * 2
       }
 
@@ -1204,7 +1208,10 @@ size: 10px;
         opt
       )
 
-      var node = cssobj.findNode(ret.ref.abc, ret.root)
+      var node = ret.options._nodes.filter(function(v) {
+        return v.obj == ret.ref.abc
+      }).pop()
+
       expect(node.key).equal('p')
 
       var rule = cssobj.makeRule( node, opt )
