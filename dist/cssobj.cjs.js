@@ -17,26 +17,26 @@ var KEY_ORDER = '$order'
 var TYPE_KEYFRAMES = 'keyframes'
 var TYPE_GROUP = 'group'
 
-var ARRAY = 'Array'
-var OBJECT = 'Object'
+// type check
+var type = {}.toString
+var ARRAY = type.call([])
+var OBJECT = type.call({})
 
-
-var is = function (t, v) { return {}.toString.call(v).slice(8, -1) === t }
-var own = function (o, k) { return {}.hasOwnProperty.call(o, k) }
+// helper function
 var trim = function (str) { return str.replace(/(^\s+|\s+$)/g, '') }
 var keys = Object.keys
 
 function isIterable (v) {
-  return is(OBJECT, v) || is(ARRAY, v)
+  return type.call(v)==OBJECT || type.call(v)==ARRAY
 }
 
-var reWrapperType = /keyframes|group/
 var reOneRule = /@(?:charset|import|namespace)\s*$/
   var reGroupRule = /^@(?:media|document|supports) /
   var reKeyFrame = /^@keyframes /
   var reAtRule = /^\s*@/
   var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
 
+// default local prefix implement
 var random = (function () {
   var count = 0
   return function () {
@@ -81,12 +81,12 @@ function parseObj (d, opt, node, init) {
     opt._diff = {}
     opt._ref = {}
   }
-  if (is(ARRAY, d)) {
+  if (type.call(d)==ARRAY) {
     return d.map(function (v, i) {
       return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, obj: d[i]})
     })
   }
-  if (is(OBJECT, d)) {
+  if (type.call(d)==OBJECT) {
     var children = node.children = node.children||{}
     var oldVal = node.oldVal = node.lastVal
     node.lastVal = {}
@@ -103,9 +103,8 @@ function parseObj (d, opt, node, init) {
     }).pop()
 
     var parentRule = node.parentRule = getParents(node.parent, function(n) {
-      return reWrapperType.test(n.type)
+      return n.type==TYPE_KEYFRAMES||n.type==TYPE_GROUP
     }).pop() || null
-
 
     if(ruleNode) {
       var sel = ruleNode.key
@@ -156,13 +155,13 @@ function parseObj (d, opt, node, init) {
     }
 
     for (var k in d) {
-      if (!own(d, k)) continue
-      if (!isIterable(d[k]) || is(ARRAY, d[k]) && !isIterable(d[k][0])) {
+      if ( !d.hasOwnProperty(k) ) continue
+      if (!isIterable(d[k]) || type.call(d[k])==ARRAY && !isIterable(d[k][0])) {
         if(k.charAt(0)=='$') continue
         var r = function(_k) {
           parseProp(node, d, _k, opt)
         }
-        order!=0
+        order
           ? funcArr.push([r, k])
           : r(k)
       } else {
@@ -187,17 +186,18 @@ function parseObj (d, opt, node, init) {
       // prop changed
       var diffProp = function() {
         var newKeys = keys(node.lastVal)
-        var removed = keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
+        var removed = keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 }).map(function(k) {
+          return dashify(k)
+        })
         if(removed.length) node.diff.removed = removed
         if(keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
       }
-      order!=0
+      order
         ? funcArr.push([diffProp, null])
         : diffProp()
     }
 
-    funcArr.push( [function(){ node.cssText = makeRule(node, opt, 1) }, null] )
-    arrayKV(opt, '_order', {order:order, func:funcArr})
+    if(order) arrayKV(opt, '_order', {order:order, func:funcArr})
     opt._nodes.push(node)
     return node
   }
@@ -218,7 +218,7 @@ function parseProp(node, d, key, opt) {
 
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
-    var val = is('Function', v)
+    var val = typeof v=='function'
         ? v(prev, node, opt)
       : v
 
@@ -227,9 +227,7 @@ function parseProp(node, d, key, opt) {
       // push every val to prop
       arrayKV(
         node.prop,
-        trim(strSugar(key, [
-          ['[A-Z]', function (z) { return '-' + z.toLowerCase() }]
-        ])),
+        dashify(key),
         applyPlugins(opt, 'value', val, key, node)
       )
       prev = lastVal[key] = val
@@ -237,9 +235,9 @@ function parseProp(node, d, key, opt) {
   })
   if(oldVal) {
     if(!(key in oldVal)) {
-      arrayKV(node.diff, 'added', key)
+      arrayKV(node.diff, 'added', dashify(key))
     } else if (oldVal[key]!=lastVal[key]){
-      arrayKV(node.diff, 'changed', key)
+      arrayKV(node.diff, 'changed', dashify(key))
     }
   }
 }
@@ -256,6 +254,10 @@ function getParents (node, test, key, onlyOne) {
 function arrayKV (obj, k, v) {
   obj[k] = obj[k] || []
   obj[k].push(v)
+}
+
+function dashify(str) {
+  return trim(strSugar(str, [ ['[A-Z]', function (z) { return '-' + z.toLowerCase() }] ]))
 }
 
 function strSugar (str, sugar) {
@@ -291,8 +293,8 @@ function combinePath(array, prev, sep, rep) {
 
 function splitComma (str) {
   for (var c, i = 0, n = 0, prev = 0, d = []; c = str[i]; i++) {
-    if (/[\(\[]/.test(c)) n++
-    if (/[\)\]]/.test(c)) n--
+    if (c=='('||c=='[') n++
+    if (c==')'||c==']') n--
     if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
   }
   return d.concat(str.substring(prev))
@@ -328,20 +330,28 @@ function makeCSS (root, opt, recursive) {
   var str = []
   var walk = function(node) {
     if (!node) return ''
-    if (is(ARRAY, node)) return node.map(function (v) {walk(v)})
+    if (node.constructor === Array) return node.map(function (v) {walk(v)})
 
     var postArr = []
     var children = node.children
-    var isGroup = reWrapperType.test(node.type)
+    var isGroup = node.type==TYPE_GROUP||node.type==TYPE_KEYFRAMES
 
     if(isGroup) {
       str.push(node.groupText+' {\n')
     }
 
+    var prop = node.prop
     var selText = node.selText
-    var cssText = node.cssText
 
-    if(cssText) str.push( selText ? selText + ' {\n'+ cssText +'}\n' : cssText )
+    var cssText = keys(prop).map(function(k) {
+      return prop[k].map(function(v){
+          return  k.charAt(0)=='@'
+            ? k+' '+v+';\n'
+            : k+': '+v+';\n'
+        }).join('')
+    }).join('')
+
+    if(keys(prop).length) str.push( selText ? selText + ' {\n'+ cssText +'}\n' : cssText )
 
     for(var c in children){
       if(c==='' || children[c].type==TYPE_GROUP) postArr.push(c)
@@ -359,26 +369,6 @@ function makeCSS (root, opt, recursive) {
   }
   walk(root)
   return str.join('')
-}
-
-function makeRule (node, opt, declOnly) {
-  var prop = node.prop
-
-  var style = keys(prop).map(function(k) {
-
-    return prop[k].map(function(v) {
-      if(reOneRule.test(k))
-        return k + ' ' + v + ';\n'
-      else
-        return k + ': ' + v + ';\n'
-    }).join('')
-  }).join('')
-
-  if(declOnly) return style
-
-  var sel = node.selText
-
-  return sel ? sel + ' {\n'+ style +'}\n' : style
 }
 
 function applyPlugins (opt, type) {
@@ -480,7 +470,5 @@ function cssobj (obj, options, localNames) {
   applyPlugins(options, 'post', result)
   return result
 }
-
-cssobj.makeRule = makeRule
 
 module.exports = cssobj;

@@ -818,9 +818,10 @@ float: left;
       expect(ret.diff.changed.length).equal(1)
       expect(ret.diff.changed[0].key).equal('p')
 
+      // all the diff key is dashify-ed
       expect(ret.diff.changed[0].diff).deep.equal({
         changed:['color'],
-        removed:['textAlign'],
+        removed:['text-align'],
         added:['left']
       })
 
@@ -1194,52 +1195,5 @@ size: 10px;
 
   })
 
-  //
-  // sub function test
-  describe('sub function test', function() {
-
-    it('makeRule test', function() {
-
-      var opt = {indent:'  '}
-      var ret = cssobj(
-        {
-          p:{
-            $id:'abc',
-            color:'red',
-            font:123
-          }
-        },
-        opt
-      )
-
-      var node = ret.ref.abc
-
-      expect(node.key).equal('p')
-
-      var rule = cssobj.makeRule( node, opt )
-      expect(rule).equal(
-        `p {
-color: red;
-font: 123;
-}
-`
-      )
-
-      rule = cssobj.makeRule( node, opt, -1 )
-      expect(rule).equal(
-        `color: red;
-font: 123;
-`
-      )
-
-      // after version 0.1, use selText instead
-      // var selector = cssobj.getSelector( node, opt)
-
-      expect(node.selText).equal('p')
-
-    })
-
-
-  })
 
 })

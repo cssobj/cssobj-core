@@ -36,11 +36,10 @@ reftextarea.width=function(last, node) {
   return node.obj.width = windowWidth() / 2 - 4
 }
 
-refh3.left = 10
+refh3.obj.left = 10
 delete refh3.color
 
-refh3.fontSize = function(last, node) {
-  console.log('h3', last);
+refh3.obj.fontSize = function(last, node) {
   return last+1
 }
 
