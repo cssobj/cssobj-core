@@ -227,7 +227,8 @@ var cssobj = (function () {
         arrayKV(
           node.prop,
           dashify(key),
-          applyPlugins(result.options, 'value', val, key, node, result)
+          applyPlugins(result.options, 'value', val, key, node, result),
+          true
         )
         prev = lastVal[key] = val
       }
@@ -250,9 +251,9 @@ var cssobj = (function () {
     return path
   }
 
-  function arrayKV (obj, k, v) {
+  function arrayKV (obj, k, v, reverse) {
     obj[k] = obj[k] || []
-    obj[k].push(v)
+    reverse ? obj[k].unshift(v) : obj[k].push(v)
   }
 
   function dashify(str) {
