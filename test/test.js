@@ -1,12 +1,19 @@
 var expect = require('chai').expect
 var util = require('util')
+var cssobj_plugin_post_gencss = require('../node_modules/cssobj-plugin-post-gencss/cjs/cssobj-plugin-post-gencss.js')
 
+var _cssobj = require('../dist/cssobj.cjs.js')
 var cssobj
 
 describe('test cssobj', function(){
-  before(function() {
 
-    cssobj = require('../dist/cssobj.cjs.js')
+  beforeEach(function() {
+
+    cssobj = _cssobj({
+      plugins:{
+        post: cssobj_plugin_post_gencss()
+      }
+    })
 
   })
 
@@ -20,6 +27,9 @@ describe('test cssobj', function(){
         {p:{color:'red'}},
         {indent:'  '}
       )
+
+      console.log(ret)
+
       expect(ret.css.trim()).deep.equal(
 `p {
 color: red;
@@ -48,11 +58,11 @@ _font_size\\0/: 12px;
 
     it('css from camel case', function() {
 
-      var ret = cssobj({p:{'_fontSize':'12px', 'background\\With\\S\\BColor':'#fff'}})
+      var ret = cssobj({p:{'_fontSize':'12px', 'background-color':'#fff'}})
       expect(ret.css.trim()).deep.equal(
 `p {
 _font-size: 12px;
-backgroundWithSB-color: #fff;
+background-color: #fff;
 }`
       )
 
@@ -196,6 +206,8 @@ background\\Color: #fff;
     // below will using _prefix_ as prefix
     it('local class name with custom prefix', function() {
 
+      cssobj().options.prefix = '_prefix_'
+
       var ret = cssobj({'.red':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -208,6 +220,8 @@ color: red;
     })
 
     it('local class name with :global escape 1', function() {
+
+      cssobj().options.prefix = '_prefix_'
 
       var ret = cssobj({':global(.red).bold':{
         'color':'red',
@@ -222,6 +236,8 @@ color: red;
 
     it('local class name with :global escape 2', function() {
 
+      cssobj().options.prefix = '_prefix_'
+
       var ret = cssobj({':global(.red.green .blue).bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -234,6 +250,8 @@ color: red;
     })
 
     it('local class name with ! escape 1', function() {
+
+      cssobj().options.prefix = '_prefix_'
 
       var ret = cssobj({'.!red.bold':{
         'color':'red',
@@ -248,6 +266,8 @@ color: red;
 
     it('local class name with ! escape 2', function() {
 
+      cssobj().options.prefix = '_prefix_'
+
       var ret = cssobj({'.!red .!green .bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}).css.trim()
@@ -261,6 +281,9 @@ color: red;
 
     it('local class name with pre-defined local name', function() {
 
+      cssobj().options.prefix = '_prefix_'
+      cssobj().options.localNames = {red:'_custom_sel'}
+
       var ret = cssobj({'.red .green .!bold':{
         'color':'red',
       }}, {prefix: '_prefix_'}, {red:'_custom_sel'}).css.trim()
@@ -273,6 +296,8 @@ color: red;
     })
 
     it('disable local class name', function() {
+
+      cssobj().options.local = false
 
       var ret = cssobj({'.red .!bold :global(.test)':{
         'color':'red',
@@ -297,13 +322,12 @@ color: red;
   describe('test prop && lastVal', function() {
 
 
-    it('prop should as real css rule', function() {
+    it('prop should invert order as obj', function() {
 
       var obj = {
 
         p:{
-          fontSize: 123,
-          'font-size': 456,
+          fontSize: [123, 456],
           _msZIndex: 999
         }
 
@@ -312,39 +336,16 @@ color: red;
       var ret = cssobj(obj)
 
       expect(ret.root.children.p.prop).deep.equal({
-        'font-size': [123, 456],
-        '_ms-z-index': [999]
+        fontSize: [456, 123],
+        _msZIndex: [999]
       })
 
       expect(ret.root.children.p.lastVal).deep.equal({
-        fontSize: 123,
-        'font-size': 456,
+        fontSize: 456,
         _msZIndex: 999
       })
 
     })
-
-    it('should trim prop, keep lastVal untouched', function() {
-
-      var obj = {
-
-        p:{
-          ' fontSize': 123,
-          ' @import  ': 456,
-          '  @import  ': 789
-        }
-
-      }
-
-      var ret = cssobj(obj)
-
-      expect(ret.root.children.p.prop).deep.equal({
-        'font-size': [123],
-        '@import': [456, 789]
-      })
-
-    })
-
 
   })
 
@@ -601,6 +602,8 @@ left: 20;
 
     it('@media at top level', function() {
 
+      cssobj().options.prefix = '_prefix_'
+
       var ret = cssobj(
         {
           "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
@@ -624,6 +627,8 @@ color: blue;
     })
 
     it('@media supports with multi-level', function() {
+
+      cssobj().options.prefix = '_prefix_'
 
       var ret = cssobj(
         {
@@ -683,7 +688,9 @@ color: 234;
 
         it('@media supports with multi-level comma split', function() {
 
-      var ret = cssobj(
+      cssobj().options.prefix = '_prefix_'
+
+          var ret = cssobj(
         {
           ".p": {
             "color": "red",
@@ -821,11 +828,13 @@ float: left;
       // all the diff key is dashify-ed
       expect(ret.diff.changed[0].diff).deep.equal({
         changed:['color'],
-        removed:['text-align'],
+        removed:['textAlign'],
         added:['left']
       })
 
-      ret.update({p:{color:'blue'}})
+      ret.obj = {p:{color:'blue'}}
+
+      ret.update()
 
       expect(ret.css).equal(
         `p {
@@ -837,26 +846,6 @@ color: blue;
       expect('added' in ret.diff).equal(false)
       expect(ret.diff.changed.length).equal(1)
       expect(ret.diff.removed.map(function(v){return v.key})).deep.equal(['p1', 'p2', 'div'])
-
-    })
-
-    it('set diffOnly option', function() {
-
-      var ret = cssobj({p:{color:'red'}}, {diffOnly: true, indent:'  '})
-
-      ret.obj.p.left = 10
-
-      var css = ret.update()
-
-      expect(css).equal('')
-
-      // ret.css will not changed due to: diffOnly=true
-      expect(ret.css).equal(
-        `p {
-color: red;
-}
-`
-      )
 
     })
 
@@ -884,19 +873,21 @@ color: red;
 
       obj.p.color = 10
       obj.p1.color = function(){
-        var pNode = ret.options._nodes.filter(function(v) {
+        var pNode = ret.nodes.filter(function(v) {
           return obj.p == v.obj
         }).pop()
         return pNode.lastVal.color * 2
       }
       obj.p2.color = function(){
-        var pNode = ret.options._nodes.filter(function(v) {
+        var pNode = ret.nodes.filter(function(v) {
           return obj.p1 == v.obj
         }).pop()
         return pNode.lastVal.color * 2
       }
 
-      expect(ret.update()).equal(
+      ret.update()
+
+      expect(ret.css).equal(
         `p2 {
 color: 40;
 }
@@ -913,65 +904,6 @@ color: 10;
     })
 
 
-    it('should invoke callback event when update, then remove', function() {
-
-      var ret = cssobj({
-        dd:{font:123},
-        p:{
-          $id: 'abc',
-          color: 'red'
-        }
-      }, {indent:'  '})
-
-      var callCount = 0
-
-      var onUpdate = function(css, opt) {
-
-        callCount++
-
-        if(callCount==3){
-          expect(opt._data).deep.equal({resize:true})
-        } else {
-          expect(opt._data).deep.equal({})
-        }
-
-        expect(css).equal(
-          `dd {
-font: 123;
-}
-p {
-color: red;
-}
-`)
-
-      }
-
-      // setup update
-      ret.on('update', onUpdate)
-
-      // normal update
-      ret.update()
-      ret.update()
-      expect(callCount).equal(2)
-
-      // update with custom data
-      ret.update(null, {resize:true})
-      expect(callCount).equal(3)
-
-      // remove event
-      ret.off('update', onUpdate)
-
-      // remove non-exists event
-      // should not throw
-      ret.off('event_non_exists', onUpdate)
-
-      // should not trigger event
-      ret.update()
-      expect(callCount).equal(3)
-
-
-    })
-
     it('value update function to set node.lastVal', function() {
 
       var t = {
@@ -983,7 +915,7 @@ color: red;
       }
       var ret = cssobj(obj, {indent:'  '})
 
-      var node = ret.options._root.children.p
+      var node = ret.root.children.p
       expect(node.lastVal['color']).equal(0)
 
       // test for normal update based on lastVal
@@ -991,7 +923,7 @@ color: red;
         return last+1
       }
 
-      expect(ret.update()).equal(
+      expect(ret.update().css).equal(
         `p {
 color: 1;
 }
@@ -1005,7 +937,7 @@ font: Arial;
       }
 
       // css will be empty due to null
-      expect(ret.update()).equal(
+      expect(ret.update().css).equal(
         // version 0.1 will have empty prop
         `d {
 font: Arial;
@@ -1017,7 +949,7 @@ font: Arial;
         return 0
       }
 
-      expect(ret.update()).equal(
+      expect(ret.update().css).equal(
         `p {
 color: 0;
 }
@@ -1152,11 +1084,12 @@ color: red;
         expect(value).equal(4)
       }
 
-      cssobj({p:{size:2}}, {
-        indent:'  ',
-        plugins:{
+      cssobj().options.plugins = {
           value: [plug1, plug2]
         }
+
+      cssobj({p:{size:2}}, {
+        indent:'  '
       })
 
       // plugin should not effect lastVal
@@ -1168,21 +1101,22 @@ color: red;
 
     it('update with value plugin', function() {
 
-      function plug(value){
+      function plug(value) {
         return value+'px'
       }
+
+      cssobj().options.plugins.value = plug
 
       var size = {size:2}
       var ret = cssobj({p:size}, {
         indent:'  ',
-        plugins:{
-          value: [plug]
-        }
       })
 
       size.size = 10
 
-      var css = ret.update({p:size})
+      ret.obj = {p:size}
+
+      var css = ret.update().css
 
       expect(css).equal(
         `p {

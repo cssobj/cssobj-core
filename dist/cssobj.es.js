@@ -362,21 +362,20 @@ function cssobj (options) {
 
       result.data = data||{}
 
-      result.root = parseObj(result.obj, result, result.root, true)
+      result.root = parseObj(result.obj||{}, result, result.root, true)
       applyOrder(result)
-      applyPlugins(options, 'post', result)
+      return applyPlugins(options, 'post', result)
 
     }
 
     var result = {
       obj: obj,
-      data: initData||{},
       map: options.localNames,
       update: updater,
       options: options
     }
 
-    updater()
+    updater(initData)
 
     return result
   }
