@@ -21,7 +21,6 @@ var ARRAY = type.call([])
 var OBJECT = type.call({})
 
 // helper function
-var trim = function (str) { return str.replace(/(^\s+|\s+$)/g, '') }
 var keys = Object.keys
 
 function isIterable (v) {
@@ -184,9 +183,7 @@ function parseObj (d, result, node, init) {
       // prop changed
       var diffProp = function() {
         var newKeys = keys(node.lastVal)
-        var removed = keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 }).map(function(k) {
-          return dashify(k)
-        })
+        var removed = keys(oldVal).filter(function(x) { return newKeys.indexOf(x) < 0 })
         if(removed.length) node.diff.removed = removed
         if(keys(node.diff).length) arrayKV(result.diff, 'changed', node)
       }
@@ -225,7 +222,7 @@ function parseProp(node, d, key, result) {
       // push every val to prop
       arrayKV(
         node.prop,
-        dashify(key),
+        key,
         applyPlugins(result.options, 'value', val, key, node, result),
         true
       )
@@ -234,9 +231,9 @@ function parseProp(node, d, key, result) {
   })
   if(oldVal) {
     if(!(key in oldVal)) {
-      arrayKV(node.diff, 'added', dashify(key))
+      arrayKV(node.diff, 'added', key)
     } else if (oldVal[key]!=lastVal[key]){
-      arrayKV(node.diff, 'changed', dashify(key))
+      arrayKV(node.diff, 'changed', key)
     }
   }
 }
@@ -253,10 +250,6 @@ function getParents (node, test, key, onlyOne) {
 function arrayKV (obj, k, v, reverse) {
   obj[k] = obj[k] || []
   reverse ? obj[k].unshift(v) : obj[k].push(v)
-}
-
-function dashify(str) {
-  return trim(strSugar(str, [ ['[A-Z]', function (z) { return '-' + z.toLowerCase() }] ]))
 }
 
 function strSugar (str, sugar) {
