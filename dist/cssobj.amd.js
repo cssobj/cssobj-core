@@ -73,16 +73,17 @@ define('cssobj', function () { 'use strict';
    * @param {array} [path] - array path represent root to parent
    * @returns {object} tree data object
    */
-  function parseObj (d, opt, node, init) {
+  function parseObj (d, opt, result, node, init) {
     node = node || {}
     if(init) {
-      opt._nodes.length=0
-      opt._diff = {}
-      opt._ref = {}
+      result.obj = d
+      result.nodes = []
+      result.ref = {}
+      if(node) result.diff = {}
     }
     if (type.call(d)==ARRAY) {
       return d.map(function (v, i) {
-        return parseObj(v, opt, node[i] || {parent: node, src: d, index: i, obj: d[i]})
+        return parseObj(v, opt, result, node[i] || {parent: node, src: d, index: i, obj: d[i]})
       })
     }
     if (type.call(d)==OBJECT) {
@@ -91,7 +92,7 @@ define('cssobj', function () { 'use strict';
       node.lastVal = {}
       node.prop = {}
       node.diff = {}
-      if(d[KEY_ID]) opt._ref[d[KEY_ID]] = node
+      if(d[KEY_ID]) result.ref[d[KEY_ID]] = node
       var order = d[KEY_ORDER]|0
       var funcArr = []
 
@@ -156,16 +157,16 @@ define('cssobj', function () { 'use strict';
         if (!isIterable(d[k]) || type.call(d[k])==ARRAY && !isIterable(d[k][0])) {
           if(k.charAt(0)=='$') continue
           var r = function(_k) {
-            parseProp(node, d, _k, opt)
+            parseProp(node, d, _k, result)
           }
           order
             ? funcArr.push([r, k])
             : r(k)
         } else {
           var haveOldChild = k in children
-          var n = children[k] = parseObj(d[k], opt, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
+          var n = children[k] = parseObj(d[k], opt, result, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
           // it's new added node
-          if(oldVal && !haveOldChild) arrayKV(opt._diff, 'added', n)
+          if(oldVal && !haveOldChild) arrayKV(result.diff, 'added', n)
         }
       }
 
@@ -175,7 +176,7 @@ define('cssobj', function () { 'use strict';
         // children removed
         for(k in children) {
           if(!(k in d)) {
-            arrayKV(opt._diff, 'removed', children[k])
+            arrayKV(result.diff, 'removed', children[k])
             delete children[k]
           }
         }
@@ -187,15 +188,15 @@ define('cssobj', function () { 'use strict';
             return dashify(k)
           })
           if(removed.length) node.diff.removed = removed
-          if(keys(node.diff).length) arrayKV(opt._diff, 'changed', node)
+          if(keys(node.diff).length) arrayKV(result.diff, 'changed', node)
         }
         order
           ? funcArr.push([diffProp, null])
           : diffProp()
       }
 
-      if(order) arrayKV(opt, '_order', {order:order, func:funcArr})
-      opt._nodes.push(node)
+      if(order) arrayKV(result, '_order', {order:order, func:funcArr})
+      result.nodes.push(node)
       return node
     }
     return node
@@ -207,7 +208,7 @@ define('cssobj', function () { 'use strict';
     return obj[key]
   }
 
-  function parseProp(node, d, key, opt) {
+  function parseProp(node, d, key, result) {
     var oldVal = node.oldVal
     var lastVal = node.lastVal
 
@@ -216,7 +217,7 @@ define('cssobj', function () { 'use strict';
     ![].concat(d[key]).forEach(function (v) {
       // pass lastVal if it's function
       var val = typeof v=='function'
-          ? v(prev, node, opt)
+          ? v(prev, node, result)
         : v
 
       // only valid val can be lastVal
@@ -225,7 +226,7 @@ define('cssobj', function () { 'use strict';
         arrayKV(
           node.prop,
           dashify(key),
-          applyPlugins(opt, 'value', val, key, node)
+          applyPlugins(result.options, 'value', val, key, node, result)
         )
         prev = lastVal[key] = val
       }
@@ -298,7 +299,7 @@ define('cssobj', function () { 'use strict';
   }
 
   function localizeName (str, opt) {
-    var NS = opt._localNames
+    var NS = opt.localNames
     var replacer = function (match, global, dot, name) {
       if (global) {
         return global
@@ -321,51 +322,6 @@ define('cssobj', function () { 'use strict';
 
   function isValidCSSValue (val) {
     return val || val === 0
-  }
-
-  function makeCSS (root, opt, recursive) {
-    var str = []
-    var walk = function(node) {
-      if (!node) return ''
-      if (node.constructor === Array) return node.map(function (v) {walk(v)})
-
-      var postArr = []
-      var children = node.children
-      var isGroup = node.type==TYPE_GROUP||node.type==TYPE_KEYFRAMES
-
-      if(isGroup) {
-        str.push(node.groupText+' {\n')
-      }
-
-      var prop = node.prop
-      var selText = node.selText
-
-      var cssText = keys(prop).map(function(k) {
-        return prop[k].map(function(v){
-            return  k.charAt(0)=='@'
-              ? k+' '+v+';\n'
-              : k+': '+v+';\n'
-          }).join('')
-      }).join('')
-
-      if(keys(prop).length) str.push( selText ? selText + ' {\n'+ cssText +'}\n' : cssText )
-
-      for(var c in children){
-        if(c==='' || children[c].type==TYPE_GROUP) postArr.push(c)
-        else walk(children[c])
-      }
-
-      if(isGroup) {
-        str.push('}\n')
-      }
-
-      postArr.map(function(v) {
-        walk(children[v])
-      })
-
-    }
-    walk(root)
-    return str.join('')
   }
 
   function applyPlugins (opt, type) {
@@ -391,81 +347,45 @@ define('cssobj', function () { 'use strict';
     delete opt._order
   }
 
-  function cssobj (obj, options, localNames) {
+  function cssobj (options) {
     options = options || {}
 
     var defaultOption = {
       local: true,
-      diffOnly: false,
-      plugins: {},
-      _nodes: []
+      prefix: random(),
+      localNames: {},
+      plugins: {}
     }
+
     // set default options
     for (var i in defaultOption) {
       if(!(i in options)) options[i] = defaultOption[i]
     }
 
-    options._events = {}
-    // options._util = _util
-    options.prefix = options.prefix || random()
+    return function(obj) {
 
-    var nameMap = options._localNames = localNames || {}
+      var updater = function (newObj, data) {
 
-    var root = parseObj(obj, options, '', true)
-    applyOrder(options)
+        newObj = newObj||obj
 
-    options._root = root
+        result.data = data||{}
 
-    // var d=testObj[1]['.p']
-    // console.log(1111, d, findObj(d, root))
+        result.root = parseObj(obj, options, result, result.root, true)
+        applyOrder(result)
+        applyPlugins(options, 'post', result)
 
-    var updater = function (newObj, data) {
-
-      newObj = newObj||obj
-
-      options._data = data||{}
-
-      var newCSS=''
-
-      parseObj(newObj, options, root, true)
-      applyOrder(options)
-
-      // update ref, diff
-      result.obj = newObj
-      result.ref = options._ref
-      result.diff = options._diff
-
-      if(!options.diffOnly) newCSS = result.css = makeCSS(root, options, true)
-
-      var cb = options._events['update']
-      cb && newCSS && cb.forEach(function (v) {v(newCSS, options)})
-      return newCSS
-    }
-
-    var result = {
-      root: root,
-      obj: obj,
-      ref: options._ref,
-      nodes: options._nodes,
-      css: makeCSS(root, options, true),
-      map: nameMap,
-      update: updater,
-      options: options,
-      on: function (eventName, cb) {
-        arrayKV(options._events, eventName, cb)
-      },
-      off: function (eventName, cb) {
-        var i, arr = options._events[eventName]
-        if (!arr) return
-        if (!cb) return arr = []
-        if ((i = arr.indexOf(cb)) > -1) arr.splice(i, 1)
       }
-    }
 
-    // root[0].children._p.prop._color= function(){return 'bluesdfsdf'}
-    // console.log(root, makeCSS(root[0].children['_p'], options))
-    applyPlugins(options, 'post', result)
-    return result
+      var result = {
+        map: options.localNames,
+        update: updater,
+        options: options
+      }
+
+      updater()
+
+      return result
+    }
   }
 
   return cssobj;

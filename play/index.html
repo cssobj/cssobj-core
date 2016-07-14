@@ -9,18 +9,18 @@
 
   <script type="text/javascript" src="../dist/cssobj.iife.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
+  <script type="text/javascript" src="../lib/cssobj-plugin-post-gencss.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
   var css = cssobj(
-    pagecss,
     {plugins:
      {
-       post:[cssobj_plugin_post_stylize()],
+       post:[cssobj_plugin_post_gencss, cssobj_plugin_post_stylize()],
        value: function(val, key){
          return /width|height|top|left|fontSize/i.test(key) && typeof val=='number' ? val+'px' : val }
      }
     }
-  )
+  )(pagecss)
 
 var windowWidth = function(){return window.innerWidth||document.documentElement.offsetWidth}
 var windowHeight = function(){return window.innerHeight||document.documentElement.offsetHeight}
@@ -196,14 +196,18 @@ window.DEBUG=true
 
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1, plugins:{
+  post: cssobj_plugin_post_gencss
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
-}}
+}, localNames:{p:'_prefix_p'}}
+
+var cssobjFunc = cssobj(opt)
+
 var testObj, testD, ret
 function convert(el){
   try{
     var func = new Function('return '+el.value)
     testObj = func()
-    ret = cssobj(testObj, opt, {p:'_prefix_p'})
+    ret = cssobjFunc(testObj)
     document.getElementById('css').value = ret.css
     console.log(ret)
 
