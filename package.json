@@ -1,13 +1,13 @@
 {
-  "name": "cssobj",
+  "name": "cssobj-core",
   "version": "0.1.0",
   "description": "Create css from js object",
-  "main": "dist/cssobj.cjs.js",
-  "jsnext:main": "dist/cssobj.es.js",
+  "main": "dist/cssobj-core.cjs.js",
+  "jsnext:main": "dist/cssobj-core.es.js",
   "scripts": {
     "test": "mocha",
-    "report": "cd dist && gzip < cssobj.min.js > cssobj.min.gz && ls -lh && rm -f *.gz",
-    "make": "rollup -c && uglifyjs dist/cssobj.iife.js -cm -o dist/cssobj.min.js"
+    "report": "cd dist && gzip < cssobj-core.min.js > cssobj-core.min.gz && ls -lh && rm -f *.gz",
+    "make": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js"
   },
   "author": "",
   "license": "ISC",

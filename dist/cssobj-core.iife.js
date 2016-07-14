@@ -1,4 +1,5 @@
-define('cssobj', function () { 'use strict';
+var cssobj_core = (function () {
+  'use strict';
 
   /** IE ES3 need below polyfills:
    * Array.prototype.forEach
@@ -43,19 +44,6 @@ define('cssobj', function () { 'use strict';
     }
   })()
 
-  // var _util = {
-  //   is: is,
-  //   own: own,
-  //   random: random,
-  //   getSelector: getSelector,
-  //   getParent: getParent,
-  //   findObj: findObj,
-  //   arrayKV: arrayKV,
-  //   strSugar: strSugar,
-  //   strRepeat: strRepeat,
-  //   splitComma: splitComma
-  // }
-
   /**
    * convert simple Object into tree data
    *
@@ -88,6 +76,7 @@ define('cssobj', function () { 'use strict';
       })
     }
     if (type.call(d)==OBJECT) {
+      var opt = result.options
       var children = node.children = node.children||{}
       var oldVal = node.oldVal = node.lastVal
       node.lastVal = {}
@@ -115,13 +104,11 @@ define('cssobj', function () { 'use strict';
           node.type = TYPE_GROUP
           node.at = groupRule.pop()
           node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
-            return strSugar(v, [
-              ['[><]', function (z) {
-                return z == '>'
-                  ? 'min-width:'
-                  : 'max-width:'
-              }]
-            ])
+            return strSugar(v, '[><]', function (z) {
+              return z == '>'
+                ? 'min-width:'
+                : 'max-width:'
+            })
           })
 
           var pPath = getParents(ruleNode, function(v) {
@@ -146,8 +133,10 @@ define('cssobj', function () { 'use strict';
             ? sel
             : localizeName(''+combinePath(getParents(ruleNode, function(v) {
               return v.sel && !v.at
-            }, 'sel'), '', ' ', true), result.options)
+            }, 'sel'), '', ' ', true), opt)
         }
+
+        node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
 
         if(node!==ruleNode) node.ruleNode = ruleNode
 
@@ -254,17 +243,12 @@ define('cssobj', function () { 'use strict';
     reverse ? obj[k].unshift(v) : obj[k].push(v)
   }
 
-  function strSugar (str, sugar) {
-    return sugar.reduce(
-      function (pre, cur) {
-        return pre.replace(
-          new RegExp('\\\\?('+ cur[0] +')', 'g'),
-          function (m, z) {
-            return m==z ? cur[1](z) : z
-          }
-        )
-      },
-      str
+  function strSugar (str, find, rep) {
+    return str.replace(
+      new RegExp('\\\\?('+ find +')', 'g'),
+      function (m, z) {
+        return m==z ? rep(z) : z
+      }
     )
   }
 
@@ -273,10 +257,10 @@ define('cssobj', function () { 'use strict';
       var str = prev ? prev + sep : prev
       if(rep){
         var isReplace = false
-        var sugar = strSugar(value, [['&', function(z){
+        var sugar = strSugar(value, '&', function(z){
           isReplace=true
           return prev
-        }]])
+        })
         str = isReplace ? sugar : str + sugar
       } else {
         str += value
@@ -385,4 +369,4 @@ define('cssobj', function () { 'use strict';
 
   return cssobj;
 
-});
+}());

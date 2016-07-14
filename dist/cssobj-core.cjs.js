@@ -43,19 +43,6 @@ var random = (function () {
   }
 })()
 
-// var _util = {
-//   is: is,
-//   own: own,
-//   random: random,
-//   getSelector: getSelector,
-//   getParent: getParent,
-//   findObj: findObj,
-//   arrayKV: arrayKV,
-//   strSugar: strSugar,
-//   strRepeat: strRepeat,
-//   splitComma: splitComma
-// }
-
 /**
  * convert simple Object into tree data
  *
@@ -88,6 +75,7 @@ function parseObj (d, result, node, init) {
     })
   }
   if (type.call(d)==OBJECT) {
+    var opt = result.options
     var children = node.children = node.children||{}
     var oldVal = node.oldVal = node.lastVal
     node.lastVal = {}
@@ -115,13 +103,11 @@ function parseObj (d, result, node, init) {
         node.type = TYPE_GROUP
         node.at = groupRule.pop()
         node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
-          return strSugar(v, [
-            ['[><]', function (z) {
-              return z == '>'
-                ? 'min-width:'
-                : 'max-width:'
-            }]
-          ])
+          return strSugar(v, '[><]', function (z) {
+            return z == '>'
+              ? 'min-width:'
+              : 'max-width:'
+          })
         })
 
         var pPath = getParents(ruleNode, function(v) {
@@ -146,8 +132,10 @@ function parseObj (d, result, node, init) {
           ? sel
           : localizeName(''+combinePath(getParents(ruleNode, function(v) {
             return v.sel && !v.at
-          }, 'sel'), '', ' ', true), result.options)
+          }, 'sel'), '', ' ', true), opt)
       }
+
+      node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
 
       if(node!==ruleNode) node.ruleNode = ruleNode
 
@@ -254,17 +242,12 @@ function arrayKV (obj, k, v, reverse) {
   reverse ? obj[k].unshift(v) : obj[k].push(v)
 }
 
-function strSugar (str, sugar) {
-  return sugar.reduce(
-    function (pre, cur) {
-      return pre.replace(
-        new RegExp('\\\\?('+ cur[0] +')', 'g'),
-        function (m, z) {
-          return m==z ? cur[1](z) : z
-        }
-      )
-    },
-    str
+function strSugar (str, find, rep) {
+  return str.replace(
+    new RegExp('\\\\?('+ find +')', 'g'),
+    function (m, z) {
+      return m==z ? rep(z) : z
+    }
   )
 }
 
@@ -273,10 +256,10 @@ function combinePath(array, prev, sep, rep) {
     var str = prev ? prev + sep : prev
     if(rep){
       var isReplace = false
-      var sugar = strSugar(value, [['&', function(z){
+      var sugar = strSugar(value, '&', function(z){
         isReplace=true
         return prev
-      }]])
+      })
       str = isReplace ? sugar : str + sugar
     } else {
       str += value
