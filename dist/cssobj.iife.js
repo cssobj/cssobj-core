@@ -75,13 +75,16 @@ var cssobj = (function () {
    * @returns {object} tree data object
    */
   function parseObj (d, opt, result, node, init) {
-    node = node || {}
+
     if(init) {
       result.obj = d
       result.nodes = []
       result.ref = {}
       if(node) result.diff = {}
     }
+
+    node = node || {}
+
     if (type.call(d)==ARRAY) {
       return d.map(function (v, i) {
         return parseObj(v, opt, result, node[i] || {parent: node, src: d, index: i, obj: d[i]})
@@ -364,7 +367,7 @@ var cssobj = (function () {
       if(!(i in options)) options[i] = defaultOption[i]
     }
 
-    return function(obj) {
+    return function(obj, initData) {
 
       var updater = function (newObj, data) {
 
@@ -379,6 +382,7 @@ var cssobj = (function () {
       }
 
       var result = {
+        data: initData||{},
         map: options.localNames,
         update: updater,
         options: options

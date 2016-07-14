@@ -16,5 +16,7 @@
     "mocha": "^2.5.3",
     "rollup": "^0.33.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "cssobj-plugin-post-gencss": "github:futurist/cssobj-plugin-post-gencss"
+  }
 }

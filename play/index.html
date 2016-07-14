@@ -9,7 +9,7 @@
 
   <script type="text/javascript" src="../dist/cssobj.iife.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
-  <script type="text/javascript" src="../lib/cssobj-plugin-post-gencss.js"></script>
+  <script type="text/javascript" src="../node_modules/cssobj-plugin-post-gencss/iife/cssobj-plugin-post-gencss.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
   var css = cssobj(
@@ -27,27 +27,27 @@ var windowHeight = function(){return window.innerHeight||document.documentElemen
 var refh3 = css.ref.h3
 var reftextarea = css.ref.textarea.obj
 // for page css
-reftextarea.height=function(last, node) {
+reftextarea.height=function(last, node, result) {
   var h3node = refh3.lastVal
   height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
   return windowHeight() - height - 20
 }
-reftextarea.width=function(last, node) {
+reftextarea.width=function(last, node, result) {
   return node.obj.width = windowWidth() / 2 - 4
 }
 
 refh3.obj.left = 10
 delete refh3.color
 
-refh3.obj.fontSize = function(last, node) {
-  return last+1
+refh3.obj.fontSize = function(last, node, result) {
+  return result.data.resize ? last : last+1
 }
 
 pagecss.div = {
   color: 'red'
 }
 window.onresize = function(){
-  css.update()
+  css.update('', {resize:true})
 }
 window.onresize()
 console.log(css)
