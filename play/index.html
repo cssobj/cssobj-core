@@ -13,7 +13,9 @@
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
   var css = cssobj(
-    {plugins:
+    {
+      local:false,
+      plugins:
      {
        post:[cssobj_plugin_post_gencss, cssobj_plugin_post_stylize()],
        value: function(val, key){
@@ -22,15 +24,21 @@
     }
   )(pagecss)
 
-var windowWidth = function(){return window.innerWidth||document.documentElement.offsetWidth}
-var windowHeight = function(){return window.innerHeight||document.documentElement.offsetHeight}
+var windowWidth = function(){return document.body.clientWidth}
+var windowHeight = function(){return document.body.clientHeight}
+
 var refh3 = css.ref.h3
+var refLeft = css.ref.left.obj
+var refRight = css.ref.right.obj
 var reftextarea = css.ref.textarea.obj
 // for page css
+function h3Height() {
+  var h3Val = refh3.lastVal
+  return h3Val.fontSize * h3Val.lineHeight + h3Val.marginTop + h3Val.marginBottom
+}
+
 reftextarea.height=function(last, node, result) {
-  var h3node = refh3.lastVal
-  height = h3node.fontSize * h3node.lineHeight + h3node.marginTop + h3node.marginBottom
-  return windowHeight() - height - 20
+  return windowHeight() - h3Height() - 20
 }
 reftextarea.width=function(last, node, result) {
   return node.obj.width = windowWidth() / 2 - 4
@@ -39,6 +47,9 @@ reftextarea.width=function(last, node, result) {
 refh3.obj.left = 10
 delete refh3.color
 
+refRight.width = refLeft.width = function(last, node, result) {
+  return windowWidth()/2
+  }
 refh3.obj.fontSize = function(last, node, result) {
   return result.data.resize ? last : last+1
 }
@@ -47,26 +58,21 @@ pagecss.div = {
   color: 'red'
 }
 window.onresize = function(){
-  css.update('', {resize:true})
+  css.update({resize:true})
 }
-window.onresize()
 console.log(css)
 
   </script>
 </head>
 <body>
-  <table>
-    <tr>
-      <td>
-        <h3 title="a,b">Input JS Object:</h3>
-        <textarea id="src" oninput="convert(this)"></textarea>
-      </td>
-      <td>
-        <h3 id="h3">Output CSS String:</h3>
-        <textarea id="css" oninput="parse(this)"></textarea>
-      </td>
-    </tr>
-  </table>
+  <div class="left div">
+    <h3 title="a,b">Input JS Object:</h3>
+    <textarea id="src" oninput="convert(this)"></textarea>
+  </div>
+  <div class="right div">
+    <h3 id="h3">Output CSS String:</h3>
+    <textarea id="css" oninput="parse(this)"></textarea>
+  </div>
   <script type="text/javascript">
 
 var mediaTest = {  h1: { 'font-size': '12px', color: 'blue' },
@@ -237,6 +243,7 @@ h3.onclick=function() {
   css.update()
 }
 
+window.onresize()
 
   </script>
 </body>

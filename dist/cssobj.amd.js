@@ -73,10 +73,9 @@ define('cssobj', function () { 'use strict';
    * @param {array} [path] - array path represent root to parent
    * @returns {object} tree data object
    */
-  function parseObj (d, opt, result, node, init) {
+  function parseObj (d, result, node, init) {
 
     if(init) {
-      result.obj = d
       result.nodes = []
       result.ref = {}
       if(node) result.diff = {}
@@ -86,7 +85,7 @@ define('cssobj', function () { 'use strict';
 
     if (type.call(d)==ARRAY) {
       return d.map(function (v, i) {
-        return parseObj(v, opt, result, node[i] || {parent: node, src: d, index: i, obj: d[i]})
+        return parseObj(v, result, node[i] || {parent: node, src: d, index: i, obj: d[i]})
       })
     }
     if (type.call(d)==OBJECT) {
@@ -113,7 +112,7 @@ define('cssobj', function () { 'use strict';
         var sel = ruleNode.key
         var groupRule = sel.match(reGroupRule)
         var keyFramesRule = sel.match(reKeyFrame)
-        if(groupRule){
+        if(groupRule) {
           node.type = TYPE_GROUP
           node.at = groupRule.pop()
           node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
@@ -130,7 +129,7 @@ define('cssobj', function () { 'use strict';
             return v.type==TYPE_GROUP
           }, 'sel')
 
-          node.groupText = localizeName(node.at + combinePath(pPath, '', ' and '), opt)
+          node.groupText = node.at + combinePath(pPath, '', ' and ')
 
           node.selText = getParents(node, function(v) {
             return v.selText && !v.at
@@ -148,7 +147,7 @@ define('cssobj', function () { 'use strict';
             ? sel
             : localizeName(''+combinePath(getParents(ruleNode, function(v) {
               return v.sel && !v.at
-            }, 'sel'), '', ' ', true), opt)
+            }, 'sel'), '', ' ', true), result.options)
         }
 
         if(node!==ruleNode) node.ruleNode = ruleNode
@@ -167,7 +166,7 @@ define('cssobj', function () { 'use strict';
             : r(k)
         } else {
           var haveOldChild = k in children
-          var n = children[k] = parseObj(d[k], opt, result, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
+          var n = children[k] = parseObj(d[k], result, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
           // it's new added node
           if(oldVal && !haveOldChild) arrayKV(result.diff, 'added', n)
         }
@@ -368,19 +367,18 @@ define('cssobj', function () { 'use strict';
 
     return function(obj, initData) {
 
-      var updater = function (newObj, data) {
-
-        newObj = newObj||obj
+      var updater = function (data) {
 
         result.data = data||{}
 
-        result.root = parseObj(obj, options, result, result.root, true)
+        result.root = parseObj(result.obj, result, result.root, true)
         applyOrder(result)
         applyPlugins(options, 'post', result)
 
       }
 
       var result = {
+        obj: obj,
         data: initData||{},
         map: options.localNames,
         update: updater,

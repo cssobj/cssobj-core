@@ -3,11 +3,21 @@ var pagecss = {
     height: ['100%'],
     margin:0,
     padding:0,
+    MsOverflowStyle: 'none',
+    overflow: 'hidden'
   },
   table: {
     width: '100%',
     height: '100%',
     'table-layout': 'fixed'
+  },
+  '.left':{
+    $id:'left',
+    float:'left'
+  },
+  '.right':{
+    $id:'right',
+    float:'left'
   },
   textarea: {
     $id: 'textarea',
@@ -29,7 +39,7 @@ var pagecss = {
     '@keyframes abc':{
       '10%':{
         color: 'blue',
-        opacity: .5,
+        opacity: .5
       },
       '20%':{
         color: 'red'
