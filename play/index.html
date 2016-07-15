@@ -53,7 +53,8 @@ refh3.obj.color = function() {
   var w = windowWidth()
   return w<900? 'blue' : 'green'
 }
-
+delete reftextarea.color
+delete pagecss.table
 
 refRight.width = refLeft.width = function(last, node, result) {
   var w = windowWidth()

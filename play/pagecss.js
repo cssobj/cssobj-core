@@ -24,6 +24,7 @@ var pagecss = {
     $order:2,
     width:'100%',
     display: 'block',
+    color: 'red',
     margin:0,
     padding:0
   },
