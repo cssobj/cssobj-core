@@ -7,13 +7,13 @@
       <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
       <![endif]-->
 
-  <script type="text/javascript" src="../dist/cssobj.iife.js"></script>
+  <script type="text/javascript" src="../dist/cssobj-core.iife.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-gencss/iife/cssobj-plugin-post-gencss.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-value-default-unit/iife/cssobj-plugin-value-default-unit.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
-  var css = cssobj(
+  var css = cssobj_core(
     {
       local:false,
       plugins:
@@ -27,8 +27,8 @@
     }
   )(pagecss)
 
-var windowWidth = function(){return document.body.clientWidth}
-var windowHeight = function(){return document.body.clientHeight}
+var windowWidth = function(){return document.documentElement.offsetWidth}
+var windowHeight = function(){return document.documentElement.offsetHeight}
 
 var refh3 = css.ref.h3
 var refLeft = css.ref.left.obj
@@ -68,6 +68,7 @@ window.onresize = function(){
   css.update({resize:true})
 }
 console.log(css)
+window.onresize()
 
   </script>
 </head>
@@ -111,6 +112,9 @@ var obj = {
 
 var testData = [
   {
+    '@page :blank':{
+      '@top-center': { 'content': "This page is intentionally left blank" }
+    },
     '@import':['url("fineprint.css") print', 'url()'],
     '@font-face':{ font_family:['Arial', 'Helvetica'] },
     "@keyframes identifier1": {
@@ -213,7 +217,7 @@ var opt = {indent:'  ', local:1, propSugar:1, plugins:{
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
 }, localNames:{p:'_prefix_p'}}
 
-var cssobjFunc = cssobj(opt)
+var cssobjFunc = cssobj_core(opt)
 
 var testObj, testD, ret
 function convert(el){
@@ -250,7 +254,6 @@ h3.onclick=function() {
   css.update()
 }
 
-window.onresize()
 
   </script>
 </body>

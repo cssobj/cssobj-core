@@ -14,7 +14,6 @@ define('cssobj_core', function () { 'use strict';
   var KEY_ID = '$id'
   var KEY_ORDER = '$order'
 
-  var TYPE_KEYFRAMES = 'keyframes'
   var TYPE_GROUP = 'group'
 
   // type check
@@ -29,8 +28,8 @@ define('cssobj_core', function () { 'use strict';
     return type.call(v)==OBJECT || type.call(v)==ARRAY
   }
 
-  var reGroupRule = /^@(?:media|document|supports) /
-    var reKeyFrame = /^@keyframes /
+  // regexp constants
+  var reGroupRule = /^@(?:media|document|supports|page|keyframes) /
     var reAtRule = /^\s*@/
     var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
 
@@ -92,17 +91,19 @@ define('cssobj_core', function () { 'use strict';
       }).pop()
 
       var parentRule = node.parentRule = getParents(node.parent, function(n) {
-        return n.type==TYPE_KEYFRAMES||n.type==TYPE_GROUP
+        return n.type==TYPE_GROUP
       }).pop() || null
 
       if(ruleNode) {
-        var sel = ruleNode.key
+        var isMedia, sel = ruleNode.key
         var groupRule = sel.match(reGroupRule)
-        var keyFramesRule = sel.match(reKeyFrame)
         if(groupRule) {
           node.type = TYPE_GROUP
           node.at = groupRule.pop()
-          node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
+          isMedia = node.at == '@media '
+
+          // only media allow nested and join, and have node.sel
+          if(isMedia) node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
             return strSugar(v, '[><]', function (z) {
               return z == '>'
                 ? 'min-width:'
@@ -110,27 +111,21 @@ define('cssobj_core', function () { 'use strict';
             })
           })
 
-          var pPath = getParents(ruleNode, function(v) {
-            return v.type==TYPE_GROUP
-          }, 'sel')
-
-          node.groupText = node.at + combinePath(pPath, '', ' and ')
+          node.groupText = isMedia
+            ? node.at + combinePath(getParents(ruleNode, function(v) {
+              return v.type==TYPE_GROUP
+            }, 'sel'), '', ' and ')
+          : sel
 
           node.selText = getParents(node, function(v) {
             return v.selText && !v.at
           }, 'selText').pop()
 
-        } else if (keyFramesRule) {
-          node.type = TYPE_KEYFRAMES
-          node.at = keyFramesRule.pop()
-          node.groupText = sel
         } else if (reAtRule.test(sel)) {
           node.type = 'at'
           node.selText = sel
         } else {
-          node.selText = parentRule && parentRule.type==TYPE_KEYFRAMES
-            ? sel
-            : localizeName(''+combinePath(getParents(ruleNode, function(v) {
+          node.selText = localizeName(''+combinePath(getParents(ruleNode, function(v) {
               return v.sel && !v.at
             }, 'sel'), '', ' ', true), opt)
         }

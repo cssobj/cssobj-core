@@ -2,7 +2,7 @@ var expect = require('chai').expect
 var util = require('util')
 var cssobj_plugin_post_gencss = require('../node_modules/cssobj-plugin-post-gencss/cjs/cssobj-plugin-post-gencss.js')
 
-var _cssobj = require('../dist/cssobj.cjs.js')
+var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
 
 describe('test cssobj', function(){
