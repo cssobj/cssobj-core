@@ -11,6 +11,7 @@
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-stylize/iife/cssobj-plugin-post-stylize.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-post-gencss/iife/cssobj-plugin-post-gencss.js"></script>
   <script type="text/javascript" src="../node_modules/cssobj-plugin-value-default-unit/iife/cssobj-plugin-value-default-unit.js"></script>
+  <script type="text/javascript" src="../../cssobj-plugin-post-cssom/src/cssobj-plugin-post-cssom.js"></script>
   <script type="text/javascript" src="pagecss.js"></script>
   <script type="text/javascript">
   var css = cssobj_core(
@@ -19,8 +20,9 @@
       plugins:
      {
        post:[
-         cssobj_plugin_post_gencss(),
-         cssobj_plugin_post_stylize()
+         // cssobj_plugin_post_gencss(),
+         // cssobj_plugin_post_stylize(),
+         cssobj_plugin_post_cssom()
        ],
        value: cssobj_plugin_value_default_unit('px')
      }

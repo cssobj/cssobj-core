@@ -90,7 +90,7 @@ function parseObj (d, result, node, init) {
       return v.key
     }).pop()
 
-    var parentRule = node.parentRule = getParents(node.parent, function(n) {
+    node.parentRule = getParents(node.parent, function(n) {
       return n.type==TYPE_GROUP
     }).pop() || null
 
@@ -127,10 +127,12 @@ function parseObj (d, result, node, init) {
       } else {
         node.selText = localizeName(''+combinePath(getParents(ruleNode, function(v) {
             return v.sel && !v.at
-          }, 'sel'), '', ' ', true), opt)
+        }, 'sel'), '', ' ', true), opt)
       }
 
       node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
+
+      if(node.selText) node.selSep = splitComma(node.selText)
 
       if(node!==ruleNode) node.ruleNode = ruleNode
 
@@ -264,7 +266,7 @@ function combinePath(array, prev, sep, rep) {
 }
 
 function splitComma (str) {
-  for (var c, i = 0, n = 0, prev = 0, d = []; c = str[i]; i++) {
+  for (var c, i = 0, n = 0, prev = 0, d = []; c = str.charAt(i); i++) {
     if (c=='('||c=='[') n++
     if (c==')'||c==']') n--
     if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
