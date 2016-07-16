@@ -37,7 +37,7 @@ var pagecss = {
     marginBottom: 10,
     color: 'green'
   },
-  '@media (>800px)':{
+  '@media (>=800px)':{
     '@keyframes abc':{
       '10%':{
         color: 'blue',
@@ -54,13 +54,13 @@ var pagecss = {
       fontSize:16,
       color: ['red','#fcc']
     },
-    '@media (<1000px), (>900px)':{
+    '@media (<=1000px), (<=900px)':{
       h3:{
         color:'blue'
       }
     }
   },
-  '@media (>1000px)':{
+  '@media (>=10000px)':{
     $id: 'ff',
     h3:{
       color:'grey'

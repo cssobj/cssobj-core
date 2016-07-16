@@ -30,7 +30,7 @@ var cssobj_core = (function () {
   }
 
   // regexp constants
-  var reGroupRule = /^@(?:media|document|supports|page|keyframes) /
+  var reGroupRule = /^@(media|document|supports|page|keyframes) /
     var reAtRule = /^\s*@/
     var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
 
@@ -101,19 +101,13 @@ var cssobj_core = (function () {
         if(groupRule) {
           node.type = TYPE_GROUP
           node.at = groupRule.pop()
-          isMedia = node.at == '@media '
+          isMedia = node.at == 'media'
 
           // only media allow nested and join, and have node.selPart
-          if(isMedia) node.selPart = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
-            return strSugar(v, '[><]', function (z) {
-              return z == '>'
-                ? 'min-width:'
-                : 'max-width:'
-            })
-          })
+          if(isMedia) node.selPart = splitComma(sel.replace(reGroupRule, ''))
 
           node.groupText = isMedia
-            ? node.at + combinePath(getParents(ruleNode, function(v) {
+            ? '@' + node.at + ' ' + combinePath(getParents(ruleNode, function(v) {
               return v.type==TYPE_GROUP
             }, 'selPart'), '', ' and ')
           : sel
