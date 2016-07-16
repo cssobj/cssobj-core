@@ -47,7 +47,7 @@ reftextarea.height=function(last, node, result) {
   return w<900? h/2 - h3Height() : h-h3Height()
 }
 
-refh3.obj.left = 10
+refh3.obj.left = function(){ return 10}
 refh3.obj.color = function() {
   var w = windowWidth()
   return w<900? 'blue' : 'green'
@@ -72,7 +72,6 @@ window.onresize = function(){
   css.update({resize:true})
 }
 console.log(css)
-window.onresize()
 
   </script>
 </head>
@@ -120,7 +119,7 @@ var testData = [
       '@top-center': { 'content': "This page is intentionally left blank" }
     },
     '@import':['url("fineprint.css") print', 'url()'],
-    '@font-face':{ font_family:['Arial', 'Helvetica'] },
+    '@font-face':{ fontFamily:['Arial', 'Helvetica'] },
     "@keyframes identifier1": {
       "0%": {
         '':[{top:[2,3,4], left:3}, {top:4}],
@@ -128,8 +127,8 @@ var testData = [
         "left": 0
       },
       "10%": {
-        "top": 20,
-        "left": function(){ return 20+5 }
+        "top": '20\\0/',
+        "left": function(){ console.log(this,1234); return 20+5 }
       }
     },
     '@supports not (display: flex)':{
@@ -191,7 +190,7 @@ var testData = [
   {
     '@media (>300)':{
       color:'red',
-      p:{font:123}
+      p:{font:'123\\0/'}
     }
   }
 ]
@@ -258,6 +257,7 @@ h3.onclick=function() {
   css.update()
 }
 
+window.onresize()
 
   </script>
 </body>

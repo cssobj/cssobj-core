@@ -120,6 +120,7 @@ function parseObj (d, result, node, init) {
       }
 
       node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
+      if (node.selText) node.selTextPart = splitComma(node.selText)
 
       if (node !== ruleNode) node.ruleNode = ruleNode
     }
@@ -187,8 +188,8 @@ function parseProp (node, d, key, result) {
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
     var val = typeof v == 'function'
-      ? v(prev, node, result)
-      : v
+        ? v.call(node, prev, node, result)
+        : v
 
     // only valid val can be lastVal
     if (isValidCSSValue(val)) {
