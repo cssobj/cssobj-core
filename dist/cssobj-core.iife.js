@@ -103,8 +103,8 @@ var cssobj_core = (function () {
           node.at = groupRule.pop()
           isMedia = node.at == '@media '
 
-          // only media allow nested and join, and have node.sel
-          if(isMedia) node.sel = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
+          // only media allow nested and join, and have node.selPart
+          if(isMedia) node.selPart = splitComma(sel.replace(reGroupRule, '')).map(function(v) {
             return strSugar(v, '[><]', function (z) {
               return z == '>'
                 ? 'min-width:'
@@ -115,7 +115,7 @@ var cssobj_core = (function () {
           node.groupText = isMedia
             ? node.at + combinePath(getParents(ruleNode, function(v) {
               return v.type==TYPE_GROUP
-            }, 'sel'), '', ' and ')
+            }, 'selPart'), '', ' and ')
           : sel
 
           node.selText = getParents(node, function(v) {
@@ -127,13 +127,11 @@ var cssobj_core = (function () {
           node.selText = sel
         } else {
           node.selText = localizeName(''+combinePath(getParents(ruleNode, function(v) {
-              return v.sel && !v.at
-          }, 'sel'), '', ' ', true), opt)
+              return v.selPart && !v.at
+          }, 'selPart'), '', ' ', true), opt)
         }
 
         node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
-
-        if(node.selText) node.selSep = splitComma(node.selText)
 
         if(node!==ruleNode) node.ruleNode = ruleNode
 
@@ -151,7 +149,7 @@ var cssobj_core = (function () {
             : r(k)
         } else {
           var haveOldChild = k in children
-          var n = children[k] = parseObj(d[k], result, extendObj(children, k, {parent: node, src: d, key: k, sel:splitComma(k), obj: d[k]}))
+          var n = children[k] = parseObj(d[k], result, extendObj(children, k, {parent: node, src: d, key: k, selPart:splitComma(k), obj: d[k]}))
           // it's new added node
           if(oldVal && !haveOldChild) arrayKV(result.diff, 'added', n)
         }

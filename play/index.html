@@ -21,7 +21,7 @@
      {
        post:[
          // cssobj_plugin_post_gencss(),
-         // cssobj_plugin_post_stylize(),
+         // cssobj_plugin_post_stylize()
          cssobj_plugin_post_cssom()
        ],
        value: cssobj_plugin_value_default_unit('px')
@@ -29,7 +29,7 @@
     }
   )(pagecss)
 
-var windowWidth = function(){return document.documentElement.offsetWidth}
+var windowWidth = function(){return document.documentElement.offsetWidth-4}
 var windowHeight = function(){return document.documentElement.offsetHeight}
 
 var refh3 = css.ref.h3
@@ -63,7 +63,9 @@ refRight.width = refLeft.width = function(last, node, result) {
 refh3.obj.fontSize = function(last, node, result) {
   return result.data.resize ? last : last+1
 }
-
+css.ref.ff.obj.textarea = {
+  color: 'red'
+}
 pagecss.div = {
   color: 'red'
 }
