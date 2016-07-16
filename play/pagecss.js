@@ -57,13 +57,14 @@ var pagecss = {
     '@media (<=1000px), (<=900px)':{
       h3:{
         color:'blue'
-      }
+      },
+      hr:{color:'red'}
     }
   },
-  '@media (>=10000px)':{
+  '@media (max-width: 800px)':{
     $id: 'ff',
-    h3:{
-      color:'grey'
+    'body h3':{
+      color:'purple'
     }
   }
 }
