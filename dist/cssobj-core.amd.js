@@ -1,17 +1,5 @@
 define('cssobj_core', function () { 'use strict';
 
-  // helper functions for cssobj
-
-  // type check helpers
-  var type = {}.toString
-  var ARRAY = type.call([])
-  var OBJECT = type.call({})
-
-  // only array, object now treated as iterable
-  function isIterable (v) {
-    return type.call(v) == OBJECT || type.call(v) == ARRAY
-  }
-
   // random string, should used across all cssobj plugins
   var random = (function () {
     var count = 0
@@ -70,15 +58,6 @@ define('cssobj_core', function () { 'use strict';
     return val || val === 0
   }
 
-  /** IE ES3 need below polyfills:
-   * Array.prototype.forEach
-   * Array.prototype.indexOf
-   * Array.prototype.map
-   * Array.prototype.some
-   * Array.prototype.reduce
-   * Object.keys
-   **/
-
   // using var as iteral to help optimize
   var KEY_ID = '$id'
   var KEY_ORDER = '$order'
@@ -87,6 +66,16 @@ define('cssobj_core', function () { 'use strict';
 
   // helper function
   var keys = Object.keys
+
+  // type check helpers
+  var type = {}.toString
+  var ARRAY = type.call([])
+  var OBJECT = type.call({})
+
+  // only array, object now treated as iterable
+  function isIterable (v) {
+    return type.call(v) == OBJECT || type.call(v) == ARRAY
+  }
 
   // regexp constants
   var reGroupRule = /^@(media|document|supports|page|keyframes) /i
