@@ -71,7 +71,7 @@ pagecss.div = {
 window.onresize = function(){
   css.update({resize:true})
 }
-console.log(css)
+// console.log(css)
 
   </script>
 </head>
@@ -128,7 +128,7 @@ var testData = [
       },
       "10%": {
         "top": '20\\0/',
-        "left": function(){ console.log(this,1234); return 20+5 }
+        "left": function(){ return 20+5 }
       }
     },
     '@supports not (display: flex)':{
@@ -229,13 +229,13 @@ function convert(el){
     testObj = func()
     ret = cssobjFunc(testObj)
     document.getElementById('css').value = ret.css
-    console.log(ret)
+    // console.log(ret)
 
     testD = testObj[1]
     // console.log(testD, ret.update(testD, true))
 
   }catch(e){
-    console.log(e)
+    // console.log(e)
   }
 }
 convert(src)

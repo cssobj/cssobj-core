@@ -1,5 +1,75 @@
 define('cssobj_core', function () { 'use strict';
 
+  // helper functions for cssobj
+
+  // type check helpers
+  var type = {}.toString
+  var ARRAY = type.call([])
+  var OBJECT = type.call({})
+
+  // only array, object now treated as iterable
+  function isIterable (v) {
+    return type.call(v) == OBJECT || type.call(v) == ARRAY
+  }
+
+  // random string, should used across all cssobj plugins
+  var random = (function () {
+    var count = 0
+    return function () {
+      count++
+      return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
+    }
+  })()
+
+  // extend obj from source, if it's no key in obj, create one
+  function extendObj (obj, key, source) {
+    obj[key] = obj[key] || {}
+    for (var k in source) obj[key][k] = source[k]
+    return obj[key]
+  }
+
+  // ensure obj[k] as array, then push v into it
+  function arrayKV (obj, k, v, reverse) {
+    obj[k] = obj[k] || []
+    reverse ? obj[k].unshift(v) : obj[k].push(v)
+  }
+
+  // replace find in str, with rep function result
+  function strSugar (str, find, rep) {
+    return str.replace(
+      new RegExp('\\\\?(' + find + ')', 'g'),
+      function (m, z) {
+        return m == z ? rep(z) : z
+      }
+    )
+  }
+
+  // get parents array from node (when it's passed the test)
+  function getParents (node, test, key, onlyOne) {
+    var p = node, path = []
+    while(p) {
+      if (test(p)) path.unshift(key ? p[key] : p)
+      p = p.parent
+    }
+    return path
+  }
+
+
+  // split selector etc. aware of css attributes
+  function splitComma (str) {
+    for (var c, i = 0, n = 0, prev = 0, d = []; c = str.charAt(i); i++) {
+      if (c == '(' || c == '[') n++
+      if (c == ')' || c == ']') n--
+      if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
+    }
+    return d.concat(str.substring(prev))
+  }
+
+  // checking for valid css value
+  function isValidCSSValue (val) {
+    return val || val === 0
+  }
+
   /** IE ES3 need below polyfills:
    * Array.prototype.forEach
    * Array.prototype.indexOf
@@ -15,31 +85,13 @@ define('cssobj_core', function () { 'use strict';
 
   var TYPE_GROUP = 'group'
 
-  // type check
-  var type = {}.toString
-  var ARRAY = type.call([])
-  var OBJECT = type.call({})
-
   // helper function
   var keys = Object.keys
-
-  function isIterable (v) {
-    return type.call(v) == OBJECT || type.call(v) == ARRAY
-  }
 
   // regexp constants
   var reGroupRule = /^@(media|document|supports|page|keyframes) /i
   var reAtRule = /^\s*@/g
   var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
-
-  // default local prefix implement
-  var random = (function () {
-    var count = 0
-    return function () {
-      count++
-      return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
-    }
-  })()
 
   /**
    * convert simple Object into node data
@@ -175,12 +227,6 @@ define('cssobj_core', function () { 'use strict';
     return node
   }
 
-  function extendObj (obj, key, source) {
-    obj[key] = obj[key] || {}
-    for (var k in source) obj[key][k] = source[k]
-    return obj[key]
-  }
-
   function parseProp (node, d, key, result) {
     var oldVal = node.oldVal
     var lastVal = node.lastVal
@@ -214,29 +260,6 @@ define('cssobj_core', function () { 'use strict';
     }
   }
 
-  function getParents (node, test, key, onlyOne) {
-    var p = node, path = []
-    while(p) {
-      if (test(p)) path.unshift(key ? p[key] : p)
-      p = p.parent
-    }
-    return path
-  }
-
-  function arrayKV (obj, k, v, reverse) {
-    obj[k] = obj[k] || []
-    reverse ? obj[k].unshift(v) : obj[k].push(v)
-  }
-
-  function strSugar (str, find, rep) {
-    return str.replace(
-      new RegExp('\\\\?(' + find + ')', 'g'),
-      function (m, z) {
-        return m == z ? rep(z) : z
-      }
-    )
-  }
-
   function combinePath (array, prev, sep, rep) {
     return !array.length ? prev : array[0].reduce(function (result, value) {
       var str = prev ? prev + sep : prev
@@ -252,15 +275,6 @@ define('cssobj_core', function () { 'use strict';
       }
       return result.concat(combinePath(array.slice(1), str, sep, rep))
     }, [])
-  }
-
-  function splitComma (str) {
-    for (var c, i = 0, n = 0, prev = 0, d = []; c = str.charAt(i); i++) {
-      if (c == '(' || c == '[') n++
-      if (c == ')' || c == ']') n--
-      if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
-    }
-    return d.concat(str.substring(prev))
   }
 
   function localizeName (str, opt) {
@@ -283,10 +297,6 @@ define('cssobj_core', function () { 'use strict';
     }
 
     return str.replace(reClass, replacer)
-  }
-
-  function isValidCSSValue (val) {
-    return val || val === 0
   }
 
   function applyPlugins (opt, type) {

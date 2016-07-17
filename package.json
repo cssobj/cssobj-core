@@ -16,5 +16,7 @@
     "mocha": "^2.5.3",
     "rollup": "^0.33.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "cssobj-helper": "github:cssobj/cssobj-helper"
+  }
 }
