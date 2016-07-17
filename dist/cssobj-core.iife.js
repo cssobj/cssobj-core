@@ -116,7 +116,7 @@ var cssobj_core = (function () {
     if (type.call(d) == OBJECT) {
       var opt = result.options
       var children = node.children = node.children || {}
-      var oldVal = node.oldVal = node.lastVal
+      var prevVal = node.prevVal = node.lastVal
       node.lastVal = {}
       node.prop = {}
       node.diff = {}
@@ -183,12 +183,12 @@ var cssobj_core = (function () {
           var haveOldChild = k in children
           var n = children[k] = parseObj(d[k], result, extendObj(children, k, {parent: node, src: d, key: k, selPart: splitComma(k), obj: d[k]}))
           // it's new added node
-          if (oldVal && !haveOldChild) arrayKV(result.diff, 'added', n)
+          if (prevVal && !haveOldChild) arrayKV(result.diff, 'added', n)
         }
       }
 
       // when it's second time visit node
-      if (oldVal) {
+      if (prevVal) {
         // children removed
         for (k in children) {
           if (!(k in d)) {
@@ -200,7 +200,7 @@ var cssobj_core = (function () {
         // prop changed
         var diffProp = function () {
           var newKeys = keys(node.lastVal)
-          var removed = keys(oldVal).filter(function (x) { return newKeys.indexOf(x) < 0 })
+          var removed = keys(prevVal).filter(function (x) { return newKeys.indexOf(x) < 0 })
           if (removed.length) node.diff.removed = removed
           if (keys(node.diff).length) arrayKV(result.diff, 'changed', node)
         }
@@ -218,10 +218,10 @@ var cssobj_core = (function () {
   }
 
   function parseProp (node, d, key, result) {
-    var oldVal = node.oldVal
+    var prevVal = node.prevVal
     var lastVal = node.lastVal
 
-    var prev = oldVal && oldVal[key]
+    var prev = prevVal && prevVal[key]
 
     ![].concat(d[key]).forEach(function (v) {
       // pass lastVal if it's function
@@ -241,10 +241,10 @@ var cssobj_core = (function () {
         prev = lastVal[key] = val
       }
     })
-    if (oldVal) {
-      if (!(key in oldVal)) {
+    if (prevVal) {
+      if (!(key in prevVal)) {
         arrayKV(node.diff, 'added', key)
-      } else if (oldVal[key] != lastVal[key]) {
+      } else if (prevVal[key] != lastVal[key]) {
         arrayKV(node.diff, 'changed', key)
       }
     }
