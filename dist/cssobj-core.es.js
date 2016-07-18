@@ -1,3 +1,14 @@
+// helper functions for cssobj
+
+// set default option (not deeply)
+function defaults(options, defaultOption) {
+  options = options || {}
+  for (var i in defaultOption) {
+    if (!(i in options)) options[i] = defaultOption[i]
+  }
+  return options
+}
+
 // random string, should used across all cssobj plugins
 var random = (function () {
   var count = 0
@@ -310,19 +321,13 @@ function applyOrder (opt) {
 }
 
 function cssobj (options) {
-  options = options || {}
 
-  var defaultOption = {
+  options = defaults(options, {
     local: true,
     prefix: random(),
     localNames: {},
     plugins: {}
-  }
-
-  // set default options
-  for (var i in defaultOption) {
-    if (!(i in options)) options[i] = defaultOption[i]
-  }
+  })
 
   return function (obj, initData) {
     var updater = function (data) {

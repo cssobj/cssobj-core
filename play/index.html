@@ -216,7 +216,7 @@ window.DEBUG=true
 
 src.value = JSON.stringify(testData,null,2)
 var opt = {indent:'  ', local:1, propSugar:1, plugins:{
-  post: cssobj_plugin_post_gencss()
+  post: cssobj_plugin_post_gencss({indent:''})
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
 }, localNames:{p:'_prefix_p'}}
 

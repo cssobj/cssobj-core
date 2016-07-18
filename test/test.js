@@ -11,7 +11,7 @@ describe('test cssobj', function(){
 
     cssobj = _cssobj({
       plugins:{
-        post: cssobj_plugin_post_gencss()
+        post: cssobj_plugin_post_gencss({indent:''})
       }
     })
 
