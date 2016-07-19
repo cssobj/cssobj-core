@@ -158,7 +158,7 @@ function parseObj (d, result, node, init) {
         node.groupText = isMedia
           ? '@' + node.at + ' ' + combinePath(getParents(ruleNode, function (v) {
             return v.type == TYPE_GROUP
-          }, 'selPart'), '', ' and ')
+          }, 'selPart', 'childSel'), '', ' and ')
         : sel
 
         node.selText = getParents(node, function (v) {
@@ -170,7 +170,7 @@ function parseObj (d, result, node, init) {
       } else {
         node.selText = localizeName('' + combinePath(getParents(ruleNode, function (v) {
           return v.selPart && !v.at
-        }, 'selPart'), '', ' ', true), opt)
+        }, 'selPart', 'childSel'), '', ' ', true), opt)
       }
 
       node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
@@ -236,7 +236,7 @@ function parseProp (node, d, key, result) {
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
     var val = typeof v == 'function'
-        ? v.call(node, prev, node, result)
+        ? v.call(node.lastVal, prev, node, result.ref, result)
         : v
 
     // only valid val can be lastVal
