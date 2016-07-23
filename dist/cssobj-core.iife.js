@@ -29,8 +29,9 @@ var cssobj_core = (function () {
   }
 
   // ensure obj[k] as array, then push v into it
-  function arrayKV (obj, k, v, reverse) {
-    obj[k] = obj[k] || []
+  function arrayKV (obj, k, v, reverse, unique) {
+    obj[k] = k in obj ? [].concat(obj[k]) : []
+    if(unique && obj[k].indexOf(v)>-1) return
     reverse ? obj[k].unshift(v) : obj[k].push(v)
   }
 
@@ -45,13 +46,21 @@ var cssobj_core = (function () {
   }
 
   // get parents array from node (when it's passed the test)
-  function getParents (node, test, key, onlyOne) {
+  function getParents (node, test, key, childrenKey, parentKey) {
     var p = node, path = []
     while(p) {
-      if (test(p)) path.unshift(key ? p[key] : p)
+      if (test(p)) {
+        if(childrenKey) path.forEach(function(v) {
+          arrayKV(p, childrenKey, v, false, true)
+        })
+        if(path[0] && parentKey){
+          path[0][parentKey] = p
+        }
+        path.unshift(p)
+      }
       p = p.parent
     }
-    return path
+    return path.map(function(p){return key?p[key]:p })
   }
 
 
@@ -159,7 +168,7 @@ var cssobj_core = (function () {
           node.groupText = isMedia
             ? '@' + node.at + ' ' + combinePath(getParents(ruleNode, function (v) {
               return v.type == TYPE_GROUP
-            }, 'selPart', 'childSel'), '', ' and ')
+            }, 'selPart', 'selChild', 'selParent'), '', ' and ')
           : sel
 
           node.selText = getParents(node, function (v) {
@@ -171,7 +180,7 @@ var cssobj_core = (function () {
         } else {
           node.selText = localizeName('' + combinePath(getParents(ruleNode, function (v) {
             return v.selPart && !v.at
-          }, 'selPart', 'childSel'), '', ' ', true), opt)
+          }, 'selPart', 'selChild', 'selParent'), '', ' ', true), opt)
         }
 
         node.selText = applyPlugins(opt, 'selector', node.selText, node, result)

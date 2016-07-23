@@ -41,7 +41,7 @@ function h3Height() {
   return h3Val.fontSize * h3Val.lineHeight + h3Val.marginTop + h3Val.marginBottom
 }
 
-reftextarea.height=function(last, node, result) {
+reftextarea.height=function(last, node, ref, result) {
   var w = windowWidth()
   var h = windowHeight()
   return w<900? h/2 - h3Height() : h-h3Height()
@@ -55,11 +55,11 @@ refh3.obj.color = function() {
 delete reftextarea.color
 delete pagecss.table
 
-refRight.width = refLeft.width = function(last, node, result) {
+refRight.width = refLeft.width = function(last, node, ref, result) {
   var w = windowWidth()
   return w<900? w : w/2
 }
-refh3.obj.fontSize = function(last, node, result) {
+refh3.obj.fontSize = function(last, node, ref, result) {
   return result.data.resize ? last : last+1
 }
 css.ref.ff.obj.textarea = {
@@ -77,144 +77,33 @@ window.onresize = function(){
 </head>
 <body>
   <div class="left div">
-    <h3 title="a,b">Input JS Object:</h3>
+    <h3 title="a,b">JS Object: (paste/change below)</h3>
     <textarea id="src" oninput="convert(this)"></textarea>
   </div>
   <div class="right div">
-    <h3 id="h3">Output CSS String:</h3>
+    <h3 id="h3">CSS Text: (paste/change below)</h3>
     <textarea id="css" oninput="parse(this)"></textarea>
   </div>
   <script type="text/javascript">
 
-var mediaTest = {  h1: { 'font-size': '12px', color: 'blue' },
-                   '@media(max-width: 800px)': { color: 'purple', p: { color: 'red' } } }
-
-var obj = {
-  'ul.menu': {
-    background_color: 'red',
-    borderRadius: '2px',
-    'li.item': [
-      {
-        '&:before, .link': {
-          ".foo[title*='\\&'], :global(.xy)": {color: 'blue'},
+var testData = {
+  div: { fontSize: '12px', color: 'blue' },
+  '@media (max-width: 800px)': {
+    '.active': {
+      color: 'purple',
+      'div &': {
+        color: 'red',
+        '@media (min-width: 100px)':{
           color: 'red'
-        },
-        'html:global(.ie8) &': {color: 'purple'},
-        font_size: '12px'
-      },
-      {
-        'span': {
-          font_size: '22px'
-        },
-        color: 'blue'
+        }
       }
-    ]
+    }
   }
 }
 
-
-var testData = [
-  {
-    '@page :blank':{
-      '@top-center': { 'content': "This page is intentionally left blank" }
-    },
-    '@import':['url("fineprint.css") print', 'url()'],
-    '@font-face':{ fontFamily:['Arial', 'Helvetica'] },
-    "@keyframes identifier1": {
-      "0%": {
-        '':[{top:[2,3,4], left:3}, {top:4}],
-        "top": 0,
-        "left": 0
-      },
-      "10%": {
-        "top": '20\\0/',
-        "left": function(){ return 20+5 }
-      }
-    },
-    '@supports not (display: flex)':{
-      '@import':'url("fineprint.css") print',
-      d:{color:'#123'},
-      '@keyframes identifier':{
-        '0%':{
-          top:0, left:0
-        },
-        '10%':{
-          top:20, left:20
-        }
-      }
-    },
-    "_p": {
-      "\\_color": "red",
-      "_backColor": "23",
-      "p1": {
-        $id: 'ff',
-        "color": "purple"
-      }
-    },
-    ".c": [
-      {
-        "color": "red",
-        "&:before": {
-          "color": "#222"
-        }
-      },
-      {
-        "font": '11px Arial'
-      }
-    ]
-  },
-  {
-    ".p": {
-      "color": "red",
-      "margin": "10px",
-      "@media only screen": {
-        "padding": "20px",
-        "@media (> 100px)": {
-          '$id':'xyz',
-          "\\_color": "blue",
-          '@media (< 324px),(> 111px)':{color:234}
-        },
-        '@font-face':{style:1},
-        "&.d": {
-          "x": 1
-        }
-      }
-    }
-  },
-  {
-    "p3": {
-      $id:'abc',
-      "color": "green"
-    }
-  },
-  {
-    '@media (>300)':{
-      color:'red',
-      p:{font:'123\\0/'}
-    }
-  }
-]
-
-testData1 = {
-  "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
-  "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
-}
-
-testData2 = {
-        '@supports (import: true)':{
-          "@import": "url(\"fineprint.css\") print",
-          '': [
-            {"@import": "url(\"fineprint1.css\") print"},
-            {"@import": "url(\"fineprint2.css\") print"},
-            {"@import": "url(\"fineprint3.css\") print"},
-          ],
-          d:{color:123}
-        }
-      }
-
-window.DEBUG=true
-
+var src = document.getElementById('src')
 src.value = JSON.stringify(testData,null,2)
+
 var opt = {local:1, propSugar:1, plugins:{
   post: cssobj_plugin_post_gencss({indent:'  '})
   // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
@@ -223,16 +112,13 @@ var opt = {local:1, propSugar:1, plugins:{
 var cssobjFunc = cssobj_core(opt)
 
 var testObj, testD, ret
-function convert(el){
+function convert(el) {
   try{
     var func = new Function('return '+el.value)
     testObj = func()
     ret = cssobjFunc(testObj)
     document.getElementById('css').value = ret.css
     // console.log(ret)
-
-    testD = testObj[1]
-    // console.log(testD, ret.update(testD, true))
 
   }catch(e){
     // console.log(e)
@@ -244,7 +130,7 @@ function parse(el){
   var value = el.value
 
   // server using cssobj-converter project: npm run server
-  fetch('http://1111hui.com:8080', {method:'POST', body:JSON.stringify({text:value})})
+  fetch('/converter', {method:'POST', body:JSON.stringify({text:value})})
     .then(function(v){
       if(v.ok)
         v.text().then(function(text){ src.value = text})
