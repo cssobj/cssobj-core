@@ -755,7 +755,8 @@ color: 234;
               "color": "red",
               "@media (min-width: 100px)": {
                 "color": "red"
-              }
+              },
+              "fontSize": "12px"
             }
           }
         }
@@ -771,6 +772,7 @@ color: purple;
 }
 div .active {
 color: red;
+font-size: 12px;
 }
 }
 @media (max-width: 800px) and (min-width: 100px) {
