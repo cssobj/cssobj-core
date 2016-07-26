@@ -1,7 +1,7 @@
 {
   "name": "cssobj-core",
-  "version": "0.1.0",
-  "description": "Create css from js object",
+  "version": "0.2.0",
+  "description": "Support for cssobj and it's plugins",
   "main": "dist/cssobj-core.cjs.js",
   "jsnext:main": "dist/cssobj-core.es.js",
   "scripts": {
@@ -17,7 +17,5 @@
     "rollup": "^0.33.1"
   },
   "dependencies": {
-    "cssobj-helper": "github:cssobj/cssobj-helper",
-    "cssobj-plugin-post-gencss": "github:cssobj/cssobj-plugin-post-gencss"
   }
 }
