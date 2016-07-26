@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 var util = require('util')
-var cssobj_plugin_post_gencss = require('../node_modules/cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js')
+var cssobj_plugin_post_gencss = require('../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js')
 
 var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
@@ -739,6 +739,48 @@ color: 234;
     })
 
 
+    it('should right format deeply nested @media rule', function() {
+
+      cssobj().options.local = false
+
+      var ret = cssobj({
+        "div": {
+          "fontSize": "12px",
+          "color": "blue"
+        },
+        "@media (max-width: 800px)": {
+          ".active": {
+            "color": "purple",
+            "div &": {
+              "color": "red",
+              "@media (min-width: 100px)": {
+                "color": "red"
+              }
+            }
+          }
+        }
+      })
+
+      expect(ret.css).equal(`div {
+font-size: 12px;
+color: blue;
+}
+@media (max-width: 800px) {
+.active {
+color: purple;
+}
+div .active {
+color: red;
+}
+}
+@media (max-width: 800px) and (min-width: 100px) {
+div .active {
+color: red;
+}
+}
+`)
+
+    })
 
 
   })
