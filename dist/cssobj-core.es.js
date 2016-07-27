@@ -219,7 +219,7 @@ function getSel(node, result) {
       node.groupText = isMedia
         ? '@' + node.at + ' ' + combinePath(getParents(ruleNode, function (v) {
           return v.type == TYPE_GROUP
-        }, 'selPart', 'selChild', 'selParent'), '', ' and ').join('').replace(/@media/ig, '')
+        }, 'selPart', 'selChild', 'selParent'), '', ' and ').join(',').replace(/@media/ig, '')
       : sel
 
       node.selText = getParents(node, function (v) {
