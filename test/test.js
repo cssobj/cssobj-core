@@ -28,8 +28,6 @@ describe('test cssobj', function(){
         {indent:'  '}
       )
 
-      console.log(ret)
-
       expect(ret.css.trim()).deep.equal(
 `p {
 color: red;
