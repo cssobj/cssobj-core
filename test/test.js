@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 var util = require('util')
-var cssobj_plugin_post_gencss = require('../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js')
+var cssobj_plugin_post_gencss = require(process.env.CSSOBJ_GENCSS || '../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js')
 
 var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
