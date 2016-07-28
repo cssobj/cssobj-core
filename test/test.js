@@ -933,6 +933,10 @@ font: Arial;
       expect(ret.root.children['.nav, .item'].selText).equal('._prefix_nav, ._prefix_item')
       expect(ret.root.children['.nav, .item'].selTextPart).deep.equal(['._prefix_nav', ' ._prefix_item'])
 
+      ret.update()
+
+      expect(ret.root.children['.nav, .item'].selText).equal('._prefix_nav, ._prefix_item')
+
     })
 
 
