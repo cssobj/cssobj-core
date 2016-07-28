@@ -322,7 +322,9 @@ define('cssobj_core', function () { 'use strict';
 
         result.root = parseObj(result.obj || {}, result, result.root, true)
         applyOrder(result)
-        return applyPlugins(options, 'post', result)
+        result = applyPlugins(options, 'post', result)
+        typeof options.onUpdate=='function' && options.onUpdate(result)
+        return result
       }
 
       var result = {
