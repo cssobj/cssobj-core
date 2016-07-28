@@ -244,7 +244,7 @@ function parseProp (node, d, key, result) {
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
     var val = typeof v == 'function'
-        ? v.call(node.lastVal, prev, node, result.ref, result)
+        ? v.call(node.lastVal, prev, node, result)
         : v
 
     // only valid val can be lastVal
