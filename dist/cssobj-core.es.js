@@ -9,15 +9,6 @@ function defaults(options, defaultOption) {
   return options
 }
 
-// random string, should used across all cssobj plugins
-var random = (function () {
-  var count = 0
-  return function () {
-    count++
-    return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
-  }
-})()
-
 // extend obj from source, if it's no key in obj, create one
 function extendObj (obj, key, source) {
   obj[key] = obj[key] || {}
@@ -98,8 +89,6 @@ function isIterable (v) {
 // regexp constants
 var reGroupRule = /^@(media|document|supports|page|keyframes) /i
 var reAtRule = /^\s*@/g
-var reClass = /:global\s*\(\s*((?:\.[A-Za-z0-9_-]+\s*)+)\s*\)|(\.)([!A-Za-z0-9_-]+)/g
-
 /**
  * convert simple Object into node data
  *
@@ -156,6 +145,7 @@ function parseObj (d, result, node, init) {
       } else {
         var haveOldChild = k in children
         var newNode = extendObj(children, k, {parent: node, src: d, key: k, obj: d[k]})
+        // don't overwrite selPart for previous node
         newNode.selPart = newNode.selPart || splitComma(k)
         var n = children[k] = parseObj(d[k], result, newNode)
         // it's new added node
@@ -232,9 +222,9 @@ function getSel(node, result) {
       node.type = 'at'
       node.selText = sel
     } else {
-      node.selText = localizeName('' + combinePath(getParents(ruleNode, function (v) {
+      node.selText = '' + combinePath(getParents(ruleNode, function (v) {
         return v.selPart && !v.at
-      }, 'selPart', 'selChild', 'selParent'), '', ' ', true), opt)
+      }, 'selPart', 'selChild', 'selParent'), '', ' ', true), opt
     }
 
     node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
@@ -295,28 +285,6 @@ function combinePath (array, prev, sep, rep) {
   }, [])
 }
 
-function localizeName (str, opt) {
-  var NS = opt.localNames
-  var replacer = function (match, global, dot, name) {
-    if (global) {
-      return global
-    }
-    if (name[0] === '!') {
-      return dot + name.substr(1)
-    }
-
-    if (!opt.local) {
-      NS[name] = name
-    } else if (!NS[name]) {
-      NS[name] = opt.prefix + name
-    }
-
-    return dot + NS[name]
-  }
-
-  return str.replace(reClass, replacer)
-}
-
 function applyPlugins (opt, type) {
   var args = [].slice.call(arguments, 2)
   var plugin = opt.plugins[type]
@@ -343,9 +311,6 @@ function applyOrder (opt) {
 function cssobj (options) {
 
   options = defaults(options, {
-    local: true,
-    prefix: random(),
-    localNames: {},
     plugins: {}
   })
 
@@ -360,7 +325,6 @@ function cssobj (options) {
 
     var result = {
       obj: obj,
-      map: options.localNames,
       update: updater,
       options: options
     }

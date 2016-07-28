@@ -180,141 +180,6 @@ background\\Color: #fff;
   })
 
   //
-  // test with local class name
-  describe('test with local class name', function() {
-
-    it('local class name with random string', function() {
-
-      // random string cannot test right,
-      // so using regexp to test format
-      var ret = cssobj({'.red':{
-        'color':'red',
-      }})
-          .css
-          .trim()
-          .split(/\n/)
-      expect(ret.shift()).match(/^._\w{6,7}\d+_red {/)
-      expect(ret.join('\n')).equal(
-`color: red;
-}`
-      )
-
-    })
-
-    // below will using _prefix_ as prefix
-    it('local class name with custom prefix', function() {
-
-      cssobj().options.prefix = '_prefix_'
-
-      var ret = cssobj({'.red':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}).css.trim()
-      expect(ret).equal(
-`._prefix_red {
-color: red;
-}`
-      )
-
-    })
-
-    it('local class name with :global escape 1', function() {
-
-      cssobj().options.prefix = '_prefix_'
-
-      var ret = cssobj({':global(.red).bold':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}).css.trim()
-      expect(ret).equal(
-`.red._prefix_bold {
-color: red;
-}`
-      )
-
-    })
-
-    it('local class name with :global escape 2', function() {
-
-      cssobj().options.prefix = '_prefix_'
-
-      var ret = cssobj({':global(.red.green .blue).bold':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}).css.trim()
-      expect(ret).equal(
-`.red.green .blue._prefix_bold {
-color: red;
-}`
-      )
-
-    })
-
-    it('local class name with ! escape 1', function() {
-
-      cssobj().options.prefix = '_prefix_'
-
-      var ret = cssobj({'.!red.bold':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}).css.trim()
-      expect(ret).equal(
-`.red._prefix_bold {
-color: red;
-}`
-      )
-
-    })
-
-    it('local class name with ! escape 2', function() {
-
-      cssobj().options.prefix = '_prefix_'
-
-      var ret = cssobj({'.!red .!green .bold':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}).css.trim()
-      expect(ret).equal(
-`.red .green ._prefix_bold {
-color: red;
-}`
-      )
-
-    })
-
-    it('local class name with pre-defined local name', function() {
-
-      cssobj().options.prefix = '_prefix_'
-      cssobj().options.localNames = {red:'_custom_sel'}
-
-      var ret = cssobj({'.red .green .!bold':{
-        'color':'red',
-      }}, {prefix: '_prefix_'}, {red:'_custom_sel'}).css.trim()
-      expect(ret).equal(
-`._custom_sel ._prefix_green .bold {
-color: red;
-}`
-      )
-
-    })
-
-    it('disable local class name', function() {
-
-      cssobj().options.local = false
-
-      var ret = cssobj({'.red .!bold :global(.test)':{
-        'color':'red',
-      }}, {local:false}, {red:'_custom_sel'})
-      expect(ret.css.trim()).equal(
-`.red .bold .test {
-color: red;
-}`
-      )
-
-      expect(ret.map).deep.equal({
-        red:'red'
-      })
-
-    })
-
-  })
-
-  //
   // test prop && lastVal
 
   describe('test prop && lastVal', function() {
@@ -600,14 +465,11 @@ left: 20;
 
     it('@media at top level', function() {
 
-      cssobj().options.prefix = '_prefix_'
-
       var ret = cssobj(
         {
           "@media only screen and (min-device-width : 320px) and (max-device-width : 480px)": {p:{color:'red'}},
           "@media only screen and (min-width : 321px)": {p:{color:'blue'}}
-        }
-        , {indent:'  ', prefix:'_prefix_'})
+        })
 
       expect(ret.css.trim()).equal(
         `@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
@@ -625,8 +487,6 @@ color: blue;
     })
 
     it('@media supports with multi-level', function() {
-
-      cssobj().options.prefix = '_prefix_'
 
       var ret = cssobj(
         {
@@ -649,32 +509,31 @@ color: blue;
               }
             }
           }
-        }
-        , {indent:'  ', prefix:'_prefix_'})
+        })
 
       expect(ret.css.trim()).equal(
-        `._prefix_p {
+        `.p {
 color: red;
 back: 23ret;
 }
 @media (min-width:320px) {
-._prefix_p {
+.p {
 color: red2;
 }
 @font-face {
 style: 1;
 }
-._prefix_p._prefix_d {
+.p.d {
 x: 1;
 }
 }
 @media (min-width:320px) and c2&c {
-._prefix_p {
+.p {
 _color: blue;
 }
 }
 @media (min-width:320px) and c2&c and (max-width:768px) {
-._prefix_p {
+.p {
 color: 234;
 }
 }`
@@ -684,11 +543,9 @@ color: 234;
 
 
 
-        it('@media supports with multi-level comma split', function() {
+    it('@media supports with multi-level comma split', function() {
 
-      cssobj().options.prefix = '_prefix_'
-
-          var ret = cssobj(
+      var ret = cssobj(
         {
           ".p": {
             "color": "red",
@@ -706,16 +563,15 @@ color: 234;
               }
             }
           }
-        }
-        , {indent:'  ', prefix:'_prefix_'})
+        })
 
       expect(ret.css.trim()).equal(
-        `._prefix_p {
+        `.p {
 color: red;
 back: 23ret;
 }
 @media & (cond,ition) {
-._prefix_p {
+.p {
 color: red2;
 }
 @font-face {
@@ -723,12 +579,12 @@ style: 1;
 }
 }
 @media & (cond,ition) and c2,& (cond,ition) and c3 {
-._prefix_p {
+.p {
 _color: blue;
 }
 }
 @media & (cond,ition) and c2 and (max:324px),& (cond,ition) and c2 and (min:111px),& (cond,ition) and c3 and (max:324px),& (cond,ition) and c3 and (min:111px) {
-._prefix_p {
+.p {
 color: 234;
 }
 }`
@@ -1061,19 +917,31 @@ font: Arial;
   describe('plugin test', function() {
 
 
+    it('selector plugin', function() {
+
+      var plug = function(sel, node, result) {
+        return sel.replace(/\.(\w+)/gi, '._prefix_$1')
+      }
+
+      var ret = _cssobj({plugins: {
+        selector: plug
+      }})({
+        '.nav, .item':{color:'red'}
+      })
+
+      expect(ret.root.children['.nav, .item'].selPart).deep.equal(['.nav', ' .item'])
+      expect(ret.root.children['.nav, .item'].selText).equal('._prefix_nav, ._prefix_item')
+      expect(ret.root.children['.nav, .item'].selTextPart).deep.equal(['._prefix_nav', ' ._prefix_item'])
+
+    })
+
+
     it('post plugin', function() {
 
       var post1 = function(option){
         return function(result){
 
           expect(option.abc).equal(true)
-
-          expect(result.css).equal(
-            `p {
-color: red;
-}
-`
-          )
 
           result.abc = option.abc
 
@@ -1090,22 +958,18 @@ color: red;
       }
 
       // only one plugin
-      cssobj({p:{color:'red'}}, {
-        indent:'  ',
-
+      _cssobj({
         plugins: {
           post: post1({abc:true})
         }
-
-      })
+      })({p:{color:'red'}})
 
       // pass value to next plugin
-      cssobj({p:{color:'red'}}, {
-        indent:'  ',
+      _cssobj({
         plugins: {
           post: [post1({abc:true}), post2]
         }
-      })
+      })({p:{color:'red'}})
 
     })
 
@@ -1126,13 +990,9 @@ color: red;
         expect(value).equal(4)
       }
 
-      cssobj().options.plugins = {
-          value: [plug1, plug2]
-        }
-
-      cssobj({p:{size:2}}, {
-        indent:'  '
-      })
+      _cssobj({plugins:{
+        value: [plug1, plug2]
+      }})({p:{size:2}})
 
       // plugin should not effect lastVal
       expect(node.lastVal['size']).equal(2)
@@ -1144,15 +1004,21 @@ color: red;
     it('update with value plugin', function() {
 
       function plug(value) {
-        return value+'px'
+        return value*2+'px'
       }
 
       cssobj().options.plugins.value = plug
 
       var size = {size:2}
-      var ret = cssobj({p:size}, {
-        indent:'  ',
-      })
+      var ret = cssobj({p:size})
+
+      expect(ret.css).equal(
+        `p {
+size: 4px;
+}
+`
+      )
+
 
       size.size = 10
 
@@ -1162,7 +1028,7 @@ color: red;
 
       expect(css).equal(
         `p {
-size: 10px;
+size: 20px;
 }
 `
       )
