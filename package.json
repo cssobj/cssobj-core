@@ -14,6 +14,14 @@
     "report": "cd dist && gzip < cssobj-core.min.js > cssobj-core.min.gz && ls -lh && rm -f *.gz",
     "make": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssobj/cssobj-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cssobj/cssobj-core/issues"
+  },
+  "homepage": "https://github.com/cssobj/cssobj-core#readme",
   "author": "James Yang <jamesyang999@gmail.com>",
   "license": "MIT",
   "devDependencies": {

@@ -319,7 +319,7 @@ var cssobj_core = (function () {
 
     return function (obj, initData) {
       var updater = function (data) {
-        result.data = data || {}
+        if (arguments.length) result.data = data || {}
 
         result.root = parseObj(result.obj || {}, result, result.root, true)
         applyOrder(result)
