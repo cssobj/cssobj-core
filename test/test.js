@@ -552,9 +552,9 @@ color: 234;
             "back": "23ret",
             "@media & (cond,ition)": {
               "color": "red2",
-              "@media c2,c3": {
+              "@media c2, c3": {
                 "_color": "blue",
-                "@media (max:324px),(min:111px)": {
+                "@media (max:324px), (min:111px)": {
                   "color": 234
                 }
               },
@@ -578,12 +578,12 @@ color: red2;
 style: 1;
 }
 }
-@media & (cond,ition) and c2,& (cond,ition) and c3 {
+@media & (cond,ition) and c2, & (cond,ition) and c3 {
 .p {
 _color: blue;
 }
 }
-@media & (cond,ition) and c2 and (max:324px),& (cond,ition) and c2 and (min:111px),& (cond,ition) and c3 and (max:324px),& (cond,ition) and c3 and (min:111px) {
+@media & (cond,ition) and c2 and (max:324px), & (cond,ition) and c2 and (min:111px), & (cond,ition) and c3 and (max:324px), & (cond,ition) and c3 and (min:111px) {
 .p {
 color: 234;
 }

@@ -89,7 +89,7 @@ function isIterable (v) {
 }
 
 // regexp constants
-var reGroupRule = /^@(media|document|supports|page|keyframes) /i
+var reGroupRule = /^@(media|document|supports|page|keyframes)/i
 var reAtRule = /^\s*@/g
 /**
  * convert simple Object into node data
@@ -212,9 +212,9 @@ function getSel(node, result) {
 
       // combinePath is array, '' + array instead of array.join(',')
       node.groupText = isMedia
-        ? '@' + node.at + ' ' + combinePath(getParents(ruleNode, function (v) {
+        ? '@' + node.at + combinePath(getParents(ruleNode, function (v) {
           return v.type == TYPE_GROUP
-        }, 'selPart', 'selChild', 'selParent'), '', ' and ')
+        }, 'selPart', 'selChild', 'selParent'), '', ' and')
       : sel
 
       node.selText = getParents(node, function (v) {

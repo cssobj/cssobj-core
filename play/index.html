@@ -126,11 +126,15 @@ function convert(el) {
 }
 convert(src)
 
+window.TEST = true
+
+var serverURL = TEST ? 'http://1111hui.com:8080' : '/converter'
+
 function parse(el){
   var value = el.value
 
   // server using cssobj-converter project: npm run server
-  fetch('/converter', {method:'POST', body:JSON.stringify({text:value})})
+  fetch(serverURL, {method:'POST', body:JSON.stringify({text:value})})
     .then(function(v){
       if(v.ok)
         v.text().then(function(text){ src.value = text})

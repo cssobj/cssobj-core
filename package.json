@@ -1,6 +1,6 @@
 {
   "name": "cssobj-core",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "Generate Virtual CSS middle format, support for all cssobj functions and plugins.",
   "keywords": [
     "virtual css",
@@ -12,7 +12,7 @@
   "scripts": {
     "test": "mocha",
     "report": "cd dist && gzip < cssobj-core.min.js > cssobj-core.min.gz && ls -lh && rm -f *.gz",
-    "make": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js"
+    "make": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js && gulp bump"
   },
   "repository": {
     "type": "git",
