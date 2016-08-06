@@ -54,7 +54,6 @@ var cssobj_core = (function () {
     return path.map(function(p){return key?p[key]:p })
   }
 
-
   // split selector etc. aware of css attributes
   function splitComma (str) {
     for (var c, i = 0, n = 0, prev = 0, d = []; c = str.charAt(i); i++) {
@@ -136,9 +135,8 @@ var cssobj_core = (function () {
       if(!('selText' in node)) getSel(node, result)
 
       for (var k in d) {
-        if (!d.hasOwnProperty(k)) continue
+        if (!d.hasOwnProperty(k) || k.charAt(0) == '$') continue
         if (!isIterable(d[k]) || type.call(d[k]) == ARRAY && !isIterable(d[k][0])) {
-          if (k.charAt(0) == '$') continue
           var r = function (_k) {
             parseProp(node, d, _k, result)
           }

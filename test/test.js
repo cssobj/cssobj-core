@@ -24,12 +24,12 @@ describe('test cssobj', function(){
     it('css with 2 space indent', function() {
 
       var ret = cssobj(
-        {p:{color:'red'}},
-        {indent:'  '}
+        {'.p':{color:'red'}},
+        {local:false}
       )
 
       expect(ret.css.trim()).deep.equal(
-`p {
+`.p {
 color: red;
 }`
       )
@@ -66,6 +66,16 @@ background-color: #fff;
 
     })
 
+    it('selector start with $ should not parse', function() {
+
+      var ret = cssobj({
+        $p:{color: 123},
+        $d:[1,2,3],
+        $id: 'abc'
+      })
+      expect(ret.css).equal('')
+
+    })
 
     it('single child selector', function() {
 
@@ -74,7 +84,7 @@ background-color: #fff;
         'p':{
           color:'red'
         }
-      }}, {indent:'  '})
+      }})
       expect(ret.css.trim()).deep.equal(
 `div {
 font-size: 12px;
@@ -93,7 +103,7 @@ color: red;
         'p,span':{
           color:'red'
         }
-      }}, {indent:'  '})
+      }})
       expect(ret.css.trim()).deep.equal(
 `div,table {
 font-size: 12px;
@@ -112,7 +122,7 @@ color: red;
         '&:before, &:after':{
           'content':'"---"'
         }
-      }}, {indent:'  '})
+      }})
       expect(ret.css.trim()).deep.equal(
 `div {
 font-size: 12px;
@@ -141,7 +151,7 @@ color: red;
         span:{
           color:'red'
         }
-      }}, {indent:'  '})
+      }})
       expect(ret.css.trim()).deep.equal(
 `p[title="a,bc"] span,div span {
 color: red;
@@ -154,7 +164,6 @@ color: red;
 
       var ret = cssobj(
         {':-moz-any(ol, ul, menu[title="a,b"], dir) dd, :-moz-any(ol, ul, menu, dir) ul':{  span: {color:'red'} }}
-        , {indent:'  '}
       )
       expect(ret.css.trim()).deep.equal(
 `:-moz-any(ol, ul, menu[title="a,b"], dir) dd span, :-moz-any(ol, ul, menu, dir) ul span {
@@ -221,8 +230,7 @@ background\\Color: #fff;
 
       var ret = cssobj({
         d:[{color:123}, {font:'"Arial"', color:'blue'}]
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
         `d {
 color: 123;
@@ -240,8 +248,7 @@ color: blue;
 
       var ret = cssobj({
         p:[{font:[function(){return 'Helvetica'}, '"Arial"'], color:'blue'}]
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
         `p {
 font: Helvetica;
@@ -257,8 +264,7 @@ color: blue;
 
       var ret = cssobj({
         p:{'': [{font:[function(){return 'Helvetica'}, '"Arial"'], color:'blue'}]}
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
         `p {
 font: Helvetica;
@@ -282,8 +288,7 @@ color: blue;
       var ret = cssobj({
         "@import": "url(\"fineprint.css\") print",
         d:{color:123}
-      }, {indent:'  '})
-
+      })
       expect(ret.css.trim()).equal(
 `@import url("fineprint.css") print;
 d {
@@ -303,8 +308,7 @@ color: 123;
           {"@import": "url(\"fineprint3.css\") print"},
         ],
         d:{color:123}
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
 
         // child always come first
@@ -339,8 +343,7 @@ color: 123;
           ],
           d:{color:123}
         }
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
         `@supports (import: true) {
 @import url("fineprint.css") print;
@@ -380,8 +383,7 @@ color: 123;
           "font-family": '"Bitstream Vera Serif Bold"',
           "src": 'url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf")'
         }
-      }, {indent:'  '})
-
+      })
       expect(ret.css.trim()).equal(
         `@font-face {
 font-family: "Bitstream Vera Serif Bold";
@@ -404,8 +406,7 @@ src: url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf");
             "left": 20
           }
         }
-      }, {indent:'  '})
-
+      })
       expect(ret.css.trim()).equal(
 `@keyframes identifier1 {
 0% {
@@ -440,8 +441,7 @@ left: 20;
             }
           }
         }
-      }, {indent:'  '})
-
+      })
       expect(ret.css.trim()).equal(
 `@supports (animation-name: test) {
 @import url("fineprint.css") print;
@@ -462,6 +462,22 @@ left: 20;
       )
 
     })
+
+    it('@media with no space after', function() {
+      var ret = cssobj({
+        '@media(min-width:800px)':{
+          h3:{color:'red'}
+        }
+      })
+      expect(ret.css).equal(
+`@media(min-width:800px) {
+h3 {
+color: red;
+}
+}
+`)
+    })
+
 
     it('@media at top level', function() {
 
@@ -662,8 +678,7 @@ color: red;
           $id: 'xyz',
           color: 'blue'
         }
-      }, {indent:'  '})
-
+      })
       expect(ret.css).equal(
         `dd {
 font: 123;
@@ -811,8 +826,7 @@ color: 10;
         p:t,
         d:{font:'Arial'}
       }
-      var ret = cssobj(obj, {indent:'  '})
-
+      var ret = cssobj(obj)
       var node = ret.root.children.p
       expect(node.lastVal['color']).equal(0)
 

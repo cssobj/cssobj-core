@@ -3,28 +3,28 @@
   <meta charset="utf-8">
   <title>cssobj playground</title>
   <!--[if lte IE 8]>
-      <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
-      <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
-      <![endif]-->
+  <script type="text/javascript" src="http://1111hui.com/js/es5-shim.min.js"></script>
+  <script type="text/javascript" src="http://1111hui.com/js/json3.min.js"></script>
+  <![endif]-->
 
-  <script type="text/javascript" src="../../cssobj-core/dist/cssobj-core.iife.js"></script>
-  <script type="text/javascript" src="../../cssobj-plugin-value-default-unit/dist/cssobj-plugin-value-default-unit.iife.js"></script>
-  <script type="text/javascript" src="../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.iife.js"></script>
-  <script type="text/javascript" src="../../cssobj-plugin-post-cssom/dist/cssobj-plugin-post-cssom.iife.js"></script>
-  <script type="text/javascript" src="../../cssobj-core/play/pagecss.js"></script>
-  <script type="text/javascript">
+    <script type="text/javascript" src="../../cssobj-core/dist/cssobj-core.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-value-default-unit/dist/cssobj-plugin-value-default-unit.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-post-cssom/dist/cssobj-plugin-post-cssom.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-core/play/pagecss.js"></script>
+    <script type="text/javascript">
   var css = cssobj_core(
     {
       local:false,
       plugins:
-     {
-       post:[
-         // cssobj_plugin_post_gencss(),
-         // cssobj_plugin_post_stylize()
-         cssobj_plugin_post_cssom()
-       ],
-       value: cssobj_plugin_value_default_unit('px')
-     }
+      {
+        post:[
+          // cssobj_plugin_post_gencss(),
+          // cssobj_plugin_post_stylize()
+          cssobj_plugin_post_cssom()
+        ],
+        value: cssobj_plugin_value_default_unit('px')
+      }
     }
   )(pagecss)
 
@@ -73,7 +73,7 @@ window.onresize = function(){
 }
 // console.log(css)
 
-  </script>
+                </script>
 </head>
 <body>
   <div class="left div">
@@ -81,8 +81,11 @@ window.onresize = function(){
     <textarea id="src" oninput="convert(this)"></textarea>
   </div>
   <div class="right div">
-    <h3 id="h3">CSS Text: (paste/change below)</h3>
-    <textarea id="css" oninput="parse(this)"></textarea>
+    <h3 id="h3">CSS Text: (paste/change below)
+      <label><input type="radio" name="format" value="css" checked onclick="parse()">CSS</label>
+      <label><input type="radio" name="format" value="scss" onclick="parse()">SCSS</label>
+      <label><input type="radio" name="format" value="less" onclick="parse()">LESS</label></h3>
+    <textarea id="css" oninput="parse()"></textarea>
   </div>
   <script type="text/javascript">
 
@@ -100,8 +103,10 @@ var testData = {
     }
   }
 }
-
-var src = document.getElementById('src')
+function $(sel) {
+  return document.querySelector(sel)
+}
+var src = $('#src')
 src.value = JSON.stringify(testData,null,2)
 
 var opt = {local:1, propSugar:1, plugins:{
@@ -117,7 +122,7 @@ function convert(el) {
     var func = new Function('return '+el.value)
     testObj = func()
     ret = cssobjFunc(testObj)
-    document.getElementById('css').value = ret.css
+    $('#css').value = ret.css
     // console.log(ret)
 
   }catch(e){
@@ -126,25 +131,30 @@ function convert(el) {
 }
 convert(src)
 
-window.TEST = true
+var serverURL = window.location.hostname.match(/rhcloud/i) ? '/converter' : 'http://1111hui.com:8080'
 
-var serverURL = TEST ? 'http://1111hui.com:8080' : '/converter'
-
-function parse(el){
+function parse() {
+  var el = $('#css')
   var value = el.value
 
   // server using cssobj-converter project: npm run server
-  fetch(serverURL, {method:'POST', body:JSON.stringify({text:value})})
-    .then(function(v){
+  fetch(serverURL, {method:'POST', body:JSON.stringify({text:value, format: getFormat()})})
+    .then(function(v) {
       if(v.ok)
         v.text().then(function(text){ src.value = text})
     })
 }
 
+function getFormat() {
+  var el = document.getElementsByName('format')
+  for(var i = 0, len = el.length; i < len; i++) {
+    if(el[i].checked) return el[i].value
+  }
+}
 
 
 h3.onclick=function() {
-  css.update(null)
+  // css.update(null)
 }
 
 window.onresize()
