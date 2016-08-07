@@ -307,12 +307,15 @@ color: 123;
           {"@import": "url(\"fineprint2.css\") print"},
           {"@import": "url(\"fineprint3.css\") print"},
         ],
+        '@import': ['url1', 'url2'],
         d:{color:123}
       })
       expect(ret.css).equal(
 
         // child always come first
-        `d {
+`@import url1;
+@import url2;
+d {
 color: 123;
 }
 @import url("fineprint1.css") print;

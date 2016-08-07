@@ -1,11 +1,13 @@
 {
   "name": "cssobj-core",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "Generate Virtual CSS middle format, support for all cssobj functions and plugins.",
   "keywords": [
-    "virtual css",
-    "cssobj core",
-    "css middle format"
+    "cssom",
+    "virtual",
+    "css",
+    "cssobj",
+    "css in js"
   ],
   "main": "dist/cssobj-core.cjs.js",
   "jsnext:main": "dist/cssobj-core.es.js",

@@ -115,9 +115,11 @@ function parseObj (d, result, node, init) {
 
   node = node || {}
 
+  node.obj = d
+
   if (type.call(d) == ARRAY) {
     return d.map(function (v, i) {
-      return parseObj(v, result, node[i] || {parent: node, src: d, index: i, obj: d[i]})
+      return parseObj(v, result, node[i] || {parent: node, src: d, index: i})
     })
   }
   if (type.call(d) == OBJECT) {
@@ -130,12 +132,34 @@ function parseObj (d, result, node, init) {
     var order = d[KEY_ORDER] | 0
     var funcArr = []
 
+    var processObj = function (obj, k, nodeObj) {
+      var haveOldChild = k in children
+      var newNode = extendObj(children, k, nodeObj)
+      // don't overwrite selPart for previous node
+      newNode.selPart = newNode.selPart || splitComma(k)
+      var n = children[k] = parseObj(obj, result, newNode)
+      // it's new added node
+      if (prevVal && !haveOldChild) arrayKV(result.diff, 'added', n)
+    }
+
     // only there's no selText, getSel
     if(!('selText' in node)) getSel(node, result)
 
     for (var k in d) {
       if (!d.hasOwnProperty(k) || k.charAt(0) == '$') continue
       if (!isIterable(d[k]) || type.call(d[k]) == ARRAY && !isIterable(d[k][0])) {
+
+        // it's inline at-rule: @import etc.
+        if (k.charAt(0)=='@') {
+          processObj(
+            // map @import: [a,b,c] into {a:1, b:1, c:1}
+            [].concat(d[k]).reduce(function(prev, cur) {
+              prev[cur] = ';'
+              return prev
+            }, {}), k, {parent: node, src: d, key: k, inline:true})
+          continue
+        }
+
         var r = function (_k) {
           parseProp(node, d, _k, result)
         }
@@ -143,13 +167,7 @@ function parseObj (d, result, node, init) {
           ? funcArr.push([r, k])
           : r(k)
       } else {
-        var haveOldChild = k in children
-        var newNode = extendObj(children, k, {parent: node, src: d, key: k, obj: d[k]})
-        // don't overwrite selPart for previous node
-        newNode.selPart = newNode.selPart || splitComma(k)
-        var n = children[k] = parseObj(d[k], result, newNode)
-        // it's new added node
-        if (prevVal && !haveOldChild) arrayKV(result.diff, 'added', n)
+        processObj(d[k], k, {parent: node, src: d, key: k})
       }
     }
 
