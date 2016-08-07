@@ -287,7 +287,7 @@ define('cssobj_core', function () { 'use strict';
 
   function applyPlugins (opt, type) {
     var args = [].slice.call(arguments, 2)
-    var plugin = opt.plugins[type]
+    var plugin = opt.plugins && opt.plugins[type]
     return !plugin ? args[0] : [].concat(plugin).reduce(
       function (pre, f) { return f.apply(null, [pre].concat(args)) },
       args.shift()

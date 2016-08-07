@@ -104,9 +104,9 @@ var testData = {
   }
 }
 function $(sel) {
-  return document.querySelector(sel)
+  return document.getElementById(sel)
 }
-var src = $('#src')
+var src = $('src')
 src.value = JSON.stringify(testData,null,2)
 
 var opt = {local:1, propSugar:1, plugins:{
@@ -122,7 +122,7 @@ function convert(el) {
     var func = new Function('return '+el.value)
     testObj = func()
     ret = cssobjFunc(testObj)
-    $('#css').value = ret.css
+    $('css').value = ret.css
     // console.log(ret)
 
   }catch(e){
@@ -134,7 +134,7 @@ convert(src)
 var serverURL = window.location.hostname.match(/rhcloud/i) ? '/converter' : 'http://1111hui.com:8080'
 
 function parse() {
-  var el = $('#css')
+  var el = $('css')
   var value = el.value
 
   // server using cssobj-converter project: npm run server

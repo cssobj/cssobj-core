@@ -13,10 +13,12 @@ var pagecss = {
   },
   '.left':{
     $id:'left',
+    overflow: 'hidden',
     float:'left'
   },
   '.right':{
     $id:'right',
+    overflow: 'hidden',
     float:'left'
   },
   textarea: {
