@@ -90,7 +90,8 @@ var cssobj_core = (function () {
 
   // regexp constants
   var reGroupRule = /^@(media|document|supports|page|keyframes)/i
-  var reAtRule = /^\s*@/g
+  var reAtRule = /^\s*@/i
+
   /**
    * convert simple Object into node data
    *

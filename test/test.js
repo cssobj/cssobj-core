@@ -928,6 +928,94 @@ font: Arial;
 
   })
 
+  //
+  // v-node test
+
+  describe('v-node test', function() {
+
+    it('normal @-rule v-node', function() {
+
+      var ret = cssobj({
+        '@import  ': 'url1',
+        '@import': 'url1',
+      })
+
+      expect(Object.keys(ret.root.children['@import  '])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+
+      expect(Object.keys(ret.root.children['@import'])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+
+    })
+
+    it('@media group rule v-node', function() {
+      var ret = cssobj({
+        '@media(min-width:800px)  ': {
+          p:{color:123}
+        },
+        '@media (min-width:300px)': {
+          p:{color:123}
+        }
+      })
+
+      var media1 = ret.root.children["@media(min-width:800px)  "]
+      var media2 = ret.root.children["@media (min-width:300px)"]
+
+      expect(media1.at).equal('media')
+
+      expect(Object.keys(media1)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+
+
+      expect(media2.at).equal('media')
+
+      expect(Object.keys(media2)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+
+    })
+
+    it('normal nested rule', function() {
+      var ret = cssobj({
+        h3:{
+          p:{color:123}
+        },
+        'h3,h4':{
+          width: function(){return 10},
+          'p,span':{color:234}
+        }
+      })
+
+      var h3 = ret.root.children.h3
+      var h4 = ret.root.children['h3,h4']
+
+      expect(h3.selText).equal('h3')
+      expect(h3.children.p.selText).equal('h3 p')
+      expect(h3.children.p.prop).deep.equal({"color":[123]})
+      expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+
+      expect(h4.selText).equal('h3,h4')
+      expect(h4.prop).deep.equal({width: [10]})
+      expect(h4.children['p,span'].selText).equal('h3 p,h3 span,h4 p,h4 span')
+      expect(h4.children['p,span'].prop).deep.equal({"color":[234]})
+      expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+
+    })
+
+    it('@media nested rule', function() {
+      var ret = cssobj({
+        h3:{
+          p:{
+            '@media(width:800px)':{
+              $id: 'abc',
+              color: 123
+            }
+          }
+        }
+      })
+
+      expect(ret.ref.abc.prop).deep.equal({"color":[123]})
+      expect(ret.ref.abc.selText).equal('h3 p')
+      expect(ret.ref.abc.groupText).equal('@media(width:800px)')
+
+    })
+
+  })
 
   //
   // plugin test

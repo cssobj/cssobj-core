@@ -89,7 +89,8 @@ function isIterable (v) {
 
 // regexp constants
 var reGroupRule = /^@(media|document|supports|page|keyframes)/i
-var reAtRule = /^\s*@/g
+var reAtRule = /^\s*@/i
+
 /**
  * convert simple Object into node data
  *
