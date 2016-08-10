@@ -78,18 +78,10 @@ window.onresize = function(){
 <body>
   <div class="left div">
     <h3 title="a,b">JS Object: (paste/change below)</h3>
-    <textarea id="src" oninput="convert(this)"></textarea>
-  </div>
-  <div class="right div">
-    <h3 id="h3">CSS Text: (paste/change below)
-      <label><input type="radio" name="format" value="css" checked onclick="parse()">CSS</label>
-      <label><input type="radio" name="format" value="scss" onclick="parse()">SCSS</label>
-      <label><input type="radio" name="format" value="less" onclick="parse()">LESS</label></h3>
-    <textarea id="css" oninput="parse()"></textarea>
-  </div>
-  <script type="text/javascript">
-
-var testData = {
+    <textarea id="src" oninput="convert(this)">
+{
+  $id: 'abc',
+  $var:{abc:123, cde:function(){return 234}},
   div: { fontSize: '12px', color: 'blue' },
   '@media (max-width: 800px)': {
     '.active': {
@@ -103,11 +95,21 @@ var testData = {
     }
   }
 }
+    </textarea>
+  </div>
+  <div class="right div">
+    <h3 id="h3">CSS Text: (paste/change below)
+      <label><input type="radio" name="format" value="css" checked onclick="parse()">CSS</label>
+      <label><input type="radio" name="format" value="scss" onclick="parse()">SCSS</label>
+      <label><input type="radio" name="format" value="less" onclick="parse()">LESS</label></h3>
+    <textarea id="css" oninput="parse()"></textarea>
+  </div>
+  <script type="text/javascript">
+
 function $(sel) {
   return document.getElementById(sel)
 }
 var src = $('src')
-src.value = JSON.stringify(testData,null,2)
 
 var opt = {local:1, propSugar:1, plugins:{
   post: cssobj_plugin_post_gencss({indent:'  '})
@@ -116,7 +118,7 @@ var opt = {local:1, propSugar:1, plugins:{
 
 var cssobjFunc = cssobj_core(opt)
 
-var testObj, testD, ret
+var testObj, ret
 function convert(el) {
   try{
     var func = new Function('return '+el.value)

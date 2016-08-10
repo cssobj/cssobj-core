@@ -1009,7 +1009,8 @@ font: Arial;
         }
       })
 
-      expect(ret.ref.abc.prop).deep.equal({"color":[123]})
+      // $id should also appear in prop
+      expect(ret.ref.abc.prop).deep.equal({$id: ['abc'], "color":[123]})
       expect(ret.ref.abc.selText).equal('h3 p')
       expect(ret.ref.abc.groupText).equal('@media(width:800px)')
 
