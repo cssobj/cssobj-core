@@ -276,13 +276,14 @@ var cssobj_core = (function () {
           ? v.call(node.lastVal, prev, node, result)
           : v
 
+      val = applyPlugins(result.options, 'value', val, key, node, result)
       // only valid val can be lastVal
       if (isValidCSSValue(val)) {
         // push every val to prop
         arrayKV(
           node.prop,
           key,
-          applyPlugins(result.options, 'value', val, key, node, result),
+          val,
           true
         )
         prev = lastVal[key] = val
