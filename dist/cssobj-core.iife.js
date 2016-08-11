@@ -134,6 +134,7 @@ var cssobj_core = (function () {
       var children = node.children = node.children || {}
       var prevVal = node.prevVal = node.lastVal
       node.lastVal = {}
+      node.rawVal = {}
       node.prop = {}
       node.diff = {}
       if (d[KEY_ID]) result.ref[d[KEY_ID]] = node
@@ -276,6 +277,7 @@ var cssobj_core = (function () {
           ? v.call(node.lastVal, prev, node, result)
           : v
 
+      node.rawVal[key] = val
       val = applyPlugins(result.options, 'value', val, key, node, result)
       // only valid val can be lastVal
       if (isValidCSSValue(val)) {
