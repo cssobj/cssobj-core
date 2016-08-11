@@ -1104,8 +1104,13 @@ font: Arial;
         value: [plug1, plug2]
       }})({p:{size:2}})
 
+      // before v0.3.2 :
       // plugin should not effect lastVal
-      expect(node.lastVal['size']).equal(2)
+      // expect(node.lastVal['size']).equal(2)
+
+      // from v0.3.3 :
+      // plugin also affect lastVal to get DIFF work right
+      expect(node.lastVal['size']).equal(undefined)
 
     })
 
