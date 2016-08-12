@@ -269,7 +269,7 @@ var cssobj_core = (function () {
     var isRegExp = type.call(target)=='[object RegExp]'
     result.nodes.forEach(function(node) {
       var selTextPart = node.selTextPart
-      if(sourceNode.parentRule !== node.parentRule) return
+      if(!selTextPart || sourceNode.parentRule !== node.parentRule) return
       sourceNode.selTextPart.forEach(function(source) {
         ![].push.apply(selTextPart, selTextPart.filter(function(v) {
           return isRegExp
