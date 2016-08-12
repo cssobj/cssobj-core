@@ -37,7 +37,7 @@ var refRight = css.ref.right.obj
 var reftextarea = css.ref.textarea.obj
 // for page css
 function h3Height() {
-  var h3Val = refh3.lastVal
+  var h3Val = refh3.rawVal
   return h3Val.fontSize * h3Val.lineHeight + h3Val.marginTop + h3Val.marginBottom
 }
 
@@ -60,7 +60,7 @@ refRight.width = refLeft.width = function(last, node, result) {
   return w<900? w : w/2
 }
 refh3.obj.fontSize = function(last, node, result) {
-  return result.data.resize ? last : last+1
+  return result.data.resize ? parseInt(last) : parseInt(last)+1
 }
 css.ref.ff.obj.textarea = {
   color: 'red'
