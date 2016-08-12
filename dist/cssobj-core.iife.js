@@ -294,7 +294,7 @@ var cssobj_core = (function () {
           ? v.call(node.lastVal, prev, node, result)
           : v
 
-      if(val && /^\$extendR?$/.test(key)) extendSel(result, node, val)
+      if(val && key=='$extend') extendSel(result, node, val)
 
       node.rawVal[key] = val
       val = applyPlugins(result.options, 'value', val, key, node, result)
