@@ -1008,6 +1008,27 @@ color: 123;
 `)
     })
 
+    it('$extend right with @media group rule', function() {
+      var ret = cssobj({
+        p:{color: 78},
+        '@media (min-width:800px)':{
+          p:{
+            color: 45
+          },
+          div:{$extend: 'p'}
+        }
+      })
+      expect(ret.css).equal(`p {
+color: 78;
+}
+@media (min-width:800px) {
+p,div {
+color: 45;
+}
+}
+`)
+    })
+
   })
 
   //
