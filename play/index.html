@@ -8,23 +8,18 @@
   <![endif]-->
 
     <script type="text/javascript" src="../../cssobj-core/dist/cssobj-core.iife.js"></script>
-    <script type="text/javascript" src="../../cssobj-plugin-value-default-unit/dist/cssobj-plugin-value-default-unit.iife.js"></script>
-    <script type="text/javascript" src="../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.iife.js"></script>
-    <script type="text/javascript" src="../../cssobj-plugin-post-cssom/dist/cssobj-plugin-post-cssom.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-default-unit/dist/cssobj-plugin-default-unit.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-gencss/dist/cssobj-plugin-gencss.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-cssom/dist/cssobj-plugin-cssom.iife.js"></script>
     <script type="text/javascript" src="../../cssobj-core/play/pagecss.js"></script>
     <script type="text/javascript">
   var css = cssobj_core(
     {
       local:false,
-      plugins:
-      {
-        post:[
-          // cssobj_plugin_post_gencss(),
-          // cssobj_plugin_post_stylize()
-          cssobj_plugin_post_cssom()
-        ],
-        value: cssobj_plugin_value_default_unit('px')
-      }
+      plugins:[
+          cssobj_plugin_default_unit('px'),
+          cssobj_plugin_cssom()
+      ]
     }
   )(pagecss)
 
@@ -111,10 +106,9 @@ function $(sel) {
 }
 var src = $('src')
 
-var opt = {local:1, propSugar:1, plugins:{
-  post: cssobj_plugin_post_gencss({indent:'  '})
-  // value: function(val, key, node){ return /width|height|top|left/.test(key) ? val+'px' : val }
-}, localNames:{p:'_prefix_p'}}
+var opt = {local:1, propSugar:1, plugins: [
+  cssobj_plugin_gencss({indent:'  '})
+], localNames:{p:'_prefix_p'}}
 
 var cssobjFunc = cssobj_core(opt)
 

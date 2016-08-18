@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 var util = require('util')
-var cssobj_plugin_post_gencss = require(process.env.CSSOBJ_GENCSS || '../../cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js')
+var cssobj_plugin_gencss = require(process.env.CSSOBJ_GENCSS || '../../cssobj-plugin-gencss/dist/cssobj-plugin-gencss.cjs.js')
 
 var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
@@ -10,9 +10,7 @@ describe('test cssobj', function(){
   beforeEach(function() {
 
     cssobj = _cssobj({
-      plugins:{
-        post: cssobj_plugin_post_gencss({indent:''})
-      }
+      plugins:[cssobj_plugin_gencss({indent:''})]
     })
 
   })
@@ -1026,22 +1024,27 @@ font: Arial;
 
     it('selector plugin', function() {
 
-      var plug = function(sel, node, result) {
-        return sel.replace(/\.(\w+)/gi, '._prefix_$1')
+      var plug = {
+        value: function(val, key, node, result) {
+          return val*2
+        },
+        selector:  function(sel, node, result) {
+          return sel.replace(/\.(\w+)/gi, '._prefix_$1')
+        }
       }
 
-      var ret = _cssobj({plugins: {
-        selector: plug
-      }})({
-        '.nav, .item':{color:'red'}
+      var ret = _cssobj({plugins: plug})({
+        '.nav, .item':{color:123}
       })
 
+      expect(ret.root.children['.nav, .item'].prop).deep.equal({color: [246]})
       expect(ret.root.children['.nav, .item'].selPart).deep.equal(['.nav', ' .item'])
       expect(ret.root.children['.nav, .item'].selText).equal('._prefix_nav, ._prefix_item')
       expect(ret.root.children['.nav, .item'].selTextPart).deep.equal(['._prefix_nav', ' ._prefix_item'])
 
       ret.update()
 
+      expect(ret.root.children['.nav, .item'].prop).deep.equal({color: [246]})
       expect(ret.root.children['.nav, .item'].selText).equal('._prefix_nav, ._prefix_item')
 
     })
@@ -1050,36 +1053,36 @@ font: Arial;
     it('post plugin', function() {
 
       var post1 = function(option){
-        return function(result){
+        return {
+          post: function(result) {
 
-          expect(option.abc).equal(true)
+            expect(option.abc).equal(true)
 
-          result.abc = option.abc
+            result.abc = option.abc
 
-          // should return first args to pass to next plugin
-          return result
+            // should return first args to pass to next plugin
+            return result
 
+          }
         }
       }
 
-      var post2 = function(result){
+      var post2 = {
+        post: function(result){
 
-        expect(result.abc).equal(true)
+          expect(result.abc).equal(true)
 
+        }
       }
 
       // only one plugin
       _cssobj({
-        plugins: {
-          post: post1({abc:true})
-        }
+        plugins: post1({abc:true})
       })({p:{color:'red'}})
 
       // pass value to next plugin
       _cssobj({
-        plugins: {
-          post: [post1({abc:true}), post2]
-        }
+        plugins: [post1({abc:true}), post2]
       })({p:{color:'red'}})
 
     })
@@ -1089,21 +1092,21 @@ font: Arial;
 
       var node
 
-      function plug1(value) {
+      var plug1 = {value: function (value) {
         expect(value).equal(2)
 
         // pass to next plugin
         return value*2
-      }
+      }}
 
-      function plug2(value, key, n){
+      var plug2 = {value: function (value, key, n){
         node = n
         expect(value).equal(4)
-      }
+      }}
 
-      _cssobj({plugins:{
-        value: [plug1, plug2]
-      }})({p:{size:2}})
+      _cssobj({
+        plugins: [plug1, plug2]
+      })({p:{size:2}})
 
       // before v0.3.2 :
       // plugin should not effect lastVal
@@ -1119,11 +1122,11 @@ font: Arial;
 
     it('update with value plugin', function() {
 
-      function plug(value) {
+      var plug = {value: function (value) {
         return value*2+'px'
-      }
+      }}
 
-      cssobj().options.plugins.value = plug
+      cssobj().options.plugins.push(plug)
 
       var size = {size:2}
       var ret = cssobj({p:size})

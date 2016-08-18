@@ -319,9 +319,9 @@ var cssobj_core = (function () {
 
   function applyPlugins (opt, type) {
     var args = [].slice.call(arguments, 2)
-    var plugin = opt.plugins && opt.plugins[type]
+    var plugin = opt.plugins
     return !plugin ? args[0] : [].concat(plugin).reduce(
-      function (pre, f) { return f.apply(null, [pre].concat(args)) },
+      function (pre, plugin) { return plugin[type] ? plugin[type].apply(null, [pre].concat(args)) : pre },
       args.shift()
     )
   }
