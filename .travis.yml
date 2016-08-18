@@ -4,6 +4,6 @@ node_js:
   - '6.2.1'
 
 env:
-  - CSSOBJ_GENCSS='../node_modules/cssobj-plugin-post-gencss/dist/cssobj-plugin-post-gencss.cjs.js'
+  - CSSOBJ_GENCSS='../node_modules/cssobj-plugin-gencss/dist/cssobj-plugin-gencss.cjs.js'
 
-script: 'npm install cssobj/cssobj-plugin-post-gencss && npm test'
+script: 'npm install cssobj/cssobj-plugin-gencss && npm test'
