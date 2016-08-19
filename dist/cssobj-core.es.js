@@ -152,9 +152,9 @@ function parseObj (d, result, node, init) {
     var order = d[KEY_ORDER] | 0
     var funcArr = []
 
-    var processObj = function (obj, k, nodeObj) {
+    var processObj = function (obj, k, nodeObj, noExtend) {
       var haveOldChild = k in children
-      var newNode = extendObj(children, k, nodeObj)
+      var newNode = noExtend ? nodeObj : extendObj(children, k, nodeObj)
       // don't overwrite selPart for previous node
       newNode.selPart = newNode.selPart || splitComma(k)
       var n = parseObj(obj, result, newNode)
@@ -202,8 +202,8 @@ function parseObj (d, result, node, init) {
     var testAgain = function() {
       if(typeof test=='function') test = test(node)
       if(test) result.nodes.push(node)
+      else node.lastVal=prevVal, processObj({$test: test}, node.key, node, true)
       // pass false test to processObj, delete node
-      else processObj({$test: test}, node.key, node)
     }
     order
       ? funcArr.push([testAgain, null])
@@ -233,7 +233,7 @@ function parseObj (d, result, node, init) {
     }
 
     if (order) arrayKV(result, '_order', {order: order, func: funcArr})
-    return node
+    return test && node
   }
 
   return node

@@ -19,40 +19,122 @@ describe('test cssobj', function(){
   // option test
   describe('test cssobj options', function() {
 
-    it('css with 2 space indent', function() {
-      function $test (node) {
-        return function(node) {
-        console.log(node && node.key, node.prop, node && JSON.stringify(node.prop),111)
-        return node.prop.color[0] === 'red'
-        }
-      }
+    it('basic css', function() {
 
-      var i=0
       var ret = cssobj(
         {'.p':{
+          color:'red'
+        }}
+      )
+
+      expect(ret.css.trim()).deep.equal(
+`.p {
+color: red;
+}`
+      )
+
+    })
+
+  })
+
+  //
+  // $test key
+  describe('$test key', function() {
+
+    it('should $test right at stage 1(prev node)', function() {
+      var i = 0
+      var ret = cssobj(
+        {'p':{
           $test: function(){
-            console.log(i,i,i,i,888888888)
             return i++%2
           },
           color:'red'
         }}
       )
-      console.log(util.inspect(ret, null, 10))
 
-//       expect(ret.css.trim()).deep.equal(
-// `.p {
-// color: red;
-// }`
-//       )
+      expect(i).equal(1)
+      expect(ret.root.children).deep.equal({})
 
       ret.update()
-      console.log(util.inspect(ret, null, 10), i, '\n\n\n')
+      expect(i).equal(2)
+      expect(ret.root.children.p.prop).deep.equal({color: ['red']})
+      expect(ret.diff.added[0]).equal(ret.root.children.p)
 
+      var prev_p = ret.root.children.p
       ret.update()
-      console.log(util.inspect(ret, null, 10), i, '\n\n\n')
+      expect(i).equal(3)
+      expect(ret.root.children).deep.equal({})
+      expect(ret.diff.removed[0]).equal(prev_p)
 
     })
 
+    it('should $test right at stage 2(post node)', function() {
+
+      var i = 0
+      var ret = _cssobj() (
+        {'p':{
+          $test: function(){
+            return function(node) {
+              // if(i%2==1) expect(node.prop).deep.equal({color: ['red']})
+              return i++%2
+            }
+          },
+          color:'red'
+        }}
+      )
+
+      expect(i).equal(1)
+      expect(ret.root.children).deep.equal({})
+
+      ret.update()
+      expect(i).equal(2)
+      expect(ret.root.children.p.prop).deep.equal({color: ['red']})
+      expect(ret.diff.added[0]).equal(ret.root.children.p)
+
+      var prev_p = ret.root.children.p
+      ret.update()
+      expect(i).equal(3)
+      expect(ret.root.children).deep.equal({})
+      expect(ret.diff.removed[0]).equal(prev_p)
+
+    })
+
+    xit('should $test right with stage 2 and $order', function() {
+
+      var i = 0
+      var ret = _cssobj() (
+        {
+          'p':{
+            $order:2,
+            $test: function(){
+              return function(node) {
+                // if(i%2==1) expect(node.prop).deep.equal({color: ['red']})
+                return i++%2
+              }
+            },
+            color:'red'
+          },
+         'dd':{
+           color:'blue'
+         }
+        }
+      )
+
+      expect(i).equal(1)
+      expect(Object.keys(ret.root.children)).deep.equal(['dd'])
+
+      ret.update()
+      expect(i).equal(2)
+      expect(ret.root.children.p.prop).deep.equal({'$order':[2], color: ['red']})
+      expect(ret.diff.added[0]).equal(ret.root.children.p)
+
+      var prev_p = ret.root.children.p
+      ret.update()
+      expect(i).equal(3)
+      expect(Object.keys(ret.root.children)).deep.equal(['dd'])
+      expect(ret.diff.removed[0]).equal(prev_p)
+
+    })
   })
 
   //

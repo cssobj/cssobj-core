@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>cssobj-core test</title>
+  </head>
+  <body>
+    <script type="text/javascript" src="../dist/cssobj-core.iife.js"></script>
+    <script type="text/javascript">
+  var i = 0
+  var ret = cssobj_core() (
+    {'p':{
+      $test: function(){
+        return function(node) {
+          debugger
+          if(i%2==1) expect(node.prop).deep.equal({color: ['red']})
+          return i++%2
+        }
+      },
+      color:'red'
+    }}
+  )
+    </script>
+  </body>
+</html>
