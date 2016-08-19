@@ -77,7 +77,13 @@ window.onresize = function(){
 {
   $id: 'abc', $c:[1,2,3],
   $var:{abc:123, cde:function(){return 234}},
-  div: { fontSize: '12px', color: 'blue' },
+  div: {
+    fontSize: '12px',
+    color: 'blue',
+    $test: function() {
+      return function(){return windowWidth && windowWidth()>1500}
+    }
+  },
   '@media (max-width: 800px)': {
     '.active': {
       color: 'purple',

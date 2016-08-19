@@ -144,6 +144,7 @@ function parseObj (d, result, node, init) {
         !prevVal && node.parent && delete node.parent.children[node.key]
         return
       }
+      node.test = test
     }
     var children = node.children = node.children || {}
     node.lastVal = {}
@@ -369,6 +370,15 @@ function cssobj (options) {
 
       result.root = parseObj(result.obj || {}, result, result.root, true)
       applyOrder(result)
+      // $test apply
+      result.nodes.forEach(function(node) {
+        if(typeof node.test=='function') {
+          var prev = node.enabled
+          node.enabled = node.test(node, result)
+          if (result.diff && prev !== node.enabled) arrayKV(result.diff, prev ? 'removed' : 'added', node)
+          !node.enabled && node.parent && delete node.parent.children[node.key]
+        }
+      })
       result = applyPlugins(options, 'post', result)
       typeof options.onUpdate=='function' && options.onUpdate(result)
       return result
