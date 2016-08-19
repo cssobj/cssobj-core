@@ -68,7 +68,7 @@ color: red;
 
     })
 
-    it('should $test right at stage 2(post node)', function() {
+    xit('should $test right at stage 2(post node)', function() {
 
       var i = 0
       var ret = _cssobj() (

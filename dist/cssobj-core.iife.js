@@ -155,9 +155,9 @@ var cssobj_core = (function () {
       var order = d[KEY_ORDER] | 0
       var funcArr = []
 
-      var processObj = function (obj, k, nodeObj, noExtend) {
+      var processObj = function (obj, k, nodeObj) {
         var haveOldChild = k in children
-        var newNode = noExtend ? nodeObj : extendObj(children, k, nodeObj)
+        var newNode = extendObj(children, k, nodeObj)
         // don't overwrite selPart for previous node
         newNode.selPart = newNode.selPart || splitComma(k)
         var n = parseObj(obj, result, newNode)
@@ -201,17 +201,6 @@ var cssobj_core = (function () {
         }
       }
 
-      // second time $test when it's return function
-      var testAgain = function() {
-        if(typeof test=='function') test = test(node)
-        if(test) result.nodes.push(node)
-        else node.lastVal=prevVal, processObj({$test: test}, node.key, node, true)
-        // pass false test to processObj, delete node
-      }
-      order
-        ? funcArr.push([testAgain, null])
-        : testAgain()
-
       // when it's second time visit node
       if (prevVal) {
         // children removed
@@ -224,7 +213,6 @@ var cssobj_core = (function () {
 
         // prop changed
         var diffProp = function () {
-          if(!test) return
           var newKeys = keys(node.lastVal)
           var removed = keys(prevVal).filter(function (x) { return newKeys.indexOf(x) < 0 })
           if (removed.length) node.diff.removed = removed
@@ -236,7 +224,8 @@ var cssobj_core = (function () {
       }
 
       if (order) arrayKV(result, '_order', {order: order, func: funcArr})
-      return test && node
+      result.nodes.push(node)
+      return node
     }
 
     return node
