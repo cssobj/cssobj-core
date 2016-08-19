@@ -66,12 +66,14 @@ var cssobj_core = (function () {
 
   // checking for valid css value
   function isValidCSSValue (val) {
-    return val || val === 0
+    // falsy: '', NaN, Infinity, [], {}
+    return typeof val=='string' && val || typeof val=='number' && isFinite(val)
   }
 
   // using var as iteral to help optimize
   var KEY_ID = '$id'
   var KEY_ORDER = '$order'
+  var KEY_TEST = '$test'
 
   var TYPE_GROUP = 'group'
 
@@ -131,8 +133,20 @@ var cssobj_core = (function () {
       })
     }
     if (type.call(d) == OBJECT) {
-      var children = node.children = node.children || {}
       var prevVal = node.prevVal = node.lastVal
+      var test = true
+      // at first stage check $test
+      if (KEY_TEST in d) {
+        test = typeof d[KEY_TEST]=='function' ? d[KEY_TEST](node) : d[KEY_TEST]
+        // if test false, remove node completely
+        // if it's return function, going to stage 2 where all prop rendered
+        if(!test) {
+          // for first time check, remove from parent (no diff)
+          !prevVal && node.parent && delete node.parent.children[node.key]
+          return
+        }
+      }
+      var children = node.children = node.children || {}
       node.lastVal = {}
       node.rawVal = {}
       node.prop = {}
@@ -146,9 +160,12 @@ var cssobj_core = (function () {
         var newNode = extendObj(children, k, nodeObj)
         // don't overwrite selPart for previous node
         newNode.selPart = newNode.selPart || splitComma(k)
-        var n = children[k] = parseObj(obj, result, newNode)
+        var n = parseObj(obj, result, newNode)
+        if(n) children[k] = n
         // it's new added node
-        if (prevVal && !haveOldChild) arrayKV(result.diff, 'added', n)
+        if (prevVal) !haveOldChild
+          ? n && arrayKV(result.diff, 'added', n)
+          : !n && (arrayKV(result.diff, 'removed', children[k]), delete children[k])
       }
 
       // only there's no selText, getSel
@@ -173,7 +190,8 @@ var cssobj_core = (function () {
           }
 
           var r = function (_k) {
-            parseProp(node, d, _k, result)
+            // skip $test key
+            if(_k != KEY_TEST) parseProp(node, d, _k, result)
           }
           order
             ? funcArr.push([r, k])
@@ -182,6 +200,17 @@ var cssobj_core = (function () {
           processObj(d[k], k, {parent: node, src: d, key: k})
         }
       }
+
+      // second time $test when it's return function
+      var testAgain = function() {
+        if(typeof test=='function') test = test(node)
+        if(test) result.nodes.push(node)
+        // pass false test to processObj, delete node
+        else processObj({$test: test}, node.key, node)
+      }
+      order
+        ? funcArr.push([testAgain, null])
+        : testAgain()
 
       // when it's second time visit node
       if (prevVal) {
@@ -195,6 +224,7 @@ var cssobj_core = (function () {
 
         // prop changed
         var diffProp = function () {
+          if(!test) return
           var newKeys = keys(node.lastVal)
           var removed = keys(prevVal).filter(function (x) { return newKeys.indexOf(x) < 0 })
           if (removed.length) node.diff.removed = removed
@@ -206,7 +236,6 @@ var cssobj_core = (function () {
       }
 
       if (order) arrayKV(result, '_order', {order: order, func: funcArr})
-      result.nodes.push(node)
       return node
     }
 

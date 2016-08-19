@@ -1,6 +1,6 @@
 {
   "name": "cssobj-core",
-  "version": "0.5.0",
+  "version": "0.4.1",
   "description": "Generate Virtual CSS middle format, support for all cssobj functions and plugins.",
   "keywords": [
     "cssom",

@@ -20,17 +20,36 @@ describe('test cssobj', function(){
   describe('test cssobj options', function() {
 
     it('css with 2 space indent', function() {
+      function $test (node) {
+        return function(node) {
+        console.log(node && node.key, node.prop, node && JSON.stringify(node.prop),111)
+        return node.prop.color[0] === 'red'
+        }
+      }
 
+      var i=0
       var ret = cssobj(
-        {'.p':{color:'red'}},
-        {local:false}
+        {'.p':{
+          $test: function(){
+            console.log(i,i,i,i,888888888)
+            return i++%2
+          },
+          color:'red'
+        }}
       )
+      console.log(util.inspect(ret, null, 10))
 
-      expect(ret.css.trim()).deep.equal(
-`.p {
-color: red;
-}`
-      )
+//       expect(ret.css.trim()).deep.equal(
+// `.p {
+// color: red;
+// }`
+//       )
+
+      ret.update()
+      console.log(util.inspect(ret, null, 10), i, '\n\n\n')
+
+      ret.update()
+      console.log(util.inspect(ret, null, 10), i, '\n\n\n')
 
     })
 
@@ -939,9 +958,9 @@ font: Arial;
         '@import': 'url1',
       })
 
-      expect(Object.keys(ret.root.children['@import  '])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+      expect(Object.keys(ret.root.children['@import  '])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
 
-      expect(Object.keys(ret.root.children['@import'])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+      expect(Object.keys(ret.root.children['@import'])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
 
     })
 
@@ -960,12 +979,12 @@ font: Arial;
 
       expect(media1.at).equal('media')
 
-      expect(Object.keys(media1)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+      expect(Object.keys(media1)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
 
 
       expect(media2.at).equal('media')
 
-      expect(Object.keys(media2)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+      expect(Object.keys(media2)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
 
     })
 
@@ -986,13 +1005,13 @@ font: Arial;
       expect(h3.selText).equal('h3')
       expect(h3.children.p.selText).equal('h3 p')
       expect(h3.children.p.prop).deep.equal({"color":[123]})
-      expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+      expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
       expect(h4.selText).equal('h3,h4')
       expect(h4.prop).deep.equal({width: [10]})
       expect(h4.children['p,span'].selText).equal('h3 p,h3 span,h4 p,h4 span')
       expect(h4.children['p,span'].prop).deep.equal({"color":[234]})
-      expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "children", "prevVal", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+      expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
     })
 
