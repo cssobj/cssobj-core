@@ -41,6 +41,41 @@ color: red;
   // $test key
   describe('$test key', function() {
 
+    it('should $test right with array', function() {
+      var i = 0
+      var ret = cssobj(
+        {
+          'p':[
+            {
+              $test: function(){
+                return i++%2
+              },
+              color:'red'
+            },
+            {
+              $test: function(){
+                return i++%2
+              },
+              color:'blue'
+            }
+          ]
+        }
+      )
+
+      expect(ret.css).equal(`p {
+color: blue;
+}
+`)
+      expect(i).equal(2)
+      i++
+      ret.update()
+      expect(ret.css).equal(`p {
+color: red;
+}
+`)
+
+    })
+
     it('should $test right at stage 1(prev node)', function() {
       var i = 0
       var ret = cssobj(

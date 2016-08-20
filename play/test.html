@@ -8,10 +8,10 @@
     </style>
   </head>
   <body>
-    <!-- <script type="text/javascript" src="../../cssobj/dist/cssobj.iife.js"></script> -->
+    <script type="text/javascript" src="../../cssobj/dist/cssobj.iife.js"></script>
     <script type="text/javascript" src="../../cssobj-core/dist/cssobj-core.iife.js"></script>
     <script type="text/javascript" src="../../cssobj-plugin-gencss/dist/cssobj-plugin-gencss.iife.js"></script>
-    <!-- <script type="text/javascript" src="../../cssobj-plugin-csstext/dist/cssobj-plugin-csstext.iife.js"></script> -->
+    <script type="text/javascript" src="../../cssobj-plugin-csstext/dist/cssobj-plugin-csstext.iife.js"></script>
     <h3>conditional apply css from js</h3>
     <input type="button" onclick="page=1; update()" value="Page1">
     <input type="button" onclick="page=2; update()" value="Page2">
@@ -40,7 +40,7 @@
 }
     </textarea>
     <h4>The CSS:</h4>
-    <textarea id="css"></textarea>
+    <textarea id="css" style="height:80px"></textarea>
     <h4>The CSSOM:</h4>
     <textarea id="cssom"></textarea>
     <script type="text/javascript">
@@ -61,18 +61,21 @@ var option = {
 var result
 (new Function('result=cssobj_core(option)('+src.value+')'))()
 
-// CSSOM part
-// var result2
-// var option2 = {
-//   onUpdate:cssobj_plugin_csstext(function(str) {
-//     cssom.value = str
-//   }).post
-// }
-// result2 = cssobj(result.obj, option2)
+/* CSSOM part */
+var result2
+var option2 = {
+  onUpdate:cssobj_plugin_csstext(function(str) {
+    cssom.value = str
+  }).post
+}
+result2 = cssobj(result.obj, option2)
 
 function update() {
   result.update()
-  // result2.update()
+  console.log(result.diff)
+
+  result2.update()
+  console.log(result2.diff)
 }
 
     </script>
