@@ -2,24 +2,79 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>cssobj-core test</title>
+    <title>$test test</title>
+    <style>
+      textarea{width:600px; height:50px; display:block;}
+    </style>
   </head>
   <body>
-    <script type="text/javascript" src="../dist/cssobj-core.iife.js"></script>
-    <script type="text/javascript">
-  var i = 0
-  var ret = cssobj_core() (
-    {'p':{
-      $test: function(){
-        return function(node) {
-          debugger
-          if(i%2==1) expect(node.prop).deep.equal({color: ['red']})
-          return i++%2
-        }
-      },
+    <!-- <script type="text/javascript" src="../../cssobj/dist/cssobj.iife.js"></script> -->
+    <script type="text/javascript" src="../../cssobj-core/dist/cssobj-core.iife.js"></script>
+    <script type="text/javascript" src="../../cssobj-plugin-gencss/dist/cssobj-plugin-gencss.iife.js"></script>
+    <!-- <script type="text/javascript" src="../../cssobj-plugin-csstext/dist/cssobj-plugin-csstext.iife.js"></script> -->
+    <h3>conditional apply css from js</h3>
+    <input type="button" onclick="page=1; update()" value="Page1">
+    <input type="button" onclick="page=2; update()" value="Page2">
+    <textarea id="src" style="height:220px">
+{
+  '.page1':{
+    $test: getPage,
+    p:{
       color:'red'
-    }}
-  )
+    }
+  },
+  '.page2':{
+    $test: getPage,
+    p:{
+      color:'blue'
+    }
+},
+  p: [{
+    $test: function(){return page==1},
+    color: 'blue'
+  }, {
+    $test: function(){return page==2},
+    color: 'red'
+  }]
+
+}
+    </textarea>
+    <h4>The CSS:</h4>
+    <textarea id="css"></textarea>
+    <h4>The CSSOM:</h4>
+    <textarea id="cssom"></textarea>
+    <script type="text/javascript">
+var page=1
+function getPage(prev,node) {
+  return node.key=='.page'+page
+}
+
+// CSS part
+var option = {
+  plugins:[
+    cssobj_plugin_gencss({indent:'  '})
+  ],
+  onUpdate:function(result) {
+    css.value = result.css
+  }
+}
+var result
+(new Function('result=cssobj_core(option)('+src.value+')'))()
+
+// CSSOM part
+// var result2
+// var option2 = {
+//   onUpdate:cssobj_plugin_csstext(function(str) {
+//     cssom.value = str
+//   }).post
+// }
+// result2 = cssobj(result.obj, option2)
+
+function update() {
+  result.update()
+  // result2.update()
+}
+
     </script>
   </body>
 </html>

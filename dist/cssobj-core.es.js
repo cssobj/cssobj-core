@@ -125,25 +125,15 @@ function parseObj (d, result, node, init) {
   node.obj = d
 
   if (type.call(d) == ARRAY) {
-    return d.map(function (v, i) {
-      return parseObj(v, result, node[i] || {parent: node, src: d, index: i})
-    })
+    var newNode = []
+    for(var node, i = 0, len = d.length; i < len; i++) {
+      node = parseObj(d[i], result, node[i] || {parent: node, parentNode: newNode, src: d, index: i})
+      node && newNode.push(node)
+    }
+    return newNode
   }
   if (type.call(d) == OBJECT) {
     var prevVal = node.prevVal = node.lastVal
-    var test = true
-    // at first stage check $test
-    if (KEY_TEST in d) {
-      test = typeof d[KEY_TEST] == 'function' ? d[KEY_TEST](!node.disabled, node, result) : d[KEY_TEST]
-      // if test false, remove node completely
-      // if it's return function, going to stage 2 where all prop rendered
-      if(!test) {
-        // for first time check, remove from parent (no diff)
-        !prevVal && node.parent && delete node.parent.children[node.key]
-        return
-      }
-      node.test = test
-    }
     var children = node.children = node.children || {}
     node.lastVal = {}
     node.rawVal = {}
@@ -154,16 +144,26 @@ function parseObj (d, result, node, init) {
     var funcArr = []
 
     var processObj = function (obj, k, nodeObj) {
+      var test = true, n
+      // at first stage check $test
+      if (KEY_TEST in obj) {
+        // if test false, remove node completely
+        nodeObj.test = test = typeof obj[KEY_TEST] == 'function' ? obj[KEY_TEST](!nodeObj.disabled, nodeObj, result) : obj[KEY_TEST]
+      }
+
       var haveOldChild = k in children
-      var newNode = extendObj(children, k, nodeObj)
-      // don't overwrite selPart for previous node
-      newNode.selPart = newNode.selPart || splitComma(k)
-      var n = parseObj(obj, result, newNode)
-      if(n) children[k] = n
+      if(test) {
+        var newNode = extendObj(children, k, nodeObj)
+        // don't overwrite selPart for previous node
+        newNode.selPart = newNode.selPart || splitComma(k)
+        n = parseObj(obj, result, newNode)
+        if(n) children[k] = n
+      }
       // it's new added node
       if (prevVal) !haveOldChild
         ? n && arrayKV(result.diff, 'added', n)
         : !n && (arrayKV(result.diff, 'removed', children[k]), delete children[k])
+      return n
     }
 
     // only there's no selText, getSel
@@ -195,7 +195,7 @@ function parseObj (d, result, node, init) {
           ? funcArr.push([r, k])
           : r(k)
       } else {
-        processObj(d[k], k, {parent: node, src: d, key: k})
+        if(!processObj(d[k], k, {parent: node, src: d, key: k})) continue
       }
     }
 
