@@ -103,7 +103,8 @@ color: red;
 
     })
 
-    it('should $test right at stage 2(post node)', function() {
+    // this feature has been removed
+    xit('should $test right at stage 2(post node)', function() {
 
       var i = 0
       var ret = _cssobj() (
@@ -134,7 +135,8 @@ color: red;
 
     })
 
-    it('should $test right with stage 2 and $order', function() {
+    // this feature has been removed
+    xit('should $test right with stage 2 and $order', function() {
 
       var i = 0
       var ret = _cssobj() (
