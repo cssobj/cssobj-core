@@ -1,9 +1,12 @@
 language: node_js
 
 node_js:
-  - '6.2.1'
+  - '6'
 
 env:
   - CSSOBJ_GENCSS='../node_modules/cssobj-plugin-gencss/dist/cssobj-plugin-gencss.cjs.js'
 
-script: 'npm install cssobj/cssobj-plugin-gencss && npm test'
+script:
+  - npm install istanbul -g
+  - npm install cssobj/cssobj-plugin-gencss
+  - npm run coveralls
