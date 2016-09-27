@@ -1036,6 +1036,48 @@ font: Arial;
 
     })
 
+    it('value function return and merge Object/Array', function() {
+
+      var target = `p {
+display: -webkit-box;
+display: -moz-box;
+display: -ms-flexbox;
+display: -webkit-flex;
+display: flex;
+-ms-flex-preferred-size: initial;
+line-height: 24px;
+}
+`
+
+      // value function return single Object
+      var obj = {
+        p:{
+          display: function() {
+            return {display: ['-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex'], '-ms-flex-preferred-size': 'initial'}
+          },
+          lineHeight: '24px'
+        }
+      }
+
+      var ret = cssobj(obj)
+      expect(ret.css).equal(target)
+
+
+      // value function return Array of Object
+      var obj = {
+        p:{
+          display: function() {
+            return [{display: ['-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex']}, {'-ms-flex-preferred-size': 'initial' }]
+          },
+          lineHeight: '24px'
+        }
+      }
+
+      var ret = cssobj(obj)
+      expect(ret.css).equal(target)
+
+    })
+
 
     it('update ref when remove named obj', function() {
 

@@ -78,8 +78,13 @@ window.onresize = function(){
   $id: 'abc', $c:[1,2,3],
   $var:{abc:123, cde:function(){return 234}},
   div: {
-    fontSize: '12px',
-    color: 'blue',
+    fontSize: ['12px', '11px', '14px'],
+    color: ['blue', 'red'],
+    float: function() {
+      return [{display: 1234, color: ['red', '234'], lineHeight:'24px'}, {color:'asdf'}]
+    }, display: function() {
+            return {display: ['-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex'], '-ms-flex-preferred-size': 'initial'}
+          },
     $test: function() {
       return function(){return windowWidth && windowWidth()>1500}
     }

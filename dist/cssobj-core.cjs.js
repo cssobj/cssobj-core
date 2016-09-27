@@ -295,22 +295,30 @@ function parseProp (node, d, key, result) {
 
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
-    var val = typeof v == 'function'
+    var rawVal = typeof v == 'function'
         ? v(prev, node, result)
         : v
 
-    node.rawVal[key] = val
-    val = applyPlugins(result.options, 'value', val, key, node, result)
-    // only valid val can be lastVal
-    if (isValidCSSValue(val)) {
-      // push every val to prop
-      arrayKV(
-        node.prop,
-        key,
-        val,
-        true
-      )
-      prev = lastVal[key] = val
+    var val = applyPlugins(result.options, 'value', rawVal, key, node, result)
+
+    // check and merge only format as Object || Array of Object, other format not accepted!
+    if (isIterable(val)) {
+      for (var k in val) {
+        if (val.hasOwnProperty(k)) parseProp(node, val, k, result)
+      }
+    } else {
+      node.rawVal[key] = rawVal
+      if (isValidCSSValue(val)) {
+        // only valid val can enter node.prop and lastVal
+        // push every val to prop
+        arrayKV(
+          node.prop,
+          key,
+          val,
+          true
+        )
+        prev = lastVal[key] = val
+      }
     }
   })
   if (prevVal) {
