@@ -1036,7 +1036,41 @@ font: Arial;
 
     })
 
-    it('value function return and merge Object/Array', function() {
+    it('value function returned array of value', function() {
+      var obj = {
+        p:{
+          display: function() {
+            return [0,1]
+          }
+        }
+      }
+
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`p {
+display: 0;
+display: 1;
+}
+`)
+
+      // array of object and number mixed
+      var obj = {
+        p:{
+          display: function() {
+            return [0,1, {color: 'red'}]
+          }
+        }
+      }
+
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`p {
+display: 0;
+display: 1;
+color: red;
+}
+`)
+    })
+
+    it('value function returned and merge Object/Array', function() {
 
       var target = `p {
 display: -webkit-box;

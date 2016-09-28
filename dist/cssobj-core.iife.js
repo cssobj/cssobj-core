@@ -3,6 +3,11 @@ var cssobj_core = (function () {
 
   // helper functions for cssobj
 
+  // check n is numeric, or string of numeric
+  function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n)
+  }
+
   // set default option (not deeply)
   function defaults(options, defaultOption) {
     options = options || {}
@@ -288,45 +293,60 @@ var cssobj_core = (function () {
 
   }
 
-  function parseProp (node, d, key, result) {
+  /**
+   * Parse property of object d's key, with propKey as a candidate key name
+   * @param {} node: v-node of cssobj
+   * @param {} d: source object
+   * @param {} key: any numeric will be ignored, then converted to string
+   * @param {} result: cssobj result object
+   * @param {} propKey: candidate prop key name
+
+   Accept only key as string, numeric will be ignored
+
+   color: function(){return ['red', 'blue']} will expand
+   color: function(){return {fontSize: '12px', float:'right'}} will be replaced
+
+   */
+  function parseProp (node, d, key, result, propKey) {
     var prevVal = node.prevVal
     var lastVal = node.lastVal
-
-    var prev = prevVal && prevVal[key]
+    if(!isNumeric(key)) propKey = key
+    if(!propKey) return
+    var prev = prevVal && prevVal[propKey]
 
     ![].concat(d[key]).forEach(function (v) {
       // pass lastVal if it's function
       var rawVal = typeof v == 'function'
-          ? v(prev, node, result)
-          : v
+        ? v(prev, node, result)
+        : v
 
-      var val = applyPlugins(result.options, 'value', rawVal, key, node, result)
+      var val = applyPlugins(result.options, 'value', rawVal, propKey, node, result)
 
       // check and merge only format as Object || Array of Object, other format not accepted!
       if (isIterable(val)) {
         for (var k in val) {
-          if (val.hasOwnProperty(k)) parseProp(node, val, k, result)
+          if (val.hasOwnProperty(k)) parseProp(node, val, k, result, propKey)
         }
       } else {
-        node.rawVal[key] = rawVal
+        node.rawVal[propKey] = rawVal
         if (isValidCSSValue(val)) {
           // only valid val can enter node.prop and lastVal
           // push every val to prop
           arrayKV(
             node.prop,
-            key,
+            propKey,
             val,
             true
           )
-          prev = lastVal[key] = val
+          prev = lastVal[propKey] = val
         }
       }
     })
     if (prevVal) {
-      if (!(key in prevVal)) {
-        arrayKV(node.diff, 'added', key)
-      } else if (prevVal[key] != lastVal[key]) {
-        arrayKV(node.diff, 'changed', key)
+      if (!(propKey in prevVal)) {
+        arrayKV(node.diff, 'added', propKey)
+      } else if (prevVal[propKey] != lastVal[propKey]) {
+        arrayKV(node.diff, 'changed', propKey)
       }
     }
   }
