@@ -1040,7 +1040,13 @@ font: Arial;
       var obj = {
         p:{
           display: function() {
-            return [0,1]
+            return [
+              0,
+              1,
+              // also expand nested arrays
+              [2,3],
+              [[4]]
+            ]
           }
         }
       }
@@ -1049,15 +1055,16 @@ font: Arial;
       expect(ret.css).equal(`p {
 display: 0;
 display: 1;
+display: 2;
+display: 3;
+display: 4;
 }
 `)
 
       // array of object and number mixed
       var obj = {
         p:{
-          display: function() {
-            return [0,1, {color: 'red'}]
-          }
+          display: [0,1, {color: 'red'}]
         }
       }
 
@@ -1086,6 +1093,7 @@ line-height: 24px;
       // value function return single Object
       var obj = {
         p:{
+          // below can only as value function, for it's return Object
           display: function() {
             return {display: ['-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex'], '-ms-flex-preferred-size': 'initial'}
           },

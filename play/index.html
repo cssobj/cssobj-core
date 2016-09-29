@@ -74,34 +74,9 @@ window.onresize = function(){
   <div class="left div">
     <h3 title="a,b">JS Object: (paste/change below)</h3>
     <textarea id="src" oninput="convert(this)">
-{
-  $id: 'abc', $c:[1,2,3],
-  $var:{abc:123, cde:function(){return 234}},
-  div: {
-    fontSize: ['12px', '11px', '14px'],
-    color: ['blue', 'red'],
-    float: function() {
-      return [1,2,3]
-    }, display: function() {
-            return {display: [[[11]], [[{color:123}]], '-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex'], '-ms-flex-preferred-size': 'initial'}
-          },
-    $test: function() {
-      return function(){return windowWidth && windowWidth()>1500}
-    }
-  },
-  '@media (max-width: 800px)': {
-    '.active': {
-      color: 'purple',
-      'div &': {
-        color: 'red',
-        '@media (min-width: 100px)':{
-          color: 'red'
-        }
-      }
-    }
-  }
-}
-    </textarea>
+      {
+      p: {display:'flex', color:'red'}
+}    </textarea>
   </div>
   <div class="right div">
     <h3 id="h3">CSS Text: (paste/change below)
@@ -116,9 +91,88 @@ function $(sel) {
   return document.getElementById(sel)
 }
 var src = $('src')
+function cssobj_plugin_replace (option) {
+  option = option || {}
 
+  var replaceMap = option.maps || [
+    [
+      'display',
+      'flex',
+      [
+        {
+          display: '-webkit-box'
+        }, {
+          display: '-moz-box'
+        }, {
+          display: '-ms-flexbox',
+          '-ms-flex-preferred-size': 'initial' // IE10
+        }, {
+          display: '-webkit-flex'
+        }, {
+          display: 'flex'
+        }
+      ]
+    ],
+    [
+      'display',
+      'inline-flex',
+      [
+        {
+          display: '-ms-inline-flexbox'
+        }, {
+          display: '-webkit-inline-flex'
+        }, {
+          display: 'inline-flex'
+        }
+      ]
+    ],
+    [
+      'flex-direction',
+      'row',
+      {
+        '-ms-flex-direction': 'row',
+        '-webkit-flex-direction': 'row',
+        'flex-direction': 'row'
+      }
+    ],
+    [null,null, function(key, value){return key=='color'? {[key]:value, zoom:1} : {}}]
+  ]
+
+  return {
+    value: function (value, key, node, result, propKey) {
+
+      if(propKey!==undefined) return value
+
+      // retVal hold all maps result
+      var retVal = []
+
+      // replace from prop+value, to mapped value
+      for(var map, val, i = 0, len = replaceMap.length; i < len; i++) {
+
+        map = replaceMap[i]
+        val = map[2]
+
+        // map[0] : prop, null as placeholder
+        // map[1] : value, null as placeholder
+        // map[2] : replacement, function(key, value){} || any
+        if((map[0]===null || map[0]==key)
+           && (map[1]===null || map[1]==value))
+
+          retVal.push(
+            typeof val=='function'
+              ? val(key, value, node, result)
+              : val
+          )
+      }
+
+      // only accept replaced value, return original value as fallback
+      return retVal.length ? retVal : value
+    }
+  }
+}
 var opt = {local:1, propSugar:1, plugins: [
-  cssobj_plugin_gencss({indent:'  '})
+  cssobj_plugin_gencss({indent:'  '}),
+  cssobj_plugin_replace()
 ], localNames:{p:'_prefix_p'}}
 
 var cssobjFunc = cssobj_core(opt)
