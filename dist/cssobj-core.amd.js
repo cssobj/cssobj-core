@@ -322,7 +322,7 @@ define('cssobj_core', function () { 'use strict';
         ? v(prev, node, result)
         : v
 
-      var val = applyPlugins(result.options, 'value', rawVal, key, node, result, propKey)
+      var val = applyPlugins(result.options, 'value', rawVal, propName, node, result, propKey)
 
       // check and merge only format as Object || Array of Object, other format not accepted!
       if (isIterable(val)) {

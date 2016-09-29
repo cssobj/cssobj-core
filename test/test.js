@@ -1075,6 +1075,23 @@ display: 1;
 color: red;
 }
 `)
+
+      // array of object and array mixed
+      var obj = {
+        p:{
+          display: [0,1, {color: [['red', 'blue']]}]
+        }
+      }
+
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`p {
+display: 0;
+display: 1;
+color: red;
+color: blue;
+}
+`)
+
     })
 
     it('value function returned and merge Object/Array', function() {
@@ -1314,7 +1331,8 @@ line-height: 24px;
 
       var node
 
-      var plug1 = {value: function (value) {
+      var plug1 = {value: function (value, key) {
+        expect(key).equal('size')
         expect(value).equal(2)
 
         // pass to next plugin
@@ -1323,7 +1341,9 @@ line-height: 24px;
 
       var plug2 = {value: function (value, key, n){
         node = n
+        expect(key).equal('size')
         expect(value).equal(4)
+        return 100
       }}
 
       _cssobj({
@@ -1336,7 +1356,34 @@ line-height: 24px;
 
       // from v0.3.3 :
       // plugin also affect lastVal to get DIFF work right
-      expect(node.lastVal['size']).equal(undefined)
+      expect(node.lastVal['size']).equal(100)
+
+      // test return Object from value plugin
+      var checkArray = []
+      var expectArray = [
+        ["size",1,undefined],
+        ["size",{"color":[[2]]},undefined],
+        ["color",[2],"size"],
+        ["color",2,"color"]
+      ]
+
+      _cssobj({
+        plugins: [{
+          value: function(value, key, node, result, prop){
+            checkArray.push([key, value, prop])
+            return value
+          }
+        }]
+      })({p:{
+        size:[
+          1,
+          {
+            color:[[2]]
+          }
+        ]
+      }})
+
+      expect(checkArray).deep.equal(expectArray)
 
     })
 
