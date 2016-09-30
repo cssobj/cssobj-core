@@ -397,7 +397,7 @@ var cssobj_core = (function () {
   function cssobj (options) {
 
     options = defaults(options, {
-      plugins: {}
+      plugins: []
     })
 
     return function (obj, initData) {

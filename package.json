@@ -1,6 +1,6 @@
 {
   "name": "cssobj-core",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Generate Virtual CSS middle format, support for all cssobj functions and plugins.",
   "keywords": [
     "cssom",
@@ -16,7 +16,7 @@
     "test": "istanbul cover _mocha",
     "report": "cd dist && gzip < cssobj-core.min.js > cssobj-core.min.gz && ls -lh && rm -f *.gz",
     "build": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js",
-    "make": "npm run build && gulp bump",
+    "make": "gulp bump && npm run build",
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {

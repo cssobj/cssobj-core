@@ -396,7 +396,7 @@ function applyOrder (opt) {
 function cssobj (options) {
 
   options = defaults(options, {
-    plugins: {}
+    plugins: []
   })
 
   return function (obj, initData) {
