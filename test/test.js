@@ -1196,7 +1196,12 @@ line-height: 24px;
     })
 
     it('normal nested rule', function() {
-      var ret = cssobj({
+
+      var ret = _cssobj({
+        plugins: {value: function(val, key) {
+          return key==='width'? val*2 : val
+        }}
+      })({
         h3:{
           p:{color:123}
         },
@@ -1211,11 +1216,15 @@ line-height: 24px;
 
       expect(h3.selText).equal('h3')
       expect(h3.children.p.selText).equal('h3 p')
+      expect(h3.children.p.rawVal).deep.equal({"color":[123]})
       expect(h3.children.p.prop).deep.equal({"color":[123]})
       expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
       expect(h4.selText).equal('h3,h4')
-      expect(h4.prop).deep.equal({width: [10]})
+      // rawVal is value array before any plugins
+      expect(h4.rawVal).deep.equal({width: [10]})
+      // prop is value array after plugins
+      expect(h4.prop).deep.equal({width: [20]})
       expect(h4.children['p,span'].selText).equal('h3 p,h3 span,h4 p,h4 span')
       expect(h4.children['p,span'].prop).deep.equal({"color":[234]})
       expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
