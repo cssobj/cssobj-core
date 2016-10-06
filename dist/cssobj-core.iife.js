@@ -331,7 +331,12 @@ var cssobj_core = (function () {
           if (val.hasOwnProperty(k)) parseProp(node, val, k, result, propName)
         }
       } else {
-        node.rawVal[propName] = rawVal
+        arrayKV(
+          node.rawVal,
+          propName,
+          rawVal,
+          true
+        )
         if (isValidCSSValue(val)) {
           // only valid val can enter node.prop and lastVal
           // push every val to prop

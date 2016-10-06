@@ -309,19 +309,6 @@ color: red;
 
     })
 
-    xit('css with reset.css', function() {
-
-      var ret = cssobj({p:{'_fontSize':'12px', 'background\\Color':'#fff'}}, {propSugar:0})
-      expect(ret.css.trim()).deep.equal(
-`p {
-_fontSize: 12px;
-background\\Color: #fff;
-}`
-      )
-
-    })
-
-
   })
 
   //
@@ -1233,6 +1220,37 @@ line-height: 24px;
       expect(h4.children['p,span'].prop).deep.equal({"color":[234]})
       expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
+    })
+
+    it('should work with .clearfix', function() {
+      var ret = cssobj({
+        // clearfix hack
+        '.clearfix': {
+          '&:before, &:after': {
+            content: '" "',
+            display: 'table'
+          },
+          '&:after': {
+            clear: 'both'
+          },
+          '&': {
+            '*zoom': 1
+          }
+        }
+      })
+
+      expect(ret.css).equal(
+`.clearfix:before, .clearfix:after {
+content: " ";
+display: table;
+}
+.clearfix:after {
+clear: both;
+}
+.clearfix {
+*zoom: 1;
+}
+`)
     })
 
     it('@media nested rule', function() {
