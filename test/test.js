@@ -5,6 +5,28 @@ var cssobj_plugin_gencss = require(process.env.CSSOBJ_GENCSS || '../../cssobj-pl
 var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
 
+describe('test options', function(){
+
+  it('should work with empty options', function() {
+    var ret = _cssobj()({})
+    expect(ret.options).deep.equal({plugins:[]})
+  })
+
+  it('should work with custom options', function() {
+    var plugin = function(){}
+    var ret = _cssobj({
+      plugins:[ plugin ]
+    })(
+      {a:1},
+      {b:2}
+    )
+    expect(ret.options).deep.equal({plugins:[ plugin ]})
+    expect(ret.obj).deep.equal({a:1})
+    expect(ret.data).deep.equal({b:2})
+  })
+
+})
+
 describe('test cssobj', function(){
 
   beforeEach(function() {

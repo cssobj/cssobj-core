@@ -7,15 +7,6 @@ function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n)
 }
 
-// set default option (not deeply)
-function defaults(options, defaultOption) {
-  options = options || {}
-  for (var i in defaultOption) {
-    if (!(i in options)) options[i] = defaultOption[i]
-  }
-  return options
-}
-
 // extend obj from source, if it's no key in obj, create one
 function extendObj (obj, key, source) {
   obj[key] = obj[key] || {}
@@ -400,9 +391,13 @@ function applyOrder (opt) {
 
 function cssobj (options) {
 
-  options = defaults(options, {
-    plugins: []
-  })
+  // without using helper function below, to save size
+  // options = defaults(options, {
+  //   plugins: []
+  // })
+
+  options = options || {}
+  options.plugins = options.plugins || []
 
   return function (obj, initData) {
     var updater = function (data) {
