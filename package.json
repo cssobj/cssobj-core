@@ -15,7 +15,7 @@
     "pretest": "rollup -c",
     "test": "istanbul cover _mocha",
     "report": "cd dist && gzip < cssobj-core.min.js > cssobj-core.min.gz && ls -lh && rm -f *.gz",
-    "build": "rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js",
+    "build": "git rev-parse HEAD > .commithash && rollup -c && uglifyjs dist/cssobj-core.iife.js -cm -o dist/cssobj-core.min.js",
     "make": "gulp bump && npm run build",
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
@@ -36,7 +36,8 @@
     "gulp-bump": "^2.2.0",
     "mocha": "^2.5.3",
     "mocha-lcov-reporter": "^1.2.0",
-    "rollup": "^0.33.1"
+    "rollup": "^0.33.1",
+    "rollup-plugin-replace": "^1.1.1"
   },
   "dependencies": {}
 }

@@ -1,3 +1,18 @@
+/**
+  cssobj-core 0.5.5
+  Fri Oct 07 2016 10:48:36 GMT+0800 (HKT)
+  commit 81cf859b6799d63447704c8a5551366e92ff1c61
+
+ IE ES3 need below polyfills:
+
+ * Array.prototype.forEach
+ * Array.prototype.indexOf
+ * Array.prototype.map
+ * Array.prototype.some
+ * Array.prototype.reduce
+ * Object.keys
+ **/
+
 // helper functions for cssobj
 
 // check n is numeric, or string of numeric
