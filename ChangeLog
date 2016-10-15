@@ -7,6 +7,7 @@
 
         * v0.5.5
         CHANGE: rawVal as array instead of last value
+        - Make it compatible with: [cssobj-plugin-extend](https://github.com/cssobj/cssobj-plugin-extend)
         REMOVE: defaults function in option init, for reduce file size
 
 2016-09-30  James Yang  <jamesyang999@gmail.com>
@@ -32,6 +33,7 @@
         * v0.5.0
         ADD: coveralls.io badge
         ADD: value function can return object
+        - Make it compatible with: [cssobj-plugin-replace](https://github.com/cssobj/cssobj-plugin-replace)
 
 2016-08-20  James Yang  <jamesyang999@gmail.com>
 

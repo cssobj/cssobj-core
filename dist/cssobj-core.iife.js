@@ -1,7 +1,7 @@
 /**
-  cssobj-core 0.5.5
-  Fri Oct 07 2016 10:48:36 GMT+0800 (HKT)
-  commit 81cf859b6799d63447704c8a5551366e92ff1c61
+  cssobj-core 0.6.0
+  Sat Oct 15 2016 18:47:03 GMT+0800 (HKT)
+  commit cade87a587a5b6cd3b6ead69934eb38e371f50c3
 
  IE ES3 need below polyfills:
 
@@ -23,10 +23,27 @@ var cssobj_core = (function () {
     return !isNaN(parseFloat(n)) && isFinite(n)
   }
 
+  function own(o, k) {
+    return {}.hasOwnProperty.call(o, k)
+  }
+
+  // set default option (not deeply)
+  function defaults(options, defaultOption) {
+    options = options || {}
+    for (var i in defaultOption) {
+      if (own(defaultOption, i) && !(i in options)) options[i] = defaultOption[i]
+    }
+    return options
+  }
+
   // extend obj from source, if it's no key in obj, create one
   function extendObj (obj, key, source) {
     obj[key] = obj[key] || {}
-    for (var k in source) obj[key][k] = source[k]
+    for(var args = arguments, i = 2; i < args.length; i++) {
+      source = args[i]
+      for (var k in source)
+        if (own(source, k)) obj[key][k] = source[k]
+    }
     return obj[key]
   }
 
@@ -101,6 +118,11 @@ var cssobj_core = (function () {
     return type.call(v) == OBJECT || type.call(v) == ARRAY
   }
 
+  // check if it's function
+  function isFunction (v) {
+    return typeof v == 'function'
+  }
+
   // regexp constants
   // @page rule: CSSOM:
   //   IE returned: not implemented error
@@ -147,12 +169,14 @@ var cssobj_core = (function () {
         nodes.push(n)
       }
       return nodes
-    }
-    if (type.call(d) == OBJECT) {
+    } else {
+      // it's no need to check (type.call(d) == OBJECT)
+      // isIterable will filter only ARRAY/OBJECT
+      // other types will goto parseProp function
       var prevVal = node.prevVal = node.lastVal
       // at first stage check $test
       if (KEY_TEST in d) {
-        var test = typeof d[KEY_TEST] == 'function' ? d[KEY_TEST](!node.disabled, node, result) : d[KEY_TEST]
+        var test = isFunction(d[KEY_TEST]) ? d[KEY_TEST](!node.disabled, node, result) : d[KEY_TEST]
         // if test false, remove node completely
         // if it's return function, going to stage 2 where all prop rendered
         if(!test) {
@@ -191,7 +215,7 @@ var cssobj_core = (function () {
         // here $key start with $ is special
         // k.charAt(0) == '$' ... but the core will calc it into node.
         // Plugins should take $ with care and mark as a special case. e.g. ignore it
-        if (!d.hasOwnProperty(k)) continue
+        if (!own(d, k)) continue
         if (!isIterable(d[k]) || type.call(d[k]) == ARRAY && !isIterable(d[k][0])) {
 
           // it's inline at-rule: @import etc.
@@ -244,7 +268,6 @@ var cssobj_core = (function () {
       return node
     }
 
-    return node
   }
 
   function getSel(node, result) {
@@ -319,13 +342,17 @@ var cssobj_core = (function () {
 
     // the prop name get from object key or candidate key
     var propName = isNumeric(key) ? propKey : key
-    if(!propName) return
+
+    // NEXT: propName can be changed by user
+    // now it's not used, since propName ensure exists
+    // corner case: propKey==='' ?? below line will do wrong!!
+    // if(!propName) return
 
     var prev = prevVal && prevVal[propName]
 
     ![].concat(d[key]).forEach(function (v) {
       // pass lastVal if it's function
-      var rawVal = typeof v == 'function'
+      var rawVal = isFunction(v)
         ? v(prev, node, result)
         : v
 
@@ -334,7 +361,7 @@ var cssobj_core = (function () {
       // check and merge only format as Object || Array of Object, other format not accepted!
       if (isIterable(val)) {
         for (var k in val) {
-          if (val.hasOwnProperty(k)) parseProp(node, val, k, result, propName)
+          if (own(val, k)) parseProp(node, val, k, result, propName)
         }
       } else {
         arrayKV(
@@ -385,7 +412,8 @@ var cssobj_core = (function () {
   function applyPlugins (opt, type) {
     var args = [].slice.call(arguments, 2)
     var plugin = opt.plugins
-    return !plugin ? args[0] : [].concat(plugin).reduce(
+    // plugin is always Array, so here we don't check it
+    return [].concat(plugin).reduce(
       function (pre, plugin) { return plugin[type] ? plugin[type].apply(null, [pre].concat(args)) : pre },
       args.shift()
     )
@@ -407,30 +435,34 @@ var cssobj_core = (function () {
 
   function cssobj (options) {
 
-    // without using helper function below, to save size
-    // options = defaults(options, {
-    //   plugins: []
-    // })
-
-    options = options || {}
-    options.plugins = options.plugins || []
+    options = defaults(options, {
+      plugins: [],
+      intro: []
+    })
 
     return function (obj, initData) {
       var updater = function (data) {
         if (arguments.length) result.data = data || {}
 
-        result.root = parseObj(result.obj || {}, result, result.root, true)
+        result.root = parseObj(extendObj({}, '', result.intro, result.obj), result, result.root, true)
         applyOrder(result)
         result = applyPlugins(options, 'post', result)
-        typeof options.onUpdate=='function' && options.onUpdate(result)
+        isFunction(options.onUpdate) && options.onUpdate(result)
         return result
       }
 
       var result = {
-        obj: obj,
+        obj: obj||{},
+        intro: {},
         update: updater,
         options: options
       }
+
+      ![].concat(options.intro).forEach(
+        function(v) {
+          extendObj(result, 'intro', isFunction(v) ? v(result) : v)
+        }
+      )
 
       updater(initData)
 

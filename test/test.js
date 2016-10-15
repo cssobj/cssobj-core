@@ -9,7 +9,10 @@ describe('test options', function(){
 
   it('should work with empty options', function() {
     var ret = _cssobj()({})
-    expect(ret.options).deep.equal({plugins:[]})
+    expect(ret.options).deep.equal({
+      plugins:[],
+      intro: []
+    })
   })
 
   it('should work with custom options', function() {
@@ -20,9 +23,72 @@ describe('test options', function(){
       {a:1},
       {b:2}
     )
-    expect(ret.options).deep.equal({plugins:[ plugin ]})
+    expect(ret.options).deep.equal({
+      plugins:[ plugin ],
+      intro: []
+    })
     expect(ret.obj).deep.equal({a:1})
     expect(ret.data).deep.equal({b:2})
+  })
+
+  it('should work with intro', function() {
+    var ret = _cssobj({
+      plugins: [
+        cssobj_plugin_gencss({indent:''})
+      ],
+      intro: [
+        // basic object as intro
+        {
+          '.clearfix':{
+            clear: 'both'
+          }
+        },
+
+        // accept function as intro
+        function(){
+          return {'.flex-item': {flex:1, flexBasis: '200px'}}
+        }
+      ]
+    })(
+      {p: {color: 'red'}}
+    )
+    expect(ret.intro).deep.equal({
+      '.clearfix':{
+        clear:'both'
+      },
+      '.flex-item':{
+        flex:1,
+        flexBasis: '200px'
+      }
+    })
+    expect(ret.css).equal(`.clearfix {
+clear: both;
+}
+.flex-item {
+flex: 1;
+flex-basis: 200px;
+}
+p {
+color: red;
+}
+`)
+  })
+
+  it('option.onUpdate test', function() {
+    var prop = {
+      color: ['red']
+    }
+    var ret = _cssobj({
+      onUpdate: function(result) {
+        expect(result.root.children.p.prop).deep.equal(prop)
+      }
+    })({p: {color: 'red'}})
+
+    ret.obj.p.color = 'blue'
+    prop = {
+      color: ['blue']
+    }
+    ret.update()
   })
 
 })
@@ -60,8 +126,92 @@ color: red;
   })
 
   //
+  // corner case like: function as value, inherit
+  describe('special object test', function() {
+    it('should work right with object inherit', function() {
+      var a = {
+        color: 'white',
+        p: {color: 'red'}
+      }
+
+      var color = Object.create({color: 'blue'}, {
+        font: {value: 123, enumerable: true}
+      })
+
+      var b = Object.create(a, {
+        dd: { value: {color: 'black'}, enumerable: false }
+      })
+
+      b.div = {}
+      b.div = color
+
+      var ret = cssobj(b)
+      expect(ret.css).equal(`div {
+font: 123;
+}
+`)
+    })
+
+    it('should work right with special type', function() {
+      var obj = {
+        p: /regexp type/,  // will be ignored
+        div: false,
+        dd: {color: NaN},
+        dt: null,
+        td: undefined,
+        tr: new Date(),
+        table: new String('some string type'),
+        b: {font: 123}
+      }
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`b {
+font: 123;
+}
+`)
+    })
+  })
+
+  it('test with object contain inherited properties', function() {
+    var proto = {color: 'red'}
+    var obj = Object.create(proto, {
+      font: {value: 123, enumerable: true}
+    })
+    var ret = cssobj({
+      p: {
+        color: function() {
+          return obj
+        }
+      }
+    })
+    expect(ret.css).equal(`p {
+font: 123;
+}
+`)
+  })
+
+
+  //
   // $test key
   describe('$test key', function() {
+
+    it('should $test with simple true/false', function() {
+      var ret = cssobj({
+        p:[
+          {
+            $test: false,
+            color: 'red'
+          },
+          {
+            $test: true,
+            color: 'blue'
+          }
+        ]
+      })
+      expect(ret.css).equal(`p {
+color: blue;
+}
+`)
+    })
 
     it('should $test right with array', function() {
       var i = 0
@@ -1303,6 +1453,25 @@ clear: both;
 
     })
 
+  })
+
+  //
+  // str sugar test
+  describe('string sugar replace', function() {
+    it('should work right with escape', function() {
+      var obj = {
+        div: {
+          '&.item[title="a\\&b"]': {
+            color: 'red'
+          }
+        }
+      }
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`div.item[title="a&b"] {
+color: red;
+}
+`)
+    })
   })
 
   //
