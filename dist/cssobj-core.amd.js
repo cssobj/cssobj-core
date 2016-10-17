@@ -1,7 +1,7 @@
 /**
-  cssobj-core 0.6.0
-  Sat Oct 15 2016 18:47:03 GMT+0800 (HKT)
-  commit cade87a587a5b6cd3b6ead69934eb38e371f50c3
+  cssobj-core 0.6.1
+  Mon Oct 17 2016 10:27:51 GMT+0800 (HKT)
+  commit edf2b2f5be3a285b17bc3c86dd33c75b8b900889
 
  IE ES3 need below polyfills:
 
@@ -436,7 +436,7 @@ define('cssobj_core', function () { 'use strict';
 
     options = defaults(options, {
       plugins: [],
-      intro: []
+      intros: []
     })
 
     return function (obj, initData) {
@@ -457,7 +457,7 @@ define('cssobj_core', function () { 'use strict';
         options: options
       }
 
-      ![].concat(options.intro).forEach(
+      ![].concat(options.intros).forEach(
         function(v) {
           extendObj(result, 'intro', isFunction(v) ? v(result) : v)
         }

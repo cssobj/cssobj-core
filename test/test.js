@@ -11,7 +11,7 @@ describe('test options', function(){
     var ret = _cssobj()({})
     expect(ret.options).deep.equal({
       plugins:[],
-      intro: []
+      intros: []
     })
   })
 
@@ -25,7 +25,7 @@ describe('test options', function(){
     )
     expect(ret.options).deep.equal({
       plugins:[ plugin ],
-      intro: []
+      intros: []
     })
     expect(ret.obj).deep.equal({a:1})
     expect(ret.data).deep.equal({b:2})
@@ -36,7 +36,7 @@ describe('test options', function(){
       plugins: [
         cssobj_plugin_gencss({indent:''})
       ],
-      intro: [
+      intros: [
         // basic object as intro
         {
           '.clearfix':{
