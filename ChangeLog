@@ -1,3 +1,13 @@
+2016-10-17  James Yang  <jamesyang999@gmail.com>
+
+        * v0.6.1
+        CHANGE: option.intro => option.intros
+
+2016-10-15  James Yang  <jamesyang999@gmail.com>
+
+        * v0.6.0
+        ADD: option.intro, and add cssobj-intro-clearfix
+
 2016-10-07  James Yang  <jamesyang999@gmail.com>
 
         * v0.5.5
