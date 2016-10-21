@@ -1,7 +1,7 @@
 /**
-  cssobj-core 0.6.2
-  Fri Oct 21 2016 19:30:41 GMT+0800 (HKT)
-  commit edf2b2f5be3a285b17bc3c86dd33c75b8b900889
+  cssobj-core 0.6.3
+  Fri Oct 21 2016 21:48:24 GMT+0800 (HKT)
+  commit 31c14bb5966a6c5d9af4f8822923f07c1d251024
 
  IE ES3 need below polyfills:
 
@@ -161,6 +161,10 @@ function parseObj (d, result, node, init) {
 
   if (type.call(d) == ARRAY) {
     var nodes = []
+    /* for array type, each children have a parent that not on the virtual tree,
+       see test case of @media-array for example, the array node obj=Array, but have node.selPart(no selText)
+       So have to set the right node.at/node.type from the node.key, to get right selText for children */
+    node.at = reAtRule.exec(node.key)
     for(var i = 0; i < d.length; i++) {
       var prev = node[i]
       var n = parseObj(d[i], result, node[i] || {parent: node, src: d, parentNode: nodes, index: i})
