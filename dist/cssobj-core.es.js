@@ -1,6 +1,6 @@
 /**
-  cssobj-core 0.6.1
-  Mon Oct 17 2016 10:27:51 GMT+0800 (HKT)
+  cssobj-core 0.6.2
+  Fri Oct 21 2016 19:30:41 GMT+0800 (HKT)
   commit edf2b2f5be3a285b17bc3c86dd33c75b8b900889
 
  IE ES3 need below polyfills:
@@ -292,9 +292,9 @@ function getSel(node, result) {
       // only media allow nested and join, and have node.selPart
       if (isMedia) node.selPart = splitComma(sel.replace(reGroupRule, ''))
 
-      // combinePath is array, '' + array instead of array.join(',')
+      // combinePath is array, 'str' + array instead of array.join(',')
       node.groupText = isMedia
-        ? '@' + node.at + combinePath(getParents(ruleNode, function (v) {
+        ? '@' + node.at + combinePath(getParents(node, function (v) {
           return v.type == TYPE_GROUP
         }, 'selPart', 'selChild', 'selParent'), '', ' and')
       : sel
@@ -389,20 +389,20 @@ function parseProp (node, d, key, result, propKey) {
   }
 }
 
-function combinePath (array, prev, sep, rep) {
-  return !array.length ? prev : array[0].reduce(function (result, value) {
-    var str = prev ? prev + sep : prev
-    if (rep) {
+function combinePath (array, initialString, seperator, replaceAmpersand) {
+  return !array.length ? initialString : array[0].reduce(function (result, value) {
+    var str = initialString ? initialString + seperator : initialString
+    if (replaceAmpersand) {
       var isReplace = false
       var sugar = strSugar(value, '&', function (z) {
         isReplace = true
-        return prev
+        return initialString
       })
       str = isReplace ? sugar : str + sugar
     } else {
       str += value
     }
-    return result.concat(combinePath(array.slice(1), str, sep, rep))
+    return result.concat(combinePath(array.slice(1), str, seperator, replaceAmpersand))
   }, [])
 }
 

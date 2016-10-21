@@ -776,6 +776,28 @@ color: red;
 `)
     })
 
+    it('@media with array value', function() {
+      var ret = cssobj({
+        '@media(min-width:800px)':[{
+          h3:{color:'red'}
+        }, {
+          h3:{color:'blue'}
+        }]
+      })
+      expect(ret.css).equal(
+`@media(min-width:800px) {
+h3 {
+color: red;
+}
+}
+@media(min-width:800px) {
+h3 {
+color: blue;
+}
+}
+`)
+    })
+
 
     it('@media at top level', function() {
 

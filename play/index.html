@@ -74,9 +74,14 @@ window.onresize = function(){
   <div class="left div">
     <h3 title="a,b">JS Object: (paste/change below)</h3>
     <textarea id="src" oninput="convert(this)">
-      {
-      p: {display:'flex', color:'red'}
-}    </textarea>
+{
+        '@media(min-width:800px)':[{
+          h3:{color:'red'}
+        }, {
+          h3:{color:'blue'}
+        }]
+}
+    </textarea>
   </div>
   <div class="right div">
     <h3 id="h3">CSS Text: (paste/change below)
