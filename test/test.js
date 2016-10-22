@@ -613,6 +613,23 @@ color: 123;
         }
       }
       var ret = cssobj(obj)
+      expect(ret.css).equal(`@-webkit-keyframes progress-bar-stripes {
+from {
+background-position: 40px 0;
+}
+to {
+background-position: 0 0;
+}
+}
+@keyframes progress-bar-stripes {
+from {
+background-position: 40px 0;
+}
+to {
+background-position: 0 0;
+}
+}
+`)
 
     })
 
