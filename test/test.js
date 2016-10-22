@@ -593,6 +593,29 @@ color: 123;
 
     })
 
+    it('test @keyframes with vendor prefix', function() {
+      var obj = {
+        '@-webkit-keyframes progress-bar-stripes': {
+          from: {
+            backgroundPosition: '40px 0'
+          },
+          to: {
+            backgroundPosition: '0 0'
+          }
+        },
+        '@keyframes progress-bar-stripes': {
+          from: {
+            backgroundPosition: '40px 0'
+          },
+          to: {
+            backgroundPosition: '0 0'
+          }
+        }
+      }
+      var ret = cssobj(obj)
+
+    })
+
 
     it('@import rule with multiple', function() {
 

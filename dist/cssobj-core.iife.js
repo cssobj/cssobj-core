@@ -1,7 +1,7 @@
 /**
-  cssobj-core 0.6.3
-  Fri Oct 21 2016 21:48:24 GMT+0800 (HKT)
-  commit 31c14bb5966a6c5d9af4f8822923f07c1d251024
+  cssobj-core 0.6.4
+  Sat Oct 22 2016 09:33:42 GMT+0800 (HKT)
+  commit 1a6d428bb1a5b2efaf4b7dab2bc5491c6c6b9fd1
 
  IE ES3 need below polyfills:
 
@@ -130,7 +130,7 @@ var cssobj_core = (function () {
   //   https://developer.mozilla.org/en-US/docs/Web/API/CSSGroupingRule
   //   CSSPageRule is listed as derived from CSSGroupingRule, but not implemented yet.
   //   Here added @page as GroupRule, but plugin should take care of this.
-  var reGroupRule = /^@(media|document|supports|page|keyframes)/i
+  var reGroupRule = /^@(media|document|supports|page|[\w-]*keyframes)/i
   var reAtRule = /^\s*@/i
 
   /**
