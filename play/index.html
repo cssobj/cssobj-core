@@ -55,7 +55,7 @@ refRight.width = refLeft.width = function(last, node, result) {
   return w<900? w : w/2
 }
 refh3.obj.fontSize = function(last, node, result) {
-  return result.data.resize ? parseInt(last) : parseInt(last)+1
+  return result.state.resize ? parseInt(last) : parseInt(last)+1
 }
 css.ref.ff.obj.textarea = {
   color: 'red'
@@ -64,7 +64,7 @@ pagecss.div = {
   color: 'red'
 }
 window.onresize = function(){
-  css.update({resize:true})
+  css.update(null, {resize:true})
 }
 // console.log(css)
 

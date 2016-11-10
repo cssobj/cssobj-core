@@ -1029,8 +1029,13 @@ color: red;
       expect(ret.state).deep.equal({abc:1})
       ret.update(null, {def:2})
       expect(ret.state).deep.equal({def:2})
+
+      ret.obj.p.font = 345
+      console.log(ret.obj)
+      ret.update()
       expect(ret.css).equal(`p {
 color: 123;
+font: 345;
 }
 `)
       // will retain state if not passed
@@ -1567,6 +1572,30 @@ clear: both;
       }
       var ret = cssobj(obj)
       expect(ret.css).equal(`div.item[title="a&b"] {
+color: red;
+}
+`)
+      obj = {
+        '.选择器1': {
+          '&.item[title="a\\&b"]': {
+            color: 'red'
+          }
+        }
+      }
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`.选择器1.item[title="a&b"] {
+color: red;
+}
+`)
+      obj = {
+        'div': {
+          'abc&选择器2[title="a\\&b"]': {
+            color: 'red'
+          }
+        }
+      }
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`abcdiv选择器2[title="a&b"] {
 color: red;
 }
 `)

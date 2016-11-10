@@ -1,6 +1,6 @@
 /**
-  cssobj-core 0.6.4
-  Thu Nov 10 2016 09:46:20 GMT+0800 (HKT)
+  cssobj-core 0.7.0
+  Thu Nov 10 2016 10:50:44 GMT+0800 (HKT)
   commit 1a6d428bb1a5b2efaf4b7dab2bc5491c6c6b9fd1
 
  IE ES3 need below polyfills:
@@ -441,10 +441,11 @@ function cssobj (options) {
     intros: []
   })
 
-  return function (obj, state) {
+  return function (initObj, initState) {
     var updater = function (obj, state) {
       if (arguments.length>1) result.state = state || {}
-      result.root = parseObj(extendObj({}, '', result.intro, obj || result.obj), result, result.root, true)
+      if(obj) result.obj = obj
+      result.root = parseObj(extendObj({}, '', result.intro, result.obj), result, result.root, true)
       applyOrder(result)
       result = applyPlugins(options, 'post', result)
       isFunction(options.onUpdate) && options.onUpdate(result)
@@ -452,7 +453,6 @@ function cssobj (options) {
     }
 
     var result = {
-      obj: obj||{},
       intro: {},
       update: updater,
       options: options
@@ -464,7 +464,7 @@ function cssobj (options) {
       }
     )
 
-    updater(null, state)
+    updater(initObj, initState)
 
     return result
   }
