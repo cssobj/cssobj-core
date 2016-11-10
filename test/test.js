@@ -1022,6 +1022,29 @@ color: red;
   //
   // test with update
 
+  describe('test with function object', function() {
+    it('Should accept function as object', function() {
+      var func = function() {
+        return {p: {color: 'red'}}
+      }
+      var ret = cssobj(func)
+      expect(ret.css).equal(`p {
+color: red;
+}
+`)
+      var func2=function() {
+        return {div: {color: 'blue'}}
+      }
+      ret.update(func2)
+      expect(ret.css).equal(`div {
+color: blue;
+}
+`)
+    })
+  })
+  //
+  // test with update
+
   describe('test with update', function() {
 
     it('should pass state right', function() {

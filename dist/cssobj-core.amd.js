@@ -1,6 +1,6 @@
 /**
   cssobj-core 0.7.0
-  Thu Nov 10 2016 10:50:44 GMT+0800 (HKT)
+  Thu Nov 10 2016 16:03:10 GMT+0800 (HKT)
   commit 1a6d428bb1a5b2efaf4b7dab2bc5491c6c6b9fd1
 
  IE ES3 need below polyfills:
@@ -446,7 +446,7 @@ define('cssobj_core', function () { 'use strict';
     return function (initObj, initState) {
       var updater = function (obj, state) {
         if (arguments.length>1) result.state = state || {}
-        if(obj) result.obj = obj
+        if (obj) result.obj = isFunction(obj) ? obj() : obj
         result.root = parseObj(extendObj({}, '', result.intro, result.obj), result, result.root, true)
         applyOrder(result)
         result = applyPlugins(options, 'post', result)
