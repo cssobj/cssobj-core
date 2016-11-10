@@ -15,7 +15,7 @@ var commitHash = (function () {
 })()
 
 
-var banner = readFileSync('lib/banner.js', 'utf-8')
+var banner = readFileSync('lib/zbanner.js', 'utf-8')
     .replace('<@VERSION@>', pkg.version)
     .replace('<@TIME@>', new Date())
     .replace('<@COMMIT@>', commitHash)

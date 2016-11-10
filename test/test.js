@@ -28,7 +28,7 @@ describe('test options', function(){
       intros: []
     })
     expect(ret.obj).deep.equal({a:1})
-    expect(ret.data).deep.equal({b:2})
+    expect(ret.state).deep.equal({b:2})
   })
 
   it('should work with intro', function() {
@@ -1024,6 +1024,24 @@ color: red;
 
   describe('test with update', function() {
 
+    it('should pass state right', function() {
+      var ret = cssobj({p: {color: 123}}, {abc:1})
+      expect(ret.state).deep.equal({abc:1})
+      ret.update(null, {def:2})
+      expect(ret.state).deep.equal({def:2})
+      expect(ret.css).equal(`p {
+color: 123;
+}
+`)
+      // will retain state if not passed
+      ret.update({div: {font:234}})
+      expect(ret.state).deep.equal({def:2})
+      expect(ret.css).equal(`div {
+font: 234;
+}
+`)
+    })
+
     it('should diff right in result', function() {
 
       var ret = cssobj({
@@ -1381,6 +1399,25 @@ line-height: 24px;
 
       expect(Object.keys(ret.ref)).deep.equal(['ab'])
 
+    })
+
+    it('should work with !important value', function() {
+      var obj = {
+        p: {
+          color: 'red'
+        }
+      }
+      var ret = cssobj(obj)
+      expect(ret.css).equal(`p {
+color: red;
+}
+`)
+      obj.p.color = 'blue !important'
+      ret.update()
+      expect(ret.css).equal(`p {
+color: blue !important;
+}
+`)
     })
 
 
