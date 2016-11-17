@@ -971,8 +971,6 @@ color: 234;
 
     it('should right format deeply nested @media rule', function() {
 
-      cssobj().options.local = false
-
       var ret = cssobj({
         "div": {
           "fontSize": "12px",
