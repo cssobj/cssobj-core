@@ -1,7 +1,7 @@
 /**
-  cssobj-core 0.7.1
-  Thu Nov 17 2016 08:04:09 GMT+0800 (HKT)
-  commit 1a6d428bb1a5b2efaf4b7dab2bc5491c6c6b9fd1
+  cssobj-core 1.0.0
+  Thu Dec 15 2016 13:56:45 GMT+0800 (HKT)
+  commit 22f19d897282e56fe7134a5d578152046770d58d
 
  IE ES3 need below polyfills:
 
@@ -216,13 +216,13 @@ define('cssobj_core', function () { 'use strict';
 
       for (var k in d) {
         // here $key start with $ is special
-        // k.charAt(0) == '$' ... but the core will calc it into node.
+        // k[0] == '$' ... but the core will calc it into node.
         // Plugins should take $ with care and mark as a special case. e.g. ignore it
         if (!own(d, k)) continue
         if (!isIterable(d[k]) || type.call(d[k]) == ARRAY && !isIterable(d[k][0])) {
 
           // it's inline at-rule: @import etc.
-          if (k.charAt(0)=='@') {
+          if (k[0]=='@') {
             processObj(
               // map @import: [a,b,c] into {a:1, b:1, c:1}
               [].concat(d[k]).reduce(function(prev, cur) {

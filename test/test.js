@@ -1052,7 +1052,6 @@ color: blue;
       expect(ret.state).deep.equal({def:2})
 
       ret.obj.p.font = 345
-      console.log(ret.obj)
       ret.update()
       expect(ret.css).equal(`p {
 color: 123;
