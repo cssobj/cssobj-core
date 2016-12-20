@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.0.1
-  Tue Dec 20 2016 11:50:04 GMT+0800 (HKT)
-  commit 91f508f2657db2cc3b6762db34cf2b2472bb4330
+  cssobj-core 1.0.2
+  Tue Dec 20 2016 15:54:47 GMT+0800 (HKT)
+  commit 575e94d0fe859469e0bcbbe666a07f44e8d8b501
 
  IE ES3 need below polyfills:
 
@@ -83,6 +83,7 @@ define('cssobj_core', function () { 'use strict';
 
   // split selector with splitter, aware of css attributes
   function splitSelector (sel, splitter) {
+    if (sel.indexOf(splitter) < 0) return [sel]
     for (var c, i = 0, n = 0, instr = '', prev = 0, d = []; c = sel.charAt(i); i++) {
       if (instr) {
         if (c == instr) instr = ''
