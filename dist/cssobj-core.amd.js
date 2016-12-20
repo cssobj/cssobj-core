@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.0.0
-  Thu Dec 15 2016 13:56:45 GMT+0800 (HKT)
-  commit 22f19d897282e56fe7134a5d578152046770d58d
+  cssobj-core 1.0.1
+  Tue Dec 20 2016 11:50:04 GMT+0800 (HKT)
+  commit 91f508f2657db2cc3b6762db34cf2b2472bb4330
 
  IE ES3 need below polyfills:
 
@@ -81,14 +81,19 @@ define('cssobj_core', function () { 'use strict';
     return path.map(function(p){return key?p[key]:p })
   }
 
-  // split selector etc. aware of css attributes
-  function splitComma (str) {
-    for (var c, i = 0, n = 0, prev = 0, d = []; c = str.charAt(i); i++) {
+  // split selector with splitter, aware of css attributes
+  function splitSelector (sel, splitter) {
+    for (var c, i = 0, n = 0, instr = '', prev = 0, d = []; c = sel.charAt(i); i++) {
+      if (instr) {
+        if (c == instr) instr = ''
+        continue
+      }
+      if (c == '"' || c == '\'') instr = c
       if (c == '(' || c == '[') n++
       if (c == ')' || c == ']') n--
-      if (!n && c == ',') d.push(str.substring(prev, i)), prev = i + 1
+      if (!n && c == splitter) d.push(sel.substring(prev, i)), prev = i + 1
     }
-    return d.concat(str.substring(prev))
+    return d.concat(sel.substring(prev))
   }
 
   // checking for valid css value
@@ -200,7 +205,7 @@ define('cssobj_core', function () { 'use strict';
         var haveOldChild = k in children
         var newNode = extendObj(children, k, nodeObj)
         // don't overwrite selPart for previous node
-        newNode.selPart = newNode.selPart || splitComma(k)
+        newNode.selPart = newNode.selPart || splitSelector(k, ',')
         var n = parseObj(obj, result, newNode)
         if(n) children[k] = n
         // it's new added node
@@ -296,7 +301,7 @@ define('cssobj_core', function () { 'use strict';
         isMedia = node.at == 'media'
 
         // only media allow nested and join, and have node.selPart
-        if (isMedia) node.selPart = splitComma(sel.replace(reGroupRule, ''))
+        if (isMedia) node.selPart = splitSelector(sel.replace(reGroupRule, ''), ',')
 
         // combinePath is array, 'str' + array instead of array.join(',')
         node.groupText = isMedia
@@ -318,7 +323,7 @@ define('cssobj_core', function () { 'use strict';
       }
 
       node.selText = applyPlugins(opt, 'selector', node.selText, node, result)
-      if (node.selText) node.selTextPart = splitComma(node.selText)
+      if (node.selText) node.selTextPart = splitSelector(node.selText, ',')
 
       if (node !== ruleNode) node.ruleNode = ruleNode
     }

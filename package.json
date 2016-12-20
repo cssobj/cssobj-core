@@ -1,6 +1,6 @@
 {
   "name": "cssobj-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate Virtual CSS middle format, support for all cssobj functions and plugins.",
   "keywords": [
     "cssom",
@@ -10,6 +10,7 @@
     "css in js"
   ],
   "main": "dist/cssobj-core.cjs.js",
+  "browser": "dist/cssobj-core.iife.js",
   "jsnext:main": "dist/cssobj-core.es.js",
   "scripts": {
     "pretest": "rollup -c",
