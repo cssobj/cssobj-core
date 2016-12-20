@@ -12,6 +12,13 @@
   "main": "dist/cssobj-core.cjs.js",
   "browser": "dist/cssobj-core.iife.js",
   "jsnext:main": "dist/cssobj-core.es.js",
+  "files": [
+    "dist",
+    "docs",
+    "*.md",
+    "*.ts",
+    "*.json"
+  ],
   "scripts": {
     "pretest": "rollup -c",
     "test": "istanbul cover _mocha",
