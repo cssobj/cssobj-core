@@ -39,7 +39,7 @@ var pagecss = {
     marginBottom: 10,
     color: 'green'
   },
-  '@media (>=800px)':{
+  '@media (min-width: 800px)':{
     '@keyframes abc':{
       '10%':{
         color: 'blue',
@@ -56,7 +56,7 @@ var pagecss = {
       fontSize:16,
       color: ['red','#fcc']
     },
-    '@media (<=1000px), (<=900px)':{
+    '@media (max-width: 1000px), (max-width: 900px)':{
       h3:{
         color:'blue'
       },

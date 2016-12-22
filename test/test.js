@@ -5,17 +5,17 @@ var cssobj_plugin_gencss = require(process.env.CSSOBJ_GENCSS || '../../cssobj-pl
 var _cssobj = require('../dist/cssobj-core.cjs.js')
 var cssobj
 
-describe('test options', function(){
+describe('test config', function(){
 
-  it('should work with empty options', function() {
+  it('should work with empty config', function() {
     var ret = _cssobj()({})
-    expect(ret.options).deep.equal({
+    expect(ret.config).deep.equal({
       plugins:[],
       intros: []
     })
   })
 
-  it('should work with custom options', function() {
+  it('should work with custom config', function() {
     var plugin = function(){}
     var ret = _cssobj({
       plugins:[ plugin ]
@@ -23,7 +23,7 @@ describe('test options', function(){
       {a:1},
       {b:2}
     )
-    expect(ret.options).deep.equal({
+    expect(ret.config).deep.equal({
       plugins:[ plugin ],
       intros: []
     })
@@ -105,7 +105,7 @@ describe('test cssobj', function(){
 
   //
   // option test
-  describe('test cssobj options', function() {
+  describe('test cssobj config', function() {
 
     it('basic css', function() {
 
@@ -1101,9 +1101,9 @@ color: blue;
       expect(Object.keys(ret.ref)).deep.equal(['abc', 'xyz'])
 
       var abc = ret.ref.abc.obj
-      abc.color = function(last, n, opt){
+      abc.color = function(v) {
         // version 0.1 it's n.selector
-        return n.selText
+        return v.node.selText
       }
       abc.left = '10px'
       delete abc.textAlign
@@ -1234,8 +1234,8 @@ color: 10;
       expect(node.lastVal['color']).equal(0)
 
       // test for normal update based on lastVal
-      t.color = function(last) {
-        return last+1
+      t.color = function(v) {
+        return v.prev+1
       }
 
       expect(ret.update().css).equal(
@@ -1761,7 +1761,7 @@ color: red;
         return value*2+'px'
       }}
 
-      cssobj().options.plugins.push(plug)
+      cssobj().config.plugins.push(plug)
 
       var size = {size:2}
       var ret = cssobj({p:size})

@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.0.2
-  Tue Dec 20 2016 15:54:47 GMT+0800 (HKT)
-  commit 575e94d0fe859469e0bcbbe666a07f44e8d8b501
+  cssobj-core 1.1.0
+  Thu Dec 22 2016 21:57:18 GMT+0800 (HKT)
+  commit 5a3ef4e8916ae1edc3dc8ab7031156135ab52a69
 
  IE ES3 need below polyfills:
 
@@ -65,20 +65,26 @@ function strSugar (str, find, rep) {
 
 // get parents array from node (when it's passed the test)
 function getParents (node, test, key, childrenKey, parentKey) {
-  var p = node, path = []
-  while(p) {
+  var i, len, p = node, path = []
+  while (p) {
     if (test(p)) {
-      if(childrenKey) path.forEach(function(v) {
-        arrayKV(p, childrenKey, v, false, true)
-      })
-      if(path[0] && parentKey){
+      if (childrenKey) {
+        for (i = 0, len = path.length; i < len; i++) {
+          arrayKV(p, childrenKey, path[i], false, true)
+        }
+      }
+      if (path[0] && parentKey) {
         path[0][parentKey] = p
       }
       path.unshift(p)
     }
     p = p.parent
   }
-  return path.map(function(p){return key?p[key]:p })
+  for (i = 0, len = path.length; i < len; i++) {
+    path[i] = key ? path[i][key] : path[i]
+  }
+
+  return path
 }
 
 // split selector with splitter, aware of css attributes
@@ -149,7 +155,7 @@ var reAtRule = /^\s*@/i
  *        4. all prop should be in dom.style camelCase
  *
  * @param {object|array} d - simple object data, or array
- * @param {object} result - the reulst object to store options and root node
+ * @param {object} result - the reulst object to store config and root node
  * @param {object} [previousNode] - also act as parent for next node
  * @param {boolean} init whether it's the root call
  * @returns {object} node data object
@@ -281,7 +287,7 @@ function parseObj (d, result, node, init) {
 
 function getSel(node, result) {
 
-  var opt = result.options
+  var opt = result.config
 
   // array index don't have key,
   // fetch parent key as ruleNode
@@ -362,10 +368,10 @@ function parseProp (node, d, key, result, propKey) {
   ![].concat(d[key]).forEach(function (v) {
     // pass lastVal if it's function
     var rawVal = isFunction(v)
-      ? v(prev, node, result)
-      : v
+        ? v({prev:prev, node:node, result:result})
+        : v
 
-    var val = applyPlugins(result.options, 'value', rawVal, propName, node, result, propKey)
+    var val = applyPlugins(result.config, 'value', rawVal, propName, node, result, propKey)
 
     // check and merge only format as Object || Array of Object, other format not accepted!
     if (isIterable(val)) {
@@ -442,9 +448,9 @@ function applyOrder (opt) {
   delete opt._order
 }
 
-function cssobj (options) {
+function cssobj (config) {
 
-  options = defaults(options, {
+  config = defaults(config, {
     plugins: [],
     intros: []
   })
@@ -455,24 +461,24 @@ function cssobj (options) {
       if (obj) result.obj = isFunction(obj) ? obj() : obj
       result.root = parseObj(extendObj({}, '', result.intro, result.obj), result, result.root, true)
       applyOrder(result)
-      result = applyPlugins(options, 'post', result)
-      isFunction(options.onUpdate) && options.onUpdate(result)
+      result = applyPlugins(config, 'post', result)
+      isFunction(config.onUpdate) && config.onUpdate(result)
       return result
     }
 
     var result = {
       intro: {},
       update: updater,
-      options: options
+      config: config
     }
 
-    ![].concat(options.intros).forEach(
+    ![].concat(config.intros).forEach(
       function(v) {
         extendObj(result, 'intro', isFunction(v) ? v(result) : v)
       }
     )
 
-    updater(initObj, initState)
+    updater(initObj, initState || config.state)
 
     return result
   }

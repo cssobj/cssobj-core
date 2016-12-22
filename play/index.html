@@ -36,7 +36,7 @@ function h3Height() {
   return h3Val.fontSize[0] * h3Val.lineHeight[0] + h3Val.marginTop[0] + h3Val.marginBottom[0]
 }
 
-reftextarea.height=function(last, node, result) {
+reftextarea.height=function(v) {
   var w = windowWidth()
   var h = windowHeight()
   return w<900? h/2 - h3Height() : h-h3Height()
@@ -50,12 +50,12 @@ refh3.obj.color = function() {
 delete reftextarea.color
 delete pagecss.table
 
-refRight.width = refLeft.width = function(last, node, result) {
+refRight.width = refLeft.width = function(v) {
   var w = windowWidth()
   return w<900? w : w/2
 }
-refh3.obj.fontSize = function(last, node, result) {
-  return result.state.resize ? parseInt(last) : parseInt(last)+1
+refh3.obj.fontSize = function(v) {
+  return v.result.state.resize ? parseInt(v.prev) : parseInt(v.prev)+1
 }
 css.ref.ff.obj.textarea = {
   color: 'red'

@@ -1,3 +1,48 @@
+2016-12-22  James Yang  <jamesyang999@gmail.com>
+
+        * 1.1.0
+        result.options renamed => result.config
+
+        new signature: cssobj(config)(obj, state)
+        config.state act as initial state (fallback state)
+
+        value function signature changed into:
+        color: v => console.log(v.prev, v.node, v.result)
+
+2016-12-15  James Yang  <jamesyang999@gmail.com>
+
+        * 1.0.4
+        splitSelector instead of splitComma, better performance
+
+        * 1.0.1
+        drop IE<8 support
+        add result.space, result.localNames props
+        revised docs
+
+2016-12-02  James Yang  <jamesyang999@gmail.com>
+
+        * v0.6.2
+        fix(core): @media array value render error; @keyframes allow vendor prefix
+
+        * v0.6.3
+        fix: update.change not work when !important in value
+
+        * v0.6.5
+        fix(cssom): !important regexp match rule
+
+        * v0.6.6
+        cssom: add append option
+
+        * v0.7.2
+        api: update now is result.update(obj?, state?)
+        api(cssom): prefixes->vendors, name->id
+        cssobj/update can accept function as obj
+        fix(localize): prefix will set back to options.local
+
+        * v0.7.3
+        options.local.prefix renamed to options.local.space
+
+
 2016-10-17  James Yang  <jamesyang999@gmail.com>
 
         * v0.6.1
