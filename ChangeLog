@@ -1,3 +1,8 @@
+2016-12-23  James Yang  <jamesyang999@gmail.com>
+
+        * 1.1.1
+        remove strSugar of '&'
+
 2016-12-22  James Yang  <jamesyang999@gmail.com>
 
         * 1.1.0
