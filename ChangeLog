@@ -1,5 +1,9 @@
 2016-12-23  James Yang  <jamesyang999@gmail.com>
 
+        * 1.1.2
+        value-function: add v.raw, v.prev->v.cooked
+        v.raw only exists when it have value previously
+
         * 1.1.1
         remove strSugar of '&'
 
