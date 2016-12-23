@@ -55,7 +55,7 @@ refRight.width = refLeft.width = function(v) {
   return w<900? w : w/2
 }
 refh3.obj.fontSize = function(v) {
-  return v.result.state.resize ? parseInt(v.prev) : parseInt(v.prev)+1
+  return v.result.state.resize ? v.raw : v.raw+1
 }
 css.ref.ff.obj.textarea = {
   color: 'red'
@@ -102,6 +102,7 @@ var opt = {local:1, propSugar:1, plugins: [
 ], localNames:{p:'_prefix_p'}}
 
 var cssobjFunc = cssobj_core(opt)
+window.cssobj = cssobjFunc
 
 var testObj, ret
 function convert(el) {

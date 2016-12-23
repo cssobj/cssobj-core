@@ -1223,7 +1223,7 @@ color: 10;
     it('value update function to set node.lastVal', function() {
 
       var t = {
-        color: 0
+        // color: 0
       }
       var obj = {
         p:t,
@@ -1231,14 +1231,26 @@ color: 10;
       }
       var ret = cssobj(obj)
       var node = ret.root.children.p
-      expect(node.lastVal['color']).equal(0)
+      expect(node.lastVal['color']).equal(undefined)
 
       // test for normal update based on lastVal
       t.color = function(v) {
-        return v.prev+1
+        // expect(v.cooked).equal(undefined)
+        // expect('raw' in v).equal(false)
+        return 'raw' in v ? v.raw+1 : 0
       }
 
-      expect(ret.update().css).equal(
+      ret.update()
+      expect(ret.css).equal(
+        `p {
+color: 0;
+}
+d {
+font: Arial;
+}
+`)
+      ret.update()
+      expect(ret.css).equal(
         `p {
 color: 1;
 }
@@ -1461,9 +1473,9 @@ color: blue !important;
         '@import': 'url1',
       })
 
-      expect(Object.keys(ret.root.children['@import  '])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+      expect(Object.keys(ret.root.children['@import  '])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
 
-      expect(Object.keys(ret.root.children['@import'])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
+      expect(Object.keys(ret.root.children['@import'])).deep.equal(["parent", "src", "key", "inline", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "selText", "selTextPart"])
 
     })
 
@@ -1482,12 +1494,12 @@ color: blue !important;
 
       expect(media1.at).equal('media')
 
-      expect(Object.keys(media1)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+      expect(Object.keys(media1)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
 
 
       expect(media2.at).equal('media')
 
-      expect(Object.keys(media2)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
+      expect(Object.keys(media2)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "type", "at", "groupText", "selText"])
 
     })
 
@@ -1514,7 +1526,7 @@ color: blue !important;
       expect(h3.children.p.selText).equal('h3 p')
       expect(h3.children.p.rawVal).deep.equal({"color":[123]})
       expect(h3.children.p.prop).deep.equal({"color":[123]})
-      expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+      expect(Object.keys(h3)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
       expect(h4.selText).equal('h3,h4')
       // rawVal is value array before any plugins
@@ -1523,7 +1535,7 @@ color: blue !important;
       expect(h4.prop).deep.equal({width: [20]})
       expect(h4.children['p,span'].selText).equal('h3 p,h3 span,h4 p,h4 span')
       expect(h4.children['p,span'].prop).deep.equal({"color":[234]})
-      expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
+      expect(Object.keys(h4)).deep.equal(["parent", "src", "key", "selPart", "obj", "prevVal", "children", "lastRaw", "lastVal", "rawVal", "prop", "diff", "parentRule", "selText", "selTextPart", "selChild"])
 
     })
 

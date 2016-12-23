@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.1.1
-  Fri Dec 23 2016 09:00:31 GMT+0800 (HKT)
-  commit f48569eb7f0590ec99c5ee0f66b756fe75632bc8
+  cssobj-core 1.1.2
+  Fri Dec 23 2016 14:48:11 GMT+0800 (HKT)
+  commit 4f605fa24554b465bd7767905911f2188bc992da
 
  IE ES3 need below polyfills:
 
@@ -191,6 +191,7 @@ define('cssobj_core', function () { 'use strict';
         node.test = test
       }
       var children = node.children = node.children || {}
+      node.lastRaw = node.rawVal || {}
       node.lastVal = {}
       node.rawVal = {}
       node.prop = {}
@@ -354,15 +355,22 @@ define('cssobj_core', function () { 'use strict';
     // corner case: propKey==='' ?? below line will do wrong!!
     // if(!propName) return
 
-    var prev = prevVal && prevVal[propName]
+    var raw = node.lastRaw[propName],
+        prev = prevVal && prevVal[propName],
+        argObj = {node:node, result:result}
+
+    if (raw) argObj.raw = raw[0]
 
     ![].concat(d[key]).forEach(function (v) {
+      // prepare value function args
+      argObj.cooked = prev
+
       // pass lastVal if it's function
-      var rawVal = isFunction(v)
-          ? v({prev:prev, node:node, result:result})
+      argObj.raw = raw = isFunction(v)
+          ? v(argObj)
           : v
 
-      var val = applyPlugins(result.config, 'value', rawVal, propName, node, result, propKey)
+      var val = applyPlugins(result.config, 'value', raw, propName, node, result, propKey)
 
       // check and merge only format as Object || Array of Object, other format not accepted!
       if (isIterable(val)) {
@@ -370,10 +378,10 @@ define('cssobj_core', function () { 'use strict';
           if (own(val, k)) parseProp(node, val, k, result, propName)
         }
       } else {
-        arrayKV(
+        arrayKV (
           node.rawVal,
           propName,
-          rawVal,
+          raw,
           true
         )
         if (isValidCSSValue(val)) {
