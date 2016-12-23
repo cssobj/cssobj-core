@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.1.2
-  Fri Dec 23 2016 14:48:11 GMT+0800 (HKT)
-  commit 4f605fa24554b465bd7767905911f2188bc992da
+  cssobj-core 1.1.3
+  Fri Dec 23 2016 17:26:06 GMT+0800 (HKT)
+  commit bdfe87d2817097b1e3d512386a1df612d045abf4
 
  IE ES3 need below polyfills:
 
