@@ -1585,7 +1585,7 @@ clear: both;
     it('should work right with escape', function() {
       var obj = {
         div: {
-          '&.item[title="a\\&b"]': {
+          '&.item[title="a&b"]': {
             color: 'red'
           }
         }
@@ -1597,7 +1597,7 @@ color: red;
 `)
       obj = {
         '.选择器1': {
-          '&.item[title="a\\&b"]': {
+          '&.item[title="a&b"]': {
             color: 'red'
           }
         }
@@ -1609,7 +1609,7 @@ color: red;
 `)
       obj = {
         'div': {
-          'abc&选择器2[title="a\\&b"]': {
+          'abc&选择器2[title="a&b"]': {
             color: 'red'
           }
         }

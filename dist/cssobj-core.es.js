@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.1.0
-  Thu Dec 22 2016 21:57:18 GMT+0800 (HKT)
-  commit 5a3ef4e8916ae1edc3dc8ab7031156135ab52a69
+  cssobj-core 1.1.1
+  Fri Dec 23 2016 09:00:31 GMT+0800 (HKT)
+  commit f48569eb7f0590ec99c5ee0f66b756fe75632bc8
 
  IE ES3 need below polyfills:
 
@@ -51,23 +51,13 @@ function arrayKV (obj, k, v, reverse, unique) {
   reverse ? obj[k].unshift(v) : obj[k].push(v)
 }
 
-// replace find in str, with rep function result
-function strSugar (str, find, rep) {
-  return str.replace(
-    new RegExp('\\\\?(' + find + ')', 'g'),
-    function (m, z) {
-      return m == z ? rep(z) : z
-    }
-  )
-}
-
 // get parents array from node (when it's passed the test)
 function getParents (node, test, key, childrenKey, parentKey) {
-  var i, len, p = node, path = []
+  var i, v, p = node, path = []
   while (p) {
     if (test(p)) {
       if (childrenKey) {
-        for (i = 0, len = path.length; i < len; i++) {
+        for (i = 0; i < path.length; i++) {
           arrayKV(p, childrenKey, path[i], false, true)
         }
       }
@@ -78,8 +68,9 @@ function getParents (node, test, key, childrenKey, parentKey) {
     }
     p = p.parent
   }
-  for (i = 0, len = path.length; i < len; i++) {
-    path[i] = key ? path[i][key] : path[i]
+  for (i = 0; i < path.length; i++) {
+    v = path[i]
+    path[i] = key ? v[key] : v
   }
 
   return path
@@ -405,16 +396,12 @@ function parseProp (node, d, key, result, propKey) {
   }
 }
 
-function combinePath (array, initialString, seperator, replaceAmpersand) {
-  return !array.length ? initialString : array[0].reduce(function (result, value) {
-    var str = initialString ? initialString + seperator : initialString
+function combinePath (array, parentSel, seperator, replaceAmpersand) {
+  return !array.length ? parentSel : array[0].reduce(function (result, value) {
+    var part, str = parentSel ? parentSel + seperator : parentSel
     if (replaceAmpersand) {
-      var isReplace = false
-      var sugar = strSugar(value, '&', function (z) {
-        isReplace = true
-        return initialString
-      })
-      str = isReplace ? sugar : str + sugar
+      part = splitSelector( value, '&' )
+      str = part.length > 1 ? part.join(parentSel) : str + value
     } else {
       str += value
     }
