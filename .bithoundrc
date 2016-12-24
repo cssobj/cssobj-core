@@ -1,0 +1,14 @@
+{
+  "ignore": [
+    "dist/**",
+    "**/node_modules/**"
+  ],
+  "test": [
+    "test/**"
+  ],
+  "critics": {
+    "lint": {
+      "engine": "standard"
+    }
+  }
+}

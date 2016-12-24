@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/css-in-js/cssobj](https://badges.gitter.im/css-in-js/cssobj.svg)](https://gitter.im/css-in-js/cssobj)
 [![Build Status](https://travis-ci.org/cssobj/cssobj-core.svg?branch=master)](https://travis-ci.org/cssobj/cssobj-core)
 [![Coverage Status](https://coveralls.io/repos/github/cssobj/cssobj-core/badge.svg?branch=master)](https://coveralls.io/github/cssobj/cssobj-core?branch=master)
+[![bitHound Overall Score](https://www.bithound.io/github/cssobj/cssobj-core/badges/score.svg)](https://www.bithound.io/github/cssobj/cssobj-core)
 
   Generate **Virtual CSS** middle format, support for all cssobj functions and plugins.
 

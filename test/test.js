@@ -1541,7 +1541,7 @@ color: blue !important;
 
     it('should work with .clearfix', function() {
       var ret = cssobj({
-        // clearfix hack
+        // clearfix
         '.clearfix': {
           '&:before, &:after': {
             content: '" "',
