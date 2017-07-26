@@ -13,7 +13,11 @@
  * Object.keys
  **/
 
-define('cssobj_core', function () { 'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define('cssobj_core', factory) :
+	(global.cssobj_core = factory());
+}(this, (function () { 'use strict';
 
 // helper functions for cssobj
 
@@ -502,4 +506,4 @@ function cssobj (config) {
 
 return cssobj;
 
-});
+})));

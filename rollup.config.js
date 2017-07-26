@@ -40,7 +40,7 @@ export default {
   targets: [
     { format: 'iife', dest: 'dist/cssobj-core.iife.js' },
     { format: 'amd',  dest: 'dist/cssobj-core.amd.js'  },
-    { format: 'umd',  dest: 'dist/cssobj-core.amd.js'  },
+    { format: 'umd',  dest: 'dist/cssobj-core.umd.js'  },
     { format: 'cjs',  dest: 'dist/cssobj-core.cjs.js'  },
     { format: 'es',   dest: 'dist/cssobj-core.es.js'   }
   ]
