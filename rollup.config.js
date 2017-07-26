@@ -23,7 +23,7 @@ var banner = readFileSync('lib/zbanner.js', 'utf-8')
 export default {
   entry: lib,
   moduleName: 'cssobj_core',
-  moduleId: 'cssobj_core',
+  amd: {id: 'cssobj_core'},
   plugins: [
     replace({
       include: lib,
@@ -40,6 +40,7 @@ export default {
   targets: [
     { format: 'iife', dest: 'dist/cssobj-core.iife.js' },
     { format: 'amd',  dest: 'dist/cssobj-core.amd.js'  },
+    { format: 'umd',  dest: 'dist/cssobj-core.amd.js'  },
     { format: 'cjs',  dest: 'dist/cssobj-core.cjs.js'  },
     { format: 'es',   dest: 'dist/cssobj-core.es.js'   }
   ]
