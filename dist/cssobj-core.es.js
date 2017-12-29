@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.1.5
-  Wed Jul 26 2017 09:49:00 GMT+0800 (CST)
-  commit 9459706b9a78c8a1e3f91f85d8b683911e340c54
+  cssobj-core 1.1.6
+  Fri Dec 29 2017 21:05:00 GMT+0800 (CST)
+  commit 5ceb86b401e3cca9a6b98e6320264f873fb5e8ec
 
  IE ES3 need below polyfills:
 
@@ -195,6 +195,7 @@ function parseObj (d, result, node, init) {
     }
     return nodes
   } else {
+    if (d[KEY_ID]) result.ref[d[KEY_ID]] = node;
     // it's no need to check (type.call(d) == OBJECT)
     // isIterable will filter only ARRAY/OBJECT
     // other types will goto parseProp function
@@ -215,7 +216,6 @@ function parseObj (d, result, node, init) {
     node.rawVal = {};
     node.prop = {};
     node.diff = {};
-    if (d[KEY_ID]) result.ref[d[KEY_ID]] = node;
     var order = d[KEY_ORDER] | 0;
     var funcArr = [];
 
