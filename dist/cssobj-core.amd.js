@@ -1,7 +1,7 @@
 /**
-  cssobj-core 1.1.6
-  Fri Dec 29 2017 21:05:00 GMT+0800 (CST)
-  commit 5ceb86b401e3cca9a6b98e6320264f873fb5e8ec
+  cssobj-core 1.1.7
+  Mon Jan 22 2018 09:51:27 GMT+0800 (CST)
+  commit 319d94d9d6c0ee455ed0dfe0c7f796298a145250
 
  IE ES3 need below polyfills:
 
@@ -60,7 +60,7 @@ function extendObj (obj, key, source) {
 
 // ensure obj[k] as array, then push v into it
 function arrayKV (obj, k, v, reverse, unique) {
-  obj[k] = k in obj ? [].concat(obj[k]) : [];
+  obj[k] = k in obj ? (Array.isArray(obj[k]) ? obj[k] : [obj[k]]) : [];
   if(unique && obj[k].indexOf(v)>-1) return
   reverse ? obj[k].unshift(v) : obj[k].push(v);
 }
