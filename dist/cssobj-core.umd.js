@@ -1,6 +1,6 @@
 /**
-  cssobj-core 1.1.7
-  Mon Jan 22 2018 09:51:27 GMT+0800 (CST)
+  cssobj-core 1.1.8
+  Fri Mar 16 2018 16:07:38 GMT+0800 (CST)
   commit 319d94d9d6c0ee455ed0dfe0c7f796298a145250
 
  IE ES3 need below polyfills:
@@ -26,6 +26,8 @@ function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n)
 }
 
+
+
 function own(o, k) {
   return {}.hasOwnProperty.call(o, k)
 }
@@ -39,6 +41,11 @@ function defaults(options, defaultOption) {
   return options
 }
 
+// Object.assgin polyfill
+
+
+// console.log(assign({}, {a:1}, {a:2}, {b:3}))
+
 // convert js prop into css prop (dashified)
 
 
@@ -50,6 +57,28 @@ function defaults(options, defaultOption) {
 
 // random string, should used across all cssobj plugins
 
+
+
+
+// console.log(isEmpty([]), isEmpty(), isEmpty(null), isEmpty(''), isEmpty({}), isEmpty(23))
+
+// set object path value, any Primitive/Non-exists will be set to {}
+
+// var obj={a:{b:{c:1}}};
+// objSet(obj, {} ,{x:1});
+// objSet(obj,'a.b.c.d.e',{x:1});
+// objSet(obj,'a.f.d.s'.split('.'), {y:1});
+// console.log(JSON.stringify(obj))
+
+
+// return object path with only object type
+
+// var obj={a:{b:{c:1}}};
+// console.log(objGetObj(obj))
+// console.log(objGetObj(obj, []))
+// console.log(objGetObj(obj, 'a'))
+// console.log(objGetObj(obj, 'a.b'))
+// console.log(objGetObj(obj, 'a.b.c.e'))
 
 // extend obj from source, if it's no key in obj, create one
 function extendObj (obj, key, source) {
@@ -455,7 +484,7 @@ function applyPlugins (opt, type) {
 }
 
 function applyOrder (opt) {
-  if (!opt._order) return
+  if (opt._order==null) return
   opt._order
     .sort(function (a, b) {
       return a.order - b.order
@@ -465,7 +494,7 @@ function applyOrder (opt) {
         f[0](f[1]);
       });
     });
-  delete opt._order;
+  opt._order = [];
 }
 
 function cssobj (config) {
